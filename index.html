@@ -23,9 +23,12 @@ function (q) {
   console.log(q); /* test! */ print(q + 2);
 }
 </textarea>
+<p><button id="highlight">Highlight text</button> <button id="traverse">Traverse text</button></p>
 
     <script type="text/javascript">
       addHighlighting("foo");
+      connect("highlight", "onclick", function(){highlight($("foo").contentWindow.document.body);});
+      connect("traverse", "onclick", function(){window.trav = list(traverseDOM($("foo").contentWindow.document.body.firstChild));});
     </script>
   </body>
 </html>

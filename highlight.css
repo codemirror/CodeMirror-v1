@@ -5,12 +5,7 @@
 }
 
 .editbox {
-/*  white-space: pre;*/
   font-family: monospace;
-}
-
-.editbox div {
-  display: inline;
 }
 
 span.keyword {

@@ -1,10 +1,10 @@
-var newlineElements = setObject("BR", "P");
+var newlineElements = setObject("BR", "P", "DIV", "LI");
 
 function traverseDOM(start){
-  function yield(value, c){cc = c; if (value == "\n") console.log("NEWLINE YIELDED"); return value;}
+  function yield(value, c){cc = c; return value;}
   function push(fun, arg, c){return function(){return fun(arg, c);};}
   function chain(fun, c){return function(){fun(); return c();};}
-  var cc = push(scanLine, start, function(){throw StopIteration;});
+  var cc = push(scanNode, start, function(){throw StopIteration;});
 
   function pointAt(node){
     var parent = node.parentNode;
@@ -15,20 +15,13 @@ function traverseDOM(start){
       return function(newnode){parent.appendChild(newnode);};
   }
   var point = null;
-  var line = null;
 
-  function newLine(){
-    addPart(null); // Close the previous line
-    line = null;
+  function insertNewline(){
+    point(BR());
   }
-  function addPart(text){
-    if (!line){
-      line = DIV();
-      point(line);
-      console.log("NEW LINE");
-    }
-    console.log("writing '" + text + "'");
-    line.appendChild(text === null ? BR() : SPAN({"class": "part unknown"}, text));
+  function insertPart(text){
+    if (text.length > 0)
+      point(SPAN({"class": "part"}, text));
   }
 
   function writeNode(node, c){
@@ -37,62 +30,43 @@ function traverseDOM(start){
     if (node.nodeType == 3){
       var text = node.textContent;
       var lines = text.split("\n");
-      addPart(lines[0]);
+      insertPart(lines[0]);
       for (var i = 1; i < lines.length; i++){
-        newLine();
-        addPart(lines[i]);
+        insertNewline();
+        insertPart(lines[i]);
       }
-      c = push(yield, text, c);
+      return yield(text, c);
     }
     else{
       if (node.nodeName in newlineElements)
-        c = chain(newLine, push(yield, "\n", c));
+        c = chain(insertNewline, push(yield, "\n", c));
       if (node.firstChild)
         c = push(writeNode, node.firstChild, c);
+      return c();
     }
-    return c();
   }
 
-  function lineNode(node){
-    return node.nodeName == "DIV" && node.lastChild && node.lastChild.nodeName == "BR";
-  }
   function partNode(node){
     return node.nodeName == "SPAN" && node.childNodes.length == 1 &&
       node.firstChild.nodeType == 3 && hasElementClass(node, "part");
   }
+  function newlineNode(node){
+    return node.nodeName == "BR";
+  }
 
-  function scanLine(node, c){
+  function scanNode(node, c){
     if (node.nextSibling)
-      c = push(scanLine, node.nextSibling, c);
-    if (lineNode(node)){
-      point = pointAt(node);
-      line = node;
-      return scanParts(node.firstChild, c);
+      c = push(scanNode, node.nextSibling, c);
+    if (partNode(node)){
+      return yield(node.firstChild.textContent, c);
+    }
+    else if (newlineNode(node)){
+      return yield("\n", c);
     }
     else {
       point = pointAt(node);
       removeElement(node);
       return writeNode(node, c);
-    }
-  }
-
-  function scanParts(part, c){
-    if (partNode(part) && line == null){
-      if (part.nextSibling)
-        c = push(scanParts, part.nextSibling, c);
-      return yield(part.firstChild.textContent, c);
-    }
-    else if (part.nodeName == "BR" && !part.nextSibling){
-      return yield("\n", c);
-    }
-    else {
-      var dummy = DIV();
-      while(part){
-        var move = part;
-        part = part.nextSibling;
-        dummy.appendChild(move);
-      }
-      return writeNode(dummy.firstChild, c);
     }
   }
 
@@ -220,12 +194,6 @@ function tokenize(source){
       return readWord(ch);
   }
   return {next: next, regexpAllowed: true, inComment: false};
-}
-
-function tokenTest(str){
-  var result = list(tokenize(iter(str)));
-  console.log(map(itemgetter("value"), result));
-  console.log(map(itemgetter("type"), result));
 }
 
 var atomicTypes = setObject("atom", "number", "variable", "string", "regexp");  
@@ -395,10 +363,6 @@ function parse(charSource){
 function highlight(node){
   if (!node.firstChild)
     return;
-  var dom = traverseDOM(node.firstChild);
-  var parsed = parse(iconcat(dom));
-  var split = splitBy(function(t){return t.type == "newline";}, parsed);
-  var line = null;
   
   function partLength(part){
     return part.firstChild.textContent.length;
@@ -411,45 +375,73 @@ function highlight(node){
   }
   function removePart(part){
     var nextpart = part.nextSibling;
-    line.removeChild(part);
+    node.removeChild(part);
     return nextpart;
   }
   function tokenPart(token){
     return SPAN({"class": "part " + token.style}, token.value);
   }
 
-  forEach(split, function(tokens){
-    line = line ? line.nextSibling : node.firstChild;
-    console.log("Line = " + scrapeText(line) + ", tokens = " + map(itemgetter("value"), tokens));
-    var part = null;
-    forEach(tokens, function(token){
-      console.log("Token '" + token.value + "'");
-      if (!part) part = line.firstChild;
+  var parsed = parse(iconcat(traverseDOM(node.firstChild)));
+  var part = {
+    current: null,
+    forward: false,
+    get: function(){
+      if (!this.current){
+        this.current = node.firstChild;
+      }
+      else if (this.forward){
+        this.forward = false;
+        this.current = this.current.nextSibling;
+      }
+      return this.current;
+    },
+    next: function(){
+      if (this.forward)
+        this.get();
+      this.forward = true;
+    },
+    remove: function(){
+      this.current = this.get().previousSibling;
+      node.removeChild(this.current.nextSibling);
+      this.forward = true;
+    }
+  };
 
-      var tokensize = token.value.length;
-      if (correctPart(token, part)){
-        part = part.nextSibling;
+  forEach(parsed, function(token){
+    if (token.type == "newline"){
+      if (!(part.get().nodeName == "BR"))
+        throw "Parser out of sync. Expected BR.";
+      part.next();
+    }
+    else {
+      if (!(part.get().nodeName == "SPAN"))
+        throw "Parser out of sync. Expected SPAN.";
+      if (correctPart(token, part.get())){
+        part.next();
       }
       else {
-        line.insertBefore(tokenPart(token), part);
+        node.insertBefore(tokenPart(token), part.get());
+        var tokensize = token.value.length;
         while (tokensize > 0) {
-          var partsize = partLength(part);
+          var partsize = partLength(part.get());
           if (partsize > tokensize){
-            shortenPart(part, tokensize);
+            shortenPart(part.get(), tokensize);
             tokensize = 0;
           }
           else {
             tokensize -= partsize;
-            part = removePart(part);
+            part.remove();
           }
         }
       }
-    });
+    }
   });
 }
 
 function importCode(code, target){
-  target.innerHTML = code.replace(/\n/g, "<br/>").replace(/\s/g, "&nbsp;");
+  var nbsp = String.fromCharCode(160);
+  replaceChildNodes(target, code.replace(/[ \t]/g, nbsp));
 }
 
 function addHighlighting(id){
@@ -462,7 +454,10 @@ function addHighlighting(id){
 
   function stage2(){
     var fdoc = frames[id].document;
-    fdoc.designMode = "on";
+    if (document.all)
+      fdoc.body.designMode = "on";
+    else
+      fdoc.designMode = "on";
     importCode(textarea.value, fdoc.body);
     highlight(fdoc.body);
   }
