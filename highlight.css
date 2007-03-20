@@ -1,0 +1,34 @@
+.subtle-iframe {
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.editbox {
+/*  white-space: pre;*/
+  font-family: monospace;
+}
+
+.editbox div {
+  display: inline;
+}
+
+span.keyword {
+  color: #0044BB;
+}
+
+span.atom {
+  color: #00BB00;
+}
+
+span.variable {
+  color: #880099;
+}
+
+span.comment {
+  color: #BB0000;
+}
+
+span.string {
+  color: #00BBBB;
+}
