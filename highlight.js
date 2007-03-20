@@ -374,11 +374,6 @@ function highlight(node){
   function shortenPart(part, minus){
     part.firstChild.nodeValue = part.firstChild.nodeValue.substring(minus);
   }
-  function removePart(part){
-    var nextpart = part.nextSibling;
-    node.removeChild(part);
-    return nextpart;
-  }
   function tokenPart(token){
     return withDocument(node.ownerDocument, partial(SPAN, {"class": "part " + token.style}, token.value));
   }

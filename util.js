@@ -59,31 +59,6 @@ function peekIter(iter, eofMarker){
   };
 }
 
-function splitBy(func, iterator){
-  iterator = iter(iterator);
-  var done = false;
-  function next(){
-    if (done)
-      throw StopIteration;
-    var elements = [];
-    while (!done){
-      try {
-        var next = iterator.next();
-        if (func(next))
-          break;
-        else
-          elements.push(next);
-      } catch (e) {
-        if (e != StopIteration || elements.length == 0)
-          throw e;
-        done = true;
-      }
-    }
-    return elements;
-  }
-  return {next: next};
-}
-
 function setObject(){
   var obj = {};
   forEach(arguments, function(value){
@@ -94,14 +69,4 @@ function setObject(){
 
 function matcher(regexp){
   return function(value){return regexp.test(value);};
-}
-
-function insertAfter(position, newnode){
-  if (position.nextSibling)
-    position.parentNode.insertBefore(newnode, position.nextSibling);
-  else
-    position.parentNode.appendChild(newnode);
-}
-function replaceNode(oldnode, newnode){
-  oldnode.parentNode.replaceChild(newnode, oldnode);
 }
