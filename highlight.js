@@ -5,6 +5,7 @@ function traverseDOM(start){
   function push(fun, arg, c){return function(){return fun(arg, c);};}
   function chain(fun, c){return function(){fun(); return c();};}
   var cc = push(scanNode, start, function(){throw StopIteration;});
+  var owner = start.ownerDocument;
 
   function pointAt(node){
     var parent = node.parentNode;
@@ -17,18 +18,18 @@ function traverseDOM(start){
   var point = null;
 
   function insertNewline(){
-    point(BR());
+    point(withDocument(owner, BR));
   }
   function insertPart(text){
     if (text.length > 0)
-      point(SPAN({"class": "part"}, text));
+      point(withDocument(owner, partial(SPAN, {"class": "part"}, text)));
   }
 
   function writeNode(node, c){
     if (node.nextSibling)
       c = push(writeNode, node.nextSibling, c);
     if (node.nodeType == 3){
-      var text = node.textContent;
+      var text = node.nodeValue;
       var lines = text.split("\n");
       insertPart(lines[0]);
       for (var i = 1; i < lines.length; i++){
@@ -58,7 +59,7 @@ function traverseDOM(start){
     if (node.nextSibling)
       c = push(scanNode, node.nextSibling, c);
     if (partNode(node)){
-      return yield(node.firstChild.textContent, c);
+      return yield(node.firstChild.nodeValue, c);
     }
     else if (newlineNode(node)){
       return yield("\n", c);
@@ -365,13 +366,13 @@ function highlight(node){
     return;
   
   function partLength(part){
-    return part.firstChild.textContent.length;
+    return part.firstChild.nodeValue.length;
   }
   function correctPart(token, part){
-    return part.firstChild.textContent == token.value && hasElementClass(part, token.style);
+    return part.firstChild.nodeValue == token.value && hasElementClass(part, token.style);
   }
   function shortenPart(part, minus){
-    part.firstChild.textContent = part.firstChild.textContent.substring(minus);
+    part.firstChild.nodeValue = part.firstChild.nodeValue.substring(minus);
   }
   function removePart(part){
     var nextpart = part.nextSibling;
@@ -379,7 +380,7 @@ function highlight(node){
     return nextpart;
   }
   function tokenPart(token){
-    return SPAN({"class": "part " + token.style}, token.value);
+    return withDocument(node.ownerDocument, partial(SPAN, {"class": "part " + token.style}, token.value));
   }
 
   var parsed = parse(iconcat(traverseDOM(node.firstChild)));
@@ -440,25 +441,24 @@ function highlight(node){
 }
 
 function importCode(code, target){
-  var nbsp = String.fromCharCode(160);
-  replaceChildNodes(target, code.replace(/[ \t]/g, nbsp));
+  code = code.replace(/[ \t]/g, String.fromCharCode(160));
+  replaceChildNodes(target, target.ownerDocument.createTextNode(code));
+  highlight(target);
 }
 
 function addHighlighting(id){
   var textarea = $(id);
   var iframe = createDOM("IFRAME", {src: "editframe.html", "class": "subtle-iframe", id: id, name: id});
+  iframe.style.width = textarea.offsetWidth + "px";
+  iframe.style.height = textarea.offsetHeight + "px";
   textarea.parentNode.replaceChild(iframe, textarea);
-  connect(iframe, "onload", stage2);
-  iframe.style.width = "500px";
-  iframe.style.height = "400px";
+  var frameload = connect(iframe, "onload", stage2);
 
   function stage2(){
+    disconnect(frameload);
     var fdoc = frames[id].document;
-    if (document.all)
-      fdoc.body.designMode = "on";
-    else
+    if (!document.all)
       fdoc.designMode = "on";
     importCode(textarea.value, fdoc.body);
-    highlight(fdoc.body);
   }
 }
