@@ -10,7 +10,7 @@ function scanDOM(root){
     if (node.nextSibling)
       c = push(scanNode, node.nextSibling, c);
     if (node.nodeType == 3){
-      var lines = node.nodeValue.split(/\r?\n/);
+      var lines = node.nodeValue.split("\n");
       for (var i = lines.length - 1; i >= 0; i--){
         c = push(yield, lines[i], c);
         if (i > 0)
