@@ -467,17 +467,24 @@ function importCode(code, target){
 
 function addHighlighting(id){
   var textarea = $(id);
-  var iframe = createDOM("IFRAME", {src: "editframe.html", "class": "subtle-iframe", id: id, name: id});
+  var iframe = createDOM("IFRAME", {"class": "subtle-iframe", id: id, name: id});
   iframe.style.width = textarea.offsetWidth + "px";
   iframe.style.height = textarea.offsetHeight + "px";
   textarea.parentNode.replaceChild(iframe, textarea);
-  var frameload = connect(iframe, "onload", stage2);
 
-  function stage2(){
-    disconnect(frameload);
-    var fdoc = frames[id].document;
-    if (!document.all)
-      fdoc.designMode = "on";
+  var fdoc = iframe.contentWindow.document;
+  fdoc.designMode = "on";
+  fdoc.open();
+  fdoc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"highlight.css\"/></head>");
+  fdoc.write("<body class=\"subtle-iframe editbox\" spellcheck=\"false\"></body></html>");
+  fdoc.close();
+
+  function init(){
     importCode(textarea.value, fdoc.body);
   }
+
+  if (document.all)
+    init();
+  else
+    connect(iframe, "onload", function(){disconnectAll(iframe, "onload"); init();});
 }
