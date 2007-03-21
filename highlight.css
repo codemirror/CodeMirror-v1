@@ -8,6 +8,10 @@
   font-family: monospace;
 }
 
+.editbox p {
+  margin: 0;
+}
+
 span.keyword {
   color: #0044BB;
 }

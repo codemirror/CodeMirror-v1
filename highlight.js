@@ -1,4 +1,5 @@
 var newlineElements = setObject("BR", "P", "DIV", "LI");
+var nbsp = String.fromCharCode(160);
 
 function scanDOM(root){
   function yield(value, c){cc = c; return value;}
@@ -9,7 +10,7 @@ function scanDOM(root){
     if (node.nextSibling)
       c = push(scanNode, node.nextSibling, c);
     if (node.nodeType == 3){
-      var lines = node.nodeValue.split("\n");
+      var lines = node.nodeValue.split(/\r?\n/);
       for (var i = lines.length - 1; i >= 0; i--){
         c = push(yield, lines[i], c);
         if (i > 0)
@@ -95,14 +96,16 @@ function traverseDOM(start){
   return {next: function(){return cc();}};
 }
 
-var keywordsA = setObject("if", "switch", "while", "catch");
+var keywordsA = setObject("if", "switch", "while", "catch", "for");
 var keywordsB = setObject("else", "do", "try", "finally"); 
 var keywordsC = setObject("return", "new", "delete");
 var atoms = setObject("true", "false", "undefined", "null");
-var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>]/);
+var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?]/);
 var isDigit = matcher(/[0-9]/);
 function isWhiteSpace(ch){
-  return ch != "\n" && /\s/.test(ch);
+  // Unfortunately, IE's regexp matcher thinks non-breaking spaces
+  // aren't whitespace.
+  return ch != "\n" && (ch == nbsp || /\s/.test(ch));
 }
 
 function tokenize(source){
@@ -457,7 +460,7 @@ function highlight(node){
 }
 
 function importCode(code, target){
-  code = code.replace(/[ \t]/g, String.fromCharCode(160));
+  code = code.replace(/[ \t]/g, nbsp);
   replaceChildNodes(target, target.ownerDocument.createTextNode(code));
   highlight(target);
 }
