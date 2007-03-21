@@ -20,6 +20,10 @@ function tryNext(iter, alternative){
   }
 }
 
+function getNext(iter, end){
+  return tryNext(iter, constantly(end));
+}
+
 function iconcat(iterators){
   var current = iter([]);
   function next(){

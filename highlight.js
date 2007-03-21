@@ -1,5 +1,32 @@
 var newlineElements = setObject("BR", "P", "DIV", "LI");
 
+function scanDOM(root){
+  function yield(value, c){cc = c; return value;}
+  function push(fun, arg, c){return function(){return fun(arg, c);};}
+  var cc = push(scanNode, root, function(){throw StopIteration;});
+  
+  function scanNode(node, c){
+    if (node.nextSibling)
+      c = push(scanNode, node.nextSibling, c);
+    if (node.nodeType == 3){
+      var lines = node.nodeValue.split("\n");
+      for (var i = lines.length - 1; i >= 0; i--){
+        c = push(yield, lines[i], c);
+        if (i > 0)
+          c = push(yield, "\n", c);
+      }
+    }
+    else{
+      if (node.nodeName in newlineElements)
+        c = push(yield, "\n", c);
+      if (node.firstChild)
+        c = push(scanNode, node.firstChild, c);
+    }
+    return c();
+  }
+  return {next: function(){return cc();}};
+}
+
 function traverseDOM(start){
   function yield(value, c){cc = c; return value;}
   function push(fun, arg, c){return function(){return fun(arg, c);};}
@@ -26,30 +53,27 @@ function traverseDOM(start){
   }
 
   function writeNode(node, c){
-    if (node.nextSibling)
-      c = push(writeNode, node.nextSibling, c);
-    if (node.nodeType == 3){
-      var text = node.nodeValue;
-      var lines = text.split("\n");
-      insertPart(lines[0]);
-      for (var i = 1; i < lines.length; i++){
-        insertNewline();
-        insertPart(lines[i]);
+    var scan = scanDOM(node);
+    function iter(){
+      var next = getNext(scan, false);
+      if (next === false){
+        return c;
       }
-      return yield(text, c);
+      else {
+        if (next == "\n")
+          insertNewline();
+        else
+          insertPart(next);
+        return push(yield, next, iter());
+      }
     }
-    else{
-      if (node.nodeName in newlineElements)
-        c = chain(insertNewline, push(yield, "\n", c));
-      if (node.firstChild)
-        c = push(writeNode, node.firstChild, c);
-      return c();
-    }
+    return iter()();
   }
 
   function partNode(node){
     return node.nodeName == "SPAN" && node.childNodes.length == 1 &&
-      node.firstChild.nodeType == 3 && hasElementClass(node, "part");
+      node.firstChild.nodeType == 3 && hasElementClass(node, "part") &&
+      node.firstChild.nodeValue.length > 0;
   }
   function newlineNode(node){
     return node.nodeName == "BR";
