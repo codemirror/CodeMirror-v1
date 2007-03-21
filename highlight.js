@@ -53,19 +53,16 @@ function traverseDOM(start){
   }
 
   function writeNode(node, c){
-    var scan = scanDOM(node);
+    var parts = scanDOM(node);
+    function handlePart(part){
+      if (part == "\n")
+        insertNewline();
+      else
+        insertPart(part);
+      return push(yield, part, iter());
+    }
     function iter(){
-      var next = getNext(scan, false);
-      if (next === false){
-        return c;
-      }
-      else {
-        if (next == "\n")
-          insertNewline();
-        else
-          insertPart(next);
-        return push(yield, next, iter());
-      }
+      return tryNext(parts, handlePart, constantly(c));
     }
     return iter()();
   }

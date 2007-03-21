@@ -8,9 +8,20 @@ registerIteratorFactory("string", isString, function (string){
   }};
 });
 
-function tryNext(iter, alternative){
+function nextOr(iter, alternative){
   try {
     return iter.next();
+  }
+  catch (e) {
+    if (e != StopIteration)
+      throw e;
+    else return alternative;
+  }
+}
+
+function tryNext(iter, regular, alternative){
+  try {
+    return regular(iter.next());
   }
   catch (e) {
     if (e != StopIteration)
@@ -20,23 +31,22 @@ function tryNext(iter, alternative){
   }
 }
 
-function getNext(iter, end){
-  return tryNext(iter, constantly(end));
+function constantly(value){
+  return function(){return value;}
 }
 
 function iconcat(iterators){
   var current = iter([]);
   function next(){
-    return tryNext(current, function(){
-      current = iter(iterators.next());
-      return next();
-    });
+    return tryNext(
+      current,
+      operator.identity,
+      function(){
+        current = iter(iterators.next());
+        return next();
+      });
   }
   return {next: next};
-}
-
-function constantly(value){
-  return function(){return value;}
 }
 
 function peekIter(iter, eofMarker){
@@ -45,7 +55,7 @@ function peekIter(iter, eofMarker){
     peek: function(){
       if (!peeked){
         peeked = true;
-        peekValue = tryNext(iter, constantly(eofMarker));
+        peekValue = nextOr(iter, eofMarker);
       }
       return peekValue;
     },
