@@ -96,10 +96,27 @@ function traverseDOM(start){
   return {next: function(){return cc();}};
 }
 
-var keywordsA = setObject("if", "switch", "while", "catch", "for");
-var keywordsB = setObject("else", "do", "try", "finally"); 
-var keywordsC = setObject("return", "new", "delete");
-var atoms = setObject("true", "false", "undefined", "null");
+var keywords = function(){
+  function result(type, style){
+    return function(word){
+      return {type: type, style: style, value: word};
+    };
+  }
+  var keywordA = result("keyword a", "keyword");
+  var keywordB = result("keyword b", "keyword");
+  var keywordC = result("keyword c", "keyword");
+  var operator = result("operator", "keyword");
+  var atom = result("atom", "atom");
+  return {
+    "if": keywordA, "switch": keywordA, "while": keywordA, "catch": keywordA, "for": keywordA,
+    "else": keywordB, "do": keywordB, "try": keywordB, "finally": keywordB,
+    "return": keywordC, "new": keywordC, "delete": keywordC, "break": keywordC, "continue": keywordC,
+    "in": operator, "typeof": operator,
+    "var": result("var", "keyword"), "function": result("function", "keyword"),
+    "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom
+  };
+}();
+
 var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?]/);
 var isDigit = matcher(/[0-9]/);
 function isWhiteSpace(ch){
@@ -134,25 +151,8 @@ function tokenize(source){
   }
 
   function wordType(word){
-    function result(type, style){
-      return {type: type, style: style, value: word};
-    }
-    if (word == "function")
-      return result("function", "keyword");
-    if (word == "var")
-      return result("var", "keyword");
-    if (word == "in")
-      return result("operator", "operator");
-    if (word in keywordsA)
-      return result("keyword a", "keyword");
-    if (word in keywordsB)
-      return result("keyword b", "keyword");
-    if (word in keywordsC)
-      return result("keyword c", "keyword");
-    if (word in atoms)
-      return result("atom", "atom");
-    else
-      return result("variable", "variable");
+    var knownWord = keywords[word];
+    return knownWord ? knownWord(word) : {type: "variable", style: "variable", value: word};
   }
 
   function readNumber(first){
