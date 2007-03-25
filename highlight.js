@@ -98,9 +98,7 @@ function traverseDOM(start){
 
 var keywords = function(){
   function result(type, style){
-    return function(word){
-      return {type: type, style: style, value: word};
-    };
+    return {type: type, style: style};
   }
   var keywordA = result("keyword a", "keyword");
   var keywordB = result("keyword b", "keyword");
@@ -119,6 +117,7 @@ var keywords = function(){
 
 var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?]/);
 var isDigit = matcher(/[0-9]/);
+var isWordChar = matcher(/[\w$_]/);
 function isWhiteSpace(ch){
   // Unfortunately, IE's regexp matcher thinks non-breaking spaces
   // aren't whitespace.
@@ -126,50 +125,55 @@ function isWhiteSpace(ch){
 }
 
 function tokenize(source){
-  source = peekIter(iter(source), "");
+  source = stringCombiner(source);
 
-  function readWhile(test, start){
-    while(true){
-      var next = source.peek();
-      if (next && test(next))
-        start += source.next();
-      else
-        return start;
-    }
+  function result(type, style, start){
+    nextWhile(isWhiteSpace);
+    var value = source.get();
+    return {type: type, style: style, value: (start ? start + value : value)};
   }
-  function readUntilUnescaped(end, start){
+
+  function nextWhile(test){
+    var next;
+    while((next = source.peek()) && test(next))
+      source.next();
+  }
+  function nextUntilUnescaped(end){
     var escaped = false;
-    while(true){
-      var next = source.peek();
-      if (next == "\n" || !next)
-        return start;
-      start += source.next();
+    var next;
+    while((next = source.peek()) && next != "\n"){
+      source.next();
       if (next == end && !escaped)
-        return start;
+        break;
       escaped = next == "\\";
     }
   }
 
-  function wordType(word){
-    var knownWord = keywords[word];
-    return knownWord ? knownWord(word) : {type: "variable", style: "variable", value: word};
+  function readNumber(){
+    nextWhile(isDigit);
+    if (source.peek() == "."){
+      source.next();
+      nextWhile(isDigit);
+    }
+    if (source.peek() == "e" || source.peek() == "E"){
+      source.next();
+      if (source.peek() == "-")
+        source.next();
+      nextWhile(isDigit);
+    }
+    return result("number", "atom");
   }
-
-  function readNumber(first){
-    var buffer = readWhile(isDigit, first);
-    if (source.peek() == ".")
-      buffer = readWhile(isDigit, buffer + source.next());
-    if (source.peek() == "e" || source.peek() == "E")
-      buffer = readWhile(isDigit, buffer + source.next() + source.next());
-    return {type: "number", style: "atom", value: buffer};
+  function readWord(){
+    nextWhile(isWordChar);
+    var word = source.get();
+    var known = keywords[word];
+    var q = known ? result(known.type, known.style, word) : result("variable", "variable", word);
+    return q;
   }
-  function readWord(first){
-    var word = readWhile(matcher(/[\w$]/), first);
-    return wordType(word);
-  }
-  function readRegexp(first){
-    var regexp = readUntilUnescaped("/", first);
-    return {type: "regexp", style: "string", value: readWhile(matcher(/[gi]/), regexp)};
+  function readRegexp(){
+    nextUntilUnescaped("/");
+    nextWhile(matcher(/[gi]/));
+    return result("regexp", "string");
   }
   function readMultilineComment(start){
     this.inComment = true;
@@ -178,46 +182,47 @@ function tokenize(source){
       var next = source.peek();
       if (next == "\n")
         break;
-      start += source.next();
+      source.next();
       if (next == "/" && maybeEnd){
         this.inComment = false;
         break;
       }
       maybeEnd = next == "*";
     }
-    return {type: "comment", style: "comment", value: start};
+    return result("comment", "comment");
   }
 
   function next(){
     var ch = source.next();
     if (ch == "\n")
-      return {type: "newline", style: "whitespace", value: "\n"};
+      return {type: "newline", style: "whitespace", value: source.get()};
     else if (this.inComment)
-      return readMultilineComment.call(this, ch)
+      return readMultilineComment.call(this, ch);
     else if (isWhiteSpace(ch))
-      return {type: "whitespace", style: "whitespace", value: readWhile(isWhiteSpace, ch)};
+      return nextWhile(isWhiteSpace) || result("whitespace", "whitespace");
     else if (ch == "\"")
-      return {type: "string", style: "string", value: readUntilUnescaped("\"", ch)};
+      return nextUntilUnescaped("\"") || result("string", "string");
     else if (/[{}\(\),;:]/.test(ch))
-      return {type: ch, style: "punctuation", value: ch};
+      return result(ch, "punctuation");
     else if (isDigit(ch))
-      return readNumber(ch);
+      return readNumber();
     else if (ch == "/"){
       next = source.peek();
       if (next == "*")
         return readMultilineComment.call(this, ch);
       else if (next == "/")
-        return {type: "comment", style: "comment", value: readUntilUnescaped("\n", ch)};
+        return nextUntilUnescaped(null) || result("comment", "comment");
       else if (this.regexpAllowed)
-        return readRegexp(ch);
+        return readRegexp();
       else
-        return {type: "operator", style: "operator", value: readWhile(isOperatorChar, ch)};
+        return nextWhile(isOperatorChar) || result("operator", "operator");
     }
     else if (isOperatorChar(ch))
-      return {type: "operator", style: "operator", value: readWhile(isOperatorChar, ch)};
+      return nextWhile(isOperatorChar) || result("operator", "operator");
     else
-      return readWord(ch);
+      return readWord();
   }
+
   return {next: next, regexpAllowed: true, inComment: false};
 }
 
