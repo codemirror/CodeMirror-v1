@@ -49,8 +49,11 @@ function traverseDOM(start){
     point(withDocument(owner, BR));
   }
   function insertPart(text){
-    if (text.length > 0)
-      point(withDocument(owner, partial(SPAN, {"class": "part"}, text)));
+    if (text.length > 0){
+      var part = withDocument(owner, partial(SPAN, {"class": "part"}, text));
+      part.text = text;
+      point(part);
+    }
   }
 
   function writeNode(node, c){
@@ -69,9 +72,11 @@ function traverseDOM(start){
   }
 
   function partNode(node){
-    return node.nodeName == "SPAN" && node.childNodes.length == 1 &&
-      node.firstChild.nodeType == 3 && hasElementClass(node, "part") &&
-      node.firstChild.nodeValue.length > 0;
+    if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3){
+      node.text = node.firstChild.nodeValue;
+      return node.text.length > 0;
+    }
+    return false;
   }
   function newlineNode(node){
     return node.nodeName == "BR";
@@ -81,7 +86,7 @@ function traverseDOM(start){
     if (node.nextSibling)
       c = push(scanNode, node.nextSibling, c);
     if (partNode(node)){
-      return yield(node.firstChild.nodeValue, c);
+      return yield(node.text, c);
     }
     else if (newlineNode(node)){
       return yield("\n", c);
@@ -393,14 +398,12 @@ function highlight(node){
   if (!node.firstChild)
     return;
   
-  function partLength(part){
-    return part.firstChild.nodeValue.length;
-  }
   function correctPart(token, part){
-    return part.firstChild.nodeValue == token.value && hasElementClass(part, token.style);
+    return part.text == token.value && hasClass(part, token.style);
   }
   function shortenPart(part, minus){
-    part.firstChild.nodeValue = part.firstChild.nodeValue.substring(minus);
+    part.text = part.text.substring(minus);
+    part.firstChild.nodeValue = part.text; // TODO delay?
   }
   function tokenPart(token){
     return withDocument(node.ownerDocument, partial(SPAN, {"class": "part " + token.style}, token.value));
@@ -448,7 +451,7 @@ function highlight(node){
         node.insertBefore(tokenPart(token), part.get());
         var tokensize = token.value.length;
         while (tokensize > 0) {
-          var partsize = partLength(part.get());
+          var partsize = part.get().text.length;
           if (partsize > tokensize){
             shortenPart(part.get(), tokensize);
             tokensize = 0;

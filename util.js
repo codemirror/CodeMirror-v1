@@ -100,3 +100,8 @@ function stringCombiner(source){
 
   return result;
 }
+
+function hasClass(element, className){
+  var classes = element.className;
+  return classes && new RegExp("(^| )" + className + "($| )").test(classes);
+}
