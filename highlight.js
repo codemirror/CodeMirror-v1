@@ -167,8 +167,7 @@ function tokenize(source){
     nextWhile(isWordChar);
     var word = source.get();
     var known = keywords[word];
-    var q = known ? result(known.type, known.style, word) : result("variable", "variable", word);
-    return q;
+    return known ? result(known.type, known.style, word) : result("variable", "variable", word);
   }
   function readRegexp(){
     nextUntilUnescaped("/");
@@ -202,7 +201,7 @@ function tokenize(source){
       return nextWhile(isWhiteSpace) || result("whitespace", "whitespace");
     else if (ch == "\"")
       return nextUntilUnescaped("\"") || result("string", "string");
-    else if (/[{}\(\),;:]/.test(ch))
+    else if (/[\[\]{}\(\),;\:]/.test(ch))
       return result(ch, "punctuation");
     else if (isDigit(ch))
       return readNumber();
@@ -228,11 +227,11 @@ function tokenize(source){
 
 var atomicTypes = setObject("atom", "number", "variable", "string", "regexp");  
 
-function parse(charSource){
+function parse(source){
   var cc = [statements];
   var context = null;
   var lexical = null;
-  var tokens = tokenize(iter(charSource));
+  var tokens = tokenize(source);
   var column = 0;
   var indented = 0;
 
@@ -407,7 +406,7 @@ function highlight(node){
     return withDocument(node.ownerDocument, partial(SPAN, {"class": "part " + token.style}, token.value));
   }
 
-  var parsed = parse(iconcat(traverseDOM(node.firstChild)));
+  var parsed = parse(traverseDOM(node.firstChild));
   var part = {
     current: null,
     forward: false,

@@ -84,7 +84,7 @@ function stringCombiner(source){
       pos = 0;
       current = source.next();
     }
-    return current[pos++];
+    return current.charAt(pos++);
   }
   function get(){
     var temp = accum;
