@@ -132,10 +132,11 @@ function isWhiteSpace(ch){
 function tokenize(source){
   source = stringCombiner(source);
 
-  function result(type, style, start){
+  function result(type, style, base){
     nextWhile(isWhiteSpace);
-    var value = source.get();
-    return {type: type, style: style, value: (start ? start + value : value)};
+    var value = {type: type, style: style, value: (base ? base + source.get() : source.get())};
+    if (base) value.name = base;
+    return value;
   }
 
   function nextWhile(test){
@@ -234,6 +235,7 @@ var atomicTypes = setObject("atom", "number", "variable", "string", "regexp");
 
 function parse(source){
   var cc = [statements];
+  var consume;
   var context = null;
   var lexical = null;
   var tokens = tokenize(source);
@@ -241,9 +243,6 @@ function parse(source){
   var indented = 0;
 
   function next(){
-    var nextaction = cc[cc.length - 1];
-    tokens.regexpAllowed = !nextaction.noRegexp;
-
     var token = tokens.next();
     if (token.type == "whitespace" && column == 0)
       indented = token.value.length;
@@ -259,45 +258,31 @@ function parse(source){
       lexical.align = true;
 
     while(true){
-      var result = nextaction(token.type, token.value);
-      if (result.pop)
-        cc.pop();
-      for (var i = result.follow.length - 1; i >= 0; i--)
-        cc.push(result.follow[i]);
-      if (result.yield)
+      consume = false;
+      cc.pop()(token.type, token.name);
+      if (consume)
         return token;
-      nextaction = cc[cc.length - 1];
     }
   }
 
-  function sub(){
-    return {follow: arguments,
-            yield: false,
-            pop: false};
+  function push(fs){
+    for (var i = fs.length - 1; i >= 0; i--)
+      cc.push(fs[i]);
   }
   function cont(){
-    return {follow: arguments,
-            yield: true,
-            pop: true};
+    push(arguments);
+    consume = true;
   }
-  function stay(){
-    return {follow: [],
-            yield: true,
-            pop: false};
-  }
-  function done(){
-    return {follow: arguments,
-            yield: false,
-            pop: true};
+  function pass(){
+    push(arguments);
+    consume = false;
   }
 
   function pushcontext(){
     context = {prev: context, vars: {}};
-    return done();
   }
   function popcontext(){
     context = context.prev;
-    return done();
   }
   function register(varname){
     if (context)
@@ -307,88 +292,66 @@ function parse(source){
   function pushlex(type){
     return function(){
       lexical = {prev: lexical, indented: indented, column: column, type: type};
-      return done();
     };
   }
   function poplex(){
     lexical = lexical.prev;
-    return done();
   }
 
   function expect(wanted){
     return function(type){
-      if (type == wanted) return cont();
-      return stay();
+      if (type == wanted) cont();
+      else cont(arguments.callee);
     };
   }
 
   function statements(type){
-    return sub(statement);
+    return pass(statement, statements);
   }
   function statement(type){
-    if (type == "var") return cont(pushlex("var"), vardef1, expect(";"), poplex);
-    if (type == "keyword a") return cont(pushlex("expr"), expression, statement, poplex);
-    if (type == "keyword b") return cont(pushlex("expr"), statement, poplex);
-    if (type == "function") return cont(pushlex("expr"), functiondef, poplex);
-    if (type == "{") return cont(pushlex("{"), block, poplex);
-    return done(pushlex("expr"), expression, expect(";"), poplex);
+    if (type == "var") cont(pushlex("expr"), vardef1, expect(";"), poplex);
+    else if (type == "keyword a") cont(pushlex("expr"), expression, statement, poplex);
+    else if (type == "keyword b") cont(pushlex("expr"), statement, poplex);
+    else if (type == "{") cont(pushlex("block"), block, poplex);
+    else pass(pushlex("expr"), expression, expect(";"), poplex);
   }
   function expression(type){
-    if (type in atomicTypes) {return cont(maybeoperator);}
-    if (type == "function") return cont(functiondef);
-    if (type == "keyword c") return cont(expression);
-    if (type == "(") return cont(pushlex("("), expression, expect(")"), poplex);
-    if (type == "operator") return stay();
-    return done();
+    if (type in atomicTypes) {tokens.regexpAllowed = false; cont(maybeoperator);}
+    else if (type == "function") cont(functiondef);
+    else if (type == "keyword c") cont(expression);
+    else if (type == "(") cont(pushlex("block"), expression, expect(")"), poplex);
+    else if (type == "operator") cont(expression);
+    else if (type == ";") cont();
   }
   function maybeoperator(type){
-    if (type == "operator") return cont(expression);
-    if (type == "(") return cont(pushlex("("), expression, commaseparated, expect(")"), poplex);
-    return done();
+    tokens.regexpAllowed = true;
+    if (type == "operator") cont(expression);
+    else if (type == "(") {cont(pushlex("block"), expression, commaseparated, expect(")"), poplex)};
   }
-  maybeoperator.noRegexp = true;
   function commaseparated(type){
-    if (type == ",") return cont(expression, commaseparated);
-    return done();
+    if (type == ",") cont(expression, commaseparated);
   }
   function block(type){
-    if (type == "}") return cont();
-    return sub(statement);
+    if (type == "}") cont();
+    else pass(statement, block);
   }
   function vardef1(type, value){
-    if (type == "variable"){
-      register(value);
-      return cont(vardef2);
-    }
-    return done();
+    if (type == "variable"){register(value); cont(vardef2);}
+    else cont();
   }
   function vardef2(type, value){
-    if (value == "=")
-      return cont(expression, vardef2);
-    if (type == ",")
-      return cont(vardef1);
-    return done();
+    if (value == "=") cont(expression, vardef2);
+    else if (type == ",") cont(vardef1);
   }
   function functiondef(type, value){
-    if (type == "variable"){
-      register(value);
-      return cont(functiondef);
-    }
-    if (type == "(")
-      return cont(pushcontext, arglist1, expect(")"), statement, popcontext);
-    return done();
+    if (type == "variable"){register(value); cont(functiondef);}
+    else if (type == "(") cont(pushcontext, arglist1, expect(")"), statement, popcontext);
   }
   function arglist1(type, value){
-    if (type == "variable"){
-      register(value);
-      return cont(arglist2);
-    }
-    return done();
+    if (type == "variable"){register(value); cont(arglist2);}
   }
   function arglist2(type){
-    if (type == ",")
-      return cont(arglist1);
-    return done();
+    if (type == ",") cont(arglist1);
   }
 
   return {next: next};
