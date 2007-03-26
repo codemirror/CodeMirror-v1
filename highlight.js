@@ -399,11 +399,11 @@ function highlight(node){
     return;
   
   function correctPart(token, part){
-    return part.text == token.value && hasClass(part, token.style);
+    return !part.reduced && part.text == token.value && hasClass(part, token.style);
   }
   function shortenPart(part, minus){
     part.text = part.text.substring(minus);
-    part.firstChild.nodeValue = part.text; // TODO delay?
+    part.reduced = true;
   }
   function tokenPart(token){
     return withDocument(node.ownerDocument, partial(SPAN, {"class": "part " + token.style}, token.value));
