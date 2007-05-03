@@ -1,31 +1,80 @@
-var newlineElements = setObject("BR", "P", "DIV", "LI");
-var nbsp = String.fromCharCode(160);
+var newlineElements = setObject("P", "DIV", "LI");
 
-function scanDOM(root){
-  function yield(value, c){cc = c; return value;}
-  function push(fun, arg, c){return function(){return fun(arg, c);};}
-  var cc = push(scanNode, root, function(){throw StopIteration;});
-  
-  function scanNode(node, c){
-    if (node.nextSibling)
-      c = push(scanNode, node.nextSibling, c);
-    if (node.nodeType == 3){
-      var lines = node.nodeValue.split("\n");
-      for (var i = lines.length - 1; i >= 0; i--){
-        c = push(yield, lines[i], c);
-        if (i > 0)
-          c = push(yield, "\n", c);
+function scanDOM(root) {
+  var doc = root.ownerDocument;
+  var current = root;
+  while (current.firstChild)
+    current = current.firstChild;
+
+  function nextNode() {
+    var result = current;
+    if (current) {
+      if (current.nextSibling) {
+        current = current.nextSibling;
+        while (current.firstChild)
+          current = current.firstChild;
+      }
+      else {
+        current = current.parentNode;
       }
     }
-    else{
-      if (node.nodeName in newlineElements)
-        c = push(yield, "\n", c);
-      if (node.firstChild)
-        c = push(scanNode, node.firstChild, c);
-    }
-    return c();
+    return result;
   }
-  return {next: function(){return cc();}};
+
+  function splitTextNode(node) {
+    var text = node.nodeValue;
+    if (text == "")
+      return [];
+    if (text.indexOf("\n") == -1)
+      return [node];
+
+    var parts = [];
+    var lines = text.split("\n");
+    for (var i = 0; i != lines.length; i++) {
+      if (i > 0){
+        var br = withDocument(doc, BR);
+        parts.push(br);
+        replaceSelection(node, br, 1);
+      }
+      var line = lines[i];
+      if (line.length > 0) {
+        var text = document.createTextNode(line);
+        parts.push(text);
+        replaceSelection(node, text, line.length);
+      }
+    }
+    return parts;
+  }
+
+  var leftOver = [];
+  var closing = false;
+  function next() {
+    if (leftOver.length > 0)
+      return leftOver.shift();
+
+    while (true) {
+      var node = nextNode();
+      if (!node)
+        throw StopIteration;
+
+      if (node.nodeType == 3){
+        leftOver = splitTextNode(node);
+        closing = false;
+        if (leftOver.length > 0)
+          return leftOver.shift();
+      }
+
+      if (node.nodeName == "BR"){
+        closing = true;
+        return node;
+      }
+      else if (!closing && node.nodeName in newlineElements){
+        closing = true;
+        return withDocument(doc, BR);
+      }
+    }
+  }
+  return {next: next};
 }
 
 function traverseDOM(start){
@@ -45,25 +94,26 @@ function traverseDOM(start){
   }
   var point = null;
 
-  function insertNewline(){
-    point(withDocument(owner, BR));
+  function insertNewline(br){
+    br.dirty = true;
+    point(br);
+    return "\n";
   }
   function insertPart(text){
-    if (text.length > 0){
-      var part = withDocument(owner, partial(SPAN, {"class": "part"}, text));
-      part.text = text;
-      point(part);
-    }
+    var part = withDocument(owner, partial(SPAN, {"class": "part"}, text));
+    part.text = text.nodeValue;
+    part.dirty = true;
+    point(part);
+    return part.text;
   }
 
   function writeNode(node, c){
     var parts = scanDOM(node);
     function handlePart(part){
-      if (part == "\n")
-        insertNewline();
+      if (part.nodeName == "BR")
+        return push(yield, insertNewline(part), iter());
       else
-        insertPart(part);
-      return push(yield, part, iter());
+        return push(yield, insertPart(part), iter());
     }
     function iter(){
       return tryNext(parts, handlePart, constantly(c));
@@ -101,146 +151,17 @@ function traverseDOM(start){
   return {next: function(){return cc();}};
 }
 
-var keywords = function(){
-  function result(type, style){
-    return {type: type, style: style};
-  }
-  var keywordA = result("keyword a", "keyword");
-  var keywordB = result("keyword b", "keyword");
-  var keywordC = result("keyword c", "keyword");
-  var operator = result("operator", "keyword");
-  var atom = result("atom", "atom");
-  return {
-    "if": keywordA, "switch": keywordA, "while": keywordA, "catch": keywordA, "for": keywordA,
-    "else": keywordB, "do": keywordB, "try": keywordB, "finally": keywordB,
-    "return": keywordC, "new": keywordC, "delete": keywordC, "break": keywordC, "continue": keywordC,
-    "in": operator, "typeof": operator,
-    "var": result("var", "keyword"), "function": result("function", "keyword"),
-    "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom
-  };
-}();
-
-var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?]/);
-var isDigit = matcher(/[0-9]/);
-var isWordChar = matcher(/[\w$_]/);
-function isWhiteSpace(ch){
-  // Unfortunately, IE's regexp matcher thinks non-breaking spaces
-  // aren't whitespace.
-  return ch != "\n" && (ch == nbsp || /\s/.test(ch));
-}
-
-function tokenize(source){
-  source = stringCombiner(source);
-
-  function result(type, style, base){
-    nextWhile(isWhiteSpace);
-    var value = {type: type, style: style, value: (base ? base + source.get() : source.get())};
-    if (base) value.name = base;
-    return value;
-  }
-
-  function nextWhile(test){
-    var next;
-    while((next = source.peek()) && test(next))
-      source.next();
-  }
-  function nextUntilUnescaped(end){
-    var escaped = false;
-    var next;
-    while((next = source.peek()) && next != "\n"){
-      source.next();
-      if (next == end && !escaped)
-        break;
-      escaped = next == "\\";
-    }
-  }
-
-  function readNumber(){
-    nextWhile(isDigit);
-    if (source.peek() == "."){
-      source.next();
-      nextWhile(isDigit);
-    }
-    if (source.peek() == "e" || source.peek() == "E"){
-      source.next();
-      if (source.peek() == "-")
-        source.next();
-      nextWhile(isDigit);
-    }
-    return result("number", "atom");
-  }
-  function readWord(){
-    nextWhile(isWordChar);
-    var word = source.get();
-    var known = keywords[word];
-    return known ? result(known.type, known.style, word) : result("variable", "variable", word);
-  }
-  function readRegexp(){
-    nextUntilUnescaped("/");
-    nextWhile(matcher(/[gi]/));
-    return result("regexp", "string");
-  }
-  function readMultilineComment(start){
-    this.inComment = true;
-    var maybeEnd = (start == "*");
-    while(true){
-      var next = source.peek();
-      if (next == "\n")
-        break;
-      source.next();
-      if (next == "/" && maybeEnd){
-        this.inComment = false;
-        break;
-      }
-      maybeEnd = next == "*";
-    }
-    return result("comment", "comment");
-  }
-
-  function next(){
-    var ch = source.next();
-    if (ch == "\n")
-      return {type: "newline", style: "whitespace", value: source.get()};
-    else if (this.inComment)
-      return readMultilineComment.call(this, ch);
-    else if (isWhiteSpace(ch))
-      return nextWhile(isWhiteSpace) || result("whitespace", "whitespace");
-    else if (ch == "\"")
-      return nextUntilUnescaped("\"") || result("string", "string");
-    else if (/[\[\]{}\(\),;\:]/.test(ch))
-      return result(ch, "punctuation");
-    else if (isDigit(ch))
-      return readNumber();
-    else if (ch == "/"){
-      next = source.peek();
-      if (next == "*")
-        return readMultilineComment.call(this, ch);
-      else if (next == "/")
-        return nextUntilUnescaped(null) || result("comment", "comment");
-      else if (this.regexpAllowed)
-        return readRegexp();
-      else
-        return nextWhile(isOperatorChar) || result("operator", "operator");
-    }
-    else if (isOperatorChar(ch))
-      return nextWhile(isOperatorChar) || result("operator", "operator");
-    else
-      return readWord();
-  }
-
-  return {next: next, regexpAllowed: true, inComment: false};
-}
-
 var atomicTypes = setObject("atom", "number", "variable", "string", "regexp");  
 
-function parse(source){
+function parse(tokens){
   var cc = [statements];
-  var consume;
+  var consume, markdef;
   var context = null;
   var lexical = null;
-  var tokens = tokenize(source);
   var column = 0;
   var indented = 0;
+
+  var parser = {next: next, copy: copy};
 
   function next(){
     var token = tokens.next();
@@ -258,11 +179,30 @@ function parse(source){
       lexical.align = true;
 
     while(true){
-      consume = false;
+      consume = markdef = false;
       cc.pop()(token.type, token.name);
-      if (consume)
+      if (consume){
+        if (token.type == "variable") {
+          if (markdef)
+            token.style = "variabledef";
+          else if (inScope(token.name))
+            token.style = "localvariable";
+        }
         return token;
+      }
     }
+  }
+  function copy(){
+    var cContext = context, cLexical = lexical, ccc = clone(cc), cRegExp = tokens.regexp, cComment = tokens.inComment;
+    return function(tokens){
+      context = cContext;
+      lexical = cLexical;
+      cc = ccc;
+      column = indented = 0;
+      tokens.regexp = cRegExp;
+      tokens.inComment = cComment;
+      return parser;
+    };
   }
 
   function push(fs){
@@ -285,8 +225,19 @@ function parse(source){
     context = context.prev;
   }
   function register(varname){
-    if (context)
+    if (context){
+      markdef = true;
       context.vars[varname] = true;
+    }
+  }
+  function inScope(varname){
+    var cursor = context;
+    while (cursor) {
+      if (cursor.vars[varname])
+        return true;
+      cursor = cursor.prev;
+    }
+    return false;
   }
 
   function pushlex(type){
@@ -313,18 +264,17 @@ function parse(source){
     else if (type == "keyword a") cont(pushlex("expr"), expression, statement, poplex);
     else if (type == "keyword b") cont(pushlex("expr"), statement, poplex);
     else if (type == "{") cont(pushlex("block"), block, poplex);
+    else if (type == "function") cont(functiondef);
     else pass(pushlex("expr"), expression, expect(";"), poplex);
   }
   function expression(type){
-    if (type in atomicTypes) {tokens.regexpAllowed = false; cont(maybeoperator);}
+    if (type in atomicTypes) cont(maybeoperator);
     else if (type == "function") cont(functiondef);
     else if (type == "keyword c") cont(expression);
     else if (type == "(") cont(pushlex("block"), expression, expect(")"), poplex);
     else if (type == "operator") cont(expression);
-    else if (type == ";") cont();
   }
   function maybeoperator(type){
-    tokens.regexpAllowed = true;
     if (type == "operator") cont(expression);
     else if (type == "(") {cont(pushlex("block"), expression, commaseparated, expect(")"), poplex)};
   }
@@ -354,11 +304,15 @@ function parse(source){
     if (type == ",") cont(arglist1);
   }
 
-  return {next: next};
+  return parser;
 }
 
-function highlight(node){
+function highlight(node, from, onlyDirtyLines, lines){
   if (!node.firstChild)
+    return;
+  while (from && !from.parserFromHere)
+    from = from.previousSibling;
+  if (from && !from.nextSibling)
     return;
   
   function correctPart(token, part){
@@ -372,13 +326,14 @@ function highlight(node){
     return withDocument(node.ownerDocument, partial(SPAN, {"class": "part " + token.style}, token.value));
   }
 
-  var parsed = parse(traverseDOM(node.firstChild));
+  var lineDirty = false;
+  var parsed = from ? from.parserFromHere(traverseDOM(from.nextSibling)) : parse(tokenize(stringCombiner(traverseDOM(node.firstChild))));
   var part = {
     current: null,
     forward: false,
     get: function(){
       if (!this.current){
-        this.current = node.firstChild;
+        this.current = from ? from.nextSibling : node.firstChild;
       }
       else if (this.forward){
         this.forward = false;
@@ -400,21 +355,33 @@ function highlight(node){
 
   forEach(parsed, function(token){
     if (token.type == "newline"){
-      if (!(part.get().nodeName == "BR"))
+      if (part.get().nodeName != "BR")
         throw "Parser out of sync. Expected BR.";
+      part.get().parserFromHere = parsed.copy();
+      part.get().dirty = false;
+      if ((lines !== undefined && --lines <= 0) ||
+          (onlyDirtyLines && !lineDirty && !part.get().dirty))
+        throw StopIteration;
+      lineDirty = false;
       part.next();
     }
     else {
-      if (!(part.get().nodeName == "SPAN"))
+      if (part.get().nodeName != "SPAN")
         throw "Parser out of sync. Expected SPAN.";
+      if (onlyDirtyLines && part.get().dirty)
+        lineDirty = true;
+
       if (correctPart(token, part.get())){
+        part.get().dirty = false;
         part.next();
       }
       else {
-        node.insertBefore(tokenPart(token), part.get());
+        var newPart = tokenPart(token);
+        node.insertBefore(newPart, part.get());
         var tokensize = token.value.length;
         while (tokensize > 0) {
           var partsize = part.get().text.length;
+          replaceSelection(part.get().firstChild, newPart.firstChild, tokensize);
           if (partsize > tokensize){
             shortenPart(part.get(), tokensize);
             tokensize = 0;
@@ -427,12 +394,67 @@ function highlight(node){
       }
     }
   });
+  return lines;
 }
 
 function importCode(code, target){
   code = code.replace(/[ \t]/g, nbsp);
   replaceChildNodes(target, target.ownerDocument.createTextNode(code));
   highlight(target);
+}
+
+var highlightTimeout = null;
+function scheduleHighlight(window, time){
+  if (highlightTimeout)
+    clearTimeout(highlightTimeout);
+  highlightTimeout = setTimeout(partial(highlightDirtyLines, window, 10), time);
+}
+
+/*
+function markSelection(window){
+  function toplevelNode(from){
+    while (from.parentNode){
+      if (from.parentNode == body)
+        return from;
+      from = from.parentNode;
+    }
+  }
+
+  var selection = rangeFromSelection(window);
+  if (!selection)
+    return;
+  var body = window.document.body;
+  var start = toplevelNode(selection.startNode),
+    end = toplevelNode(selection.endNode);
+  if (start && end){
+    start.dirty = true;
+    while (start != end) {
+      start = start.nextSibling;
+      start.dirty = true;
+    }
+  }
+  scheduleHighlight(window, 400);
+}
+
+function highlightDirtyLines(window, amount){
+  keepSelection = rangeFromSelection(window);
+  var cursor = window.document.body.firstChild;
+  for (; cursor && amount > 0; cursor = cursor.nextSibling) {
+    if (cursor.dirty){
+      var backUp = cursor.previousSibling;
+      amount = highlight(window.document.body, cursor, true, amount);
+      cursor = backUp ? backUp.nextSibling : window.document.body.firstChild;
+    }
+  }
+  if (amount == 0)
+    scheduleHighlight(window, 200);
+}
+*/
+
+function highlightWindow(win) {
+  var sel = markSelection(win);
+  highlight(win.document.body);
+  selectMarked(sel);
 }
 
 function addHighlighting(id){
@@ -451,6 +473,8 @@ function addHighlighting(id){
 
   function init(){
     importCode(textarea.value, fdoc.body);
+//    connect(fdoc, "onmouseup", partial(markSelection, iframe.contentWindow));
+//    connect(fdoc, "onkeyup", partial(markSelection, iframe.contentWindow));
   }
 
   if (document.all)
