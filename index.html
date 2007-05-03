@@ -6,6 +6,8 @@
     <script src="MochiKit/Signal.js" type="text/javascript"></script>
     <script src="MochiKit/Iter.js" type="text/javascript"></script>
     <script src="util.js" type="text/javascript"></script>
+    <script src="select.js" type="text/javascript"></script>
+    <script src="tokenize.js" type="text/javascript"></script>
     <script src="highlight.js" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="highlight.css"/>
     <title>Javascript syntax highlighting</title>
@@ -13,22 +15,24 @@
   <body>
 
 <textarea id="foo" cols="120" rows="30">
-if (x == 4)
-  kill(x);
+function (x, y) {
+  var z = x + y;
+  return z * z;
+}
 
-var str = "i am a string";
-var regexp = /rege?xp?/; // they say
-
-function (q) {
-  console.log(q); /* test! */ print(q + 2);
+function (x, y) {
+  var z = x + y;
+  return z * z;
 }
 </textarea>
-<p><button id="highlight">Highlight text</button> <button id="traverse">Traverse text</button></p>
+<p><button id="buttonA">Highlight text</button> <button id="buttonB">get selected</button></p>
 
     <script type="text/javascript">
       addHighlighting("foo");
-      connect("highlight", "onclick", function(){highlight($("foo").contentWindow.document.body);});
-      connect("traverse", "onclick", function(){window.trav = list(traverseDOM($("foo").contentWindow.document.body.firstChild));});
+      var sel = null;
+      connect("buttonA", "onclick", function(){highlight($("foo").contentWindow.document.body);});
+      connect("buttonB", "onclick", function(){if (sel) {sel.select(); sel = null;} else {sel = rangeFromSelection($('foo').contentWindow);}});
+      var fr = $('foo').contentWindow;
     </script>
   </body>
 </html>
