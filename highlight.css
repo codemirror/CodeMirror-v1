@@ -13,7 +13,7 @@
 }
 
 span.keyword {
-  color: #0044BB;
+  color: #880099;
 }
 
 span.atom {
@@ -21,7 +21,16 @@ span.atom {
 }
 
 span.variable {
-  color: #880099;
+  color: #0044BB;
+}
+
+span.variabledef {
+  color: #BB8800;
+  font-weight: bold;
+}
+
+span.localvariable {
+  color: #AA7700;
 }
 
 span.comment {
