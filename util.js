@@ -114,3 +114,18 @@ function findIf(array, check){
   }
   return null;
 }
+
+function member(array, value) {
+  for (var i = 0; i < array.length; i++){
+    if (array[i] == value)
+      return true;
+  }
+  return false;
+}
+
+function copyArray(array) {
+  var newArr = new Array(array.length);
+  for (var i = 0; i != array.length; i++)
+    newArr[i] = array[i];
+  return newArr;
+}

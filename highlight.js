@@ -193,14 +193,16 @@ function parse(tokens){
     }
   }
   function copy(){
-    var cContext = context, cLexical = lexical, ccc = clone(cc), cRegExp = tokens.regexp, cComment = tokens.inComment;
-    return function(tokens){
-      context = cContext;
-      lexical = cLexical;
-      cc = ccc;
+    var _context = context, _lexical = lexical, _cc = copyArray(cc), _regexp = tokens.regexp, _comment = tokens.inComment;
+
+    return function(newTokens){
+      context = _context;
+      lexical = _lexical;
+      cc = copyArray(_cc);
       column = indented = 0;
-      tokens.regexp = cRegExp;
-      tokens.inComment = cComment;
+      tokens = newTokens;
+      tokens.regexp = _regexp;
+      tokens.inComment = _comment;
       return parser;
     };
   }
@@ -307,14 +309,94 @@ function parse(tokens){
   return parser;
 }
 
-function highlight(node, from, onlyDirtyLines, lines){
-  if (!node.firstChild)
+function JSEditor(place, width, height, content) {
+  this.frame = createDOM("IFRAME", {"style": "border: 0; width: " + width + "px; height: " + height + "px;"});
+  place(this.frame);
+  this.win = this.frame.contentWindow;
+  this.doc = this.win.document;
+  this.doc.open();
+  this.doc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"highlight.css\"/></head>" +
+                 "<body class=\"editbox\" spellcheck=\"false\"></body></html>");
+  this.doc.close();
+  this.doc.designMode = "on";
+
+  this.dirty = [];
+
+  if (document.selection) // better check?
+    this.init(content);
+  else
+    connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
+}
+
+JSEditor.prototype = {
+  init: function (code) {
+    if (code)
+      this.importCode(code);
+    connect(this.doc, "onmouseup", bind(this.markDirty, this));
+    connect(this.doc, "onkeyup", bind(this.markDirty, this));
+  },
+
+  importCode: function(code) {
+    code = code.replace(/[ \t]/g, nbsp);
+    replaceChildNodes(this.doc.body, this.doc.createTextNode(code));
+    this.highlight();
+  },
+
+  highlight: highlight,
+
+  topLevelNode: function(from) {
+    while (from && from.parentNode != this.doc.body)
+      from = from.parentNode;
+    return from;
+  },
+
+  markDirty: function() {
+    var cursor = this.topLevelNode(cursorPos(this.frame.contentWindow));
+    if (cursor) {
+      this.scheduleHighlight();
+      if (!member(this.dirty, cursor)){
+        cursor.dirty = true;
+        this.dirty.push(cursor);
+      }
+    }
+  },
+
+  scheduleHighlight: function() {
+    clearTimeout(this.highlightTimeout);
+    this.highlightTimeout = setTimeout(bind(this.highlightDirty, this, 10), 300);
+  },
+
+  getDirtyNode: function() {
+    while (this.dirty.length > 0) {
+      var found = this.dirty.pop();
+      if (found.dirty)
+        return found;
+    }
+    return null;
+  },
+
+  highlightDirty: function(lines) {
+    var sel = markSelection(this.win);
+    var start = null;
+    while (lines > 0 && (start = this.getDirtyNode()))
+      lines = this.highlight(start, true, lines);
+    selectMarked(sel);
+    window.s = sel;
+    if (start)
+      this.scheduleHighlight();
+  }
+}
+
+function highlight(from, onlyDirtyLines, lines){
+  var doc = this.doc;
+  var body = doc.body;
+  if (!body.firstChild)
     return;
   while (from && !from.parserFromHere)
     from = from.previousSibling;
   if (from && !from.nextSibling)
     return;
-  
+
   function correctPart(token, part){
     return !part.reduced && part.text == token.value && hasClass(part, token.style);
   }
@@ -323,17 +405,19 @@ function highlight(node, from, onlyDirtyLines, lines){
     part.reduced = true;
   }
   function tokenPart(token){
-    return withDocument(node.ownerDocument, partial(SPAN, {"class": "part " + token.style}, token.value));
+    return withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
   }
 
   var lineDirty = false;
-  var parsed = from ? from.parserFromHere(traverseDOM(from.nextSibling)) : parse(tokenize(stringCombiner(traverseDOM(node.firstChild))));
+  var parsed = from ? from.parserFromHere(tokenize(stringCombiner(traverseDOM(from.nextSibling))))
+                    : parse(tokenize(stringCombiner(traverseDOM(body.firstChild))));
+
   var part = {
     current: null,
     forward: false,
     get: function(){
       if (!this.current){
-        this.current = from ? from.nextSibling : node.firstChild;
+        this.current = from ? from.nextSibling : body.firstChild;
       }
       else if (this.forward){
         this.forward = false;
@@ -348,7 +432,7 @@ function highlight(node, from, onlyDirtyLines, lines){
     },
     remove: function(){
       this.current = this.get().previousSibling;
-      node.removeChild(this.current.nextSibling);
+      body.removeChild(this.current.nextSibling);
       this.forward = true;
     }
   };
@@ -377,7 +461,7 @@ function highlight(node, from, onlyDirtyLines, lines){
       }
       else {
         var newPart = tokenPart(token);
-        node.insertBefore(newPart, part.get());
+        body.insertBefore(newPart, part.get());
         var tokensize = token.value.length;
         while (tokensize > 0) {
           var partsize = part.get().text.length;
@@ -395,90 +479,4 @@ function highlight(node, from, onlyDirtyLines, lines){
     }
   });
   return lines;
-}
-
-function importCode(code, target){
-  code = code.replace(/[ \t]/g, nbsp);
-  replaceChildNodes(target, target.ownerDocument.createTextNode(code));
-  highlight(target);
-}
-
-var highlightTimeout = null;
-function scheduleHighlight(window, time){
-  if (highlightTimeout)
-    clearTimeout(highlightTimeout);
-  highlightTimeout = setTimeout(partial(highlightDirtyLines, window, 10), time);
-}
-
-/*
-function markSelection(window){
-  function toplevelNode(from){
-    while (from.parentNode){
-      if (from.parentNode == body)
-        return from;
-      from = from.parentNode;
-    }
-  }
-
-  var selection = rangeFromSelection(window);
-  if (!selection)
-    return;
-  var body = window.document.body;
-  var start = toplevelNode(selection.startNode),
-    end = toplevelNode(selection.endNode);
-  if (start && end){
-    start.dirty = true;
-    while (start != end) {
-      start = start.nextSibling;
-      start.dirty = true;
-    }
-  }
-  scheduleHighlight(window, 400);
-}
-
-function highlightDirtyLines(window, amount){
-  keepSelection = rangeFromSelection(window);
-  var cursor = window.document.body.firstChild;
-  for (; cursor && amount > 0; cursor = cursor.nextSibling) {
-    if (cursor.dirty){
-      var backUp = cursor.previousSibling;
-      amount = highlight(window.document.body, cursor, true, amount);
-      cursor = backUp ? backUp.nextSibling : window.document.body.firstChild;
-    }
-  }
-  if (amount == 0)
-    scheduleHighlight(window, 200);
-}
-*/
-
-function highlightWindow(win) {
-  var sel = markSelection(win);
-  highlight(win.document.body);
-  selectMarked(sel);
-}
-
-function addHighlighting(id){
-  var textarea = $(id);
-  var iframe = createDOM("IFRAME", {"class": "subtle-iframe", id: id, name: id});
-  iframe.style.width = textarea.offsetWidth + "px";
-  iframe.style.height = textarea.offsetHeight + "px";
-  textarea.parentNode.replaceChild(iframe, textarea);
-
-  var fdoc = iframe.contentWindow.document;
-  fdoc.designMode = "on";
-  fdoc.open();
-  fdoc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"highlight.css\"/></head>");
-  fdoc.write("<body class=\"subtle-iframe editbox\" spellcheck=\"false\"></body></html>");
-  fdoc.close();
-
-  function init(){
-    importCode(textarea.value, fdoc.body);
-//    connect(fdoc, "onmouseup", partial(markSelection, iframe.contentWindow));
-//    connect(fdoc, "onkeyup", partial(markSelection, iframe.contentWindow));
-  }
-
-  if (document.all)
-    init();
-  else
-    connect(iframe, "onload", function(){disconnectAll(iframe, "onload"); init();});
 }

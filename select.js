@@ -3,8 +3,6 @@
 if (document.selection) {
   var markSelection = function (win) {
     var selection = win.document.selection;
-    if (selection.type == "none")
-      return null;
     var rects = selection.createRange().getClientRects();
     var start = rects[0], end = rects[rects.length - 1];
     return {start: {x: start.left, y: start.top},
@@ -23,6 +21,12 @@ if (document.selection) {
   };
 
   var replaceSelection = function(){};
+
+  var cursorPos = function(win) {
+    var selected = win.document.selection.getRange();
+    selected.collapse(false);
+    return selected.parentElement();
+  };
 }
 else {
   var markSelection = function (win) {
@@ -88,7 +92,7 @@ else {
     function replace(which) {
       var selObj = oldNode["select" + which];
       if (selObj) {
-        if (selObj.offset >= length) {
+        if (selObj.offset > length) {
           selObj.offset -= length;
         }
         else {
@@ -100,5 +104,16 @@ else {
     }
     replace("Start");
     replace("End");
+  };
+
+  var cursorPos = function(win) {
+    var selection = win.getSelection();
+    if (!selection || selection.rangeCount == 0)
+      return null;
+    var range = selection.getRangeAt(0);
+    if (range.endContainer.nodeType == 3)
+      return range.endContainer;
+    else
+      return range.endContainer.childNodes[range.endOffset];
   };
 }

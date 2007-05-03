@@ -28,11 +28,8 @@ function (x, y) {
 <p><button id="buttonA">Highlight text</button> <button id="buttonB">get selected</button></p>
 
     <script type="text/javascript">
-      addHighlighting("foo");
-      var sel = null;
-      connect("buttonA", "onclick", function(){highlight($("foo").contentWindow.document.body);});
-      connect("buttonB", "onclick", function(){if (sel) {sel.select(); sel = null;} else {sel = rangeFromSelection($('foo').contentWindow);}});
-      var fr = $('foo').contentWindow;
+      var js = new JSEditor(partial(swapDOM, $('foo')), 900, 500, $('foo').value);
+      var fr = js.frame;
     </script>
   </body>
 </html>
