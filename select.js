@@ -23,7 +23,7 @@ if (document.selection) {
   var replaceSelection = function(){};
 
   var cursorPos = function(win) {
-    var selected = win.document.selection.getRange();
+    var selected = win.document.selection.createRange();
     selected.collapse(false);
     return selected.parentElement();
   };

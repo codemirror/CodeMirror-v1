@@ -38,7 +38,7 @@ function scanDOM(root) {
       }
       var line = lines[i];
       if (line.length > 0) {
-        var text = document.createTextNode(line);
+        var text = doc.createTextNode(line);
         parts.push(text);
         replaceSelection(node, text, line.length);
       }
@@ -314,11 +314,11 @@ function JSEditor(place, width, height, content) {
   place(this.frame);
   this.win = this.frame.contentWindow;
   this.doc = this.win.document;
+  this.doc.designMode = "on";
   this.doc.open();
   this.doc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"highlight.css\"/></head>" +
                  "<body class=\"editbox\" spellcheck=\"false\"></body></html>");
   this.doc.close();
-  this.doc.designMode = "on";
 
   this.dirty = [];
 

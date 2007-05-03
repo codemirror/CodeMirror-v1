@@ -155,7 +155,7 @@ function tokenize(source){
       token = readWord();
 
     if (token.style != "whitespace")
-      this.regexp = (token.style == "punctuation" || token.type == "operator");
+      this.regexp = token.type == "operator" || token.type.match(/[\[{}\(,;]/);
     return token;
   }
 
