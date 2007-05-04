@@ -332,8 +332,8 @@ JSEditor.prototype = {
   init: function (code) {
     if (code)
       this.importCode(code);
-    connect(this.doc, "onmouseup", bind(this.markDirty, this));
-    connect(this.doc, "onkeyup", bind(this.markDirty, this));
+    connect(this.doc, "onmouseup", bind(this.markCursorDirty, this));
+    connect(this.doc, "onkeyup", bind(this.handleKey, this));
   },
 
   importCode: function(code) {
@@ -346,6 +346,13 @@ JSEditor.prototype = {
     }
   },
 
+  handleKey: function(event) {
+/*    if (event.key().string == "KEY_ENTER")
+      this.indentAtCursor();
+    else*/
+      this.markCursorDirty();
+  },
+
   highlight: highlight,
 
   topLevelNode: function(from) {
@@ -354,7 +361,7 @@ JSEditor.prototype = {
     return from;
   },
 
-  markDirty: function() {
+  markCursorDirty: function() {
     var cursor = this.topLevelNode(cursorPos(this.frame.contentWindow));
     if (cursor) {
       this.scheduleHighlight();

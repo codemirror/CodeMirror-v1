@@ -129,3 +129,9 @@ function copyArray(array) {
     newArr[i] = array[i];
   return newArr;
 }
+
+function repeatString(str, times) {
+  var result = [];
+  while(times--) result.push(str);
+  return result.join("");
+}
