@@ -15,14 +15,16 @@
   <body>
 
 <textarea id="foo" cols="120" rows="30">
-function (x, y) {
-  var z = x + y;
-  return z * z;
+function hasClass(element, className){
+  var classes = element.className;
+  return classes && new RegExp("(^| )" + className + "($| )").test(classes);
 }
 
-function (x, y) {
-  var z = x + y;
-  return z * z;
+function copyArray(array) {
+  var newArr = new Array(array.length);
+  for (var i = 0; i != array.length; i++)
+    newArr[i] = array[i];
+  return newArr;
 }
 </textarea>
 <p><button id="buttonA">Highlight text</button> <button id="buttonB">get selected</button></p>

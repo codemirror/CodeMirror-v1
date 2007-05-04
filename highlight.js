@@ -135,7 +135,10 @@ function traverseDOM(start){
     else if (newlineNode(node)){
       return yield("\n", c);
     }
-    else {
+    // The check for parentNode is a hack to prevent weird problem in
+    // FF where empty nodes seem to spontaneously remove themselves
+    // from the DOM tree.
+    else if (node.parentNode) {
       point = pointAt(node);
       removeElement(node);
       return writeNode(node, c);
@@ -323,6 +326,9 @@ function JSEditor(place, width, height, content) {
 }
 
 JSEditor.prototype = {
+  linesPerShot: 10,
+  shotDelay: 300,
+
   init: function (code) {
     if (code)
       this.importCode(code);
@@ -333,7 +339,11 @@ JSEditor.prototype = {
   importCode: function(code) {
     code = code.replace(/[ \t]/g, nbsp);
     replaceChildNodes(this.doc.body, this.doc.createTextNode(code));
-    this.highlight();
+    exhaust(traverseDOM(this.doc.body.firstChild));
+    if (this.doc.body.firstChild){
+      this.addDirtyNode(this.doc.body.firstChild);
+      this.scheduleHighlight();
+    }
   },
 
   highlight: highlight,
@@ -348,22 +358,26 @@ JSEditor.prototype = {
     var cursor = this.topLevelNode(cursorPos(this.frame.contentWindow));
     if (cursor) {
       this.scheduleHighlight();
-      if (!member(this.dirty, cursor)){
-        cursor.dirty = true;
-        this.dirty.push(cursor);
-      }
+      this.addDirtyNode(cursor);
+    }
+  },
+
+  addDirtyNode: function(node) {
+    if (!member(this.dirty, node)){
+      node.dirty = true;
+      this.dirty.push(node);
     }
   },
 
   scheduleHighlight: function() {
     clearTimeout(this.highlightTimeout);
-    this.highlightTimeout = setTimeout(bind(this.highlightDirty, this, 10), 300);
+    this.highlightTimeout = setTimeout(bind(this.highlightDirty, this, this.linesPerShot), this.shotDelay);
   },
 
   getDirtyNode: function() {
     while (this.dirty.length > 0) {
       var found = this.dirty.pop();
-      if (found.dirty)
+      if (found.dirty && found.parentNode)
         return found;
     }
     return null;
@@ -371,11 +385,16 @@ JSEditor.prototype = {
 
   highlightDirty: function(lines) {
     var sel = markSelection(this.win);
-    var start = null;
-    while (lines > 0 && (start = this.getDirtyNode()))
-      lines = this.highlight(start, true, lines);
+    var start;
+    while (lines > 0 && (start = this.getDirtyNode())){
+      var result = this.highlight(start, true, lines);
+      if (result) {
+        lines = result.left;
+        if (result.node && result.dirty)
+          this.addDirtyNode(result.node);
+      }
+    }
     selectMarked(sel);
-    window.s = sel;
     if (start)
       this.scheduleHighlight();
   }
@@ -402,7 +421,6 @@ function highlight(from, onlyDirtyLines, lines){
     return withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
   }
 
-  var lineDirty = false;
   var parsed = from ? from.parserFromHere(tokenize(stringCombiner(traverseDOM(from.nextSibling))))
                     : parse(tokenize(stringCombiner(traverseDOM(body.firstChild))));
 
@@ -431,11 +449,15 @@ function highlight(from, onlyDirtyLines, lines){
     }
   };
 
+  var lineDirty = false;
+
   forEach(parsed, function(token){
     if (token.type == "newline"){
       if (part.get().nodeName != "BR")
         throw "Parser out of sync. Expected BR.";
       part.get().parserFromHere = parsed.copy();
+      if (part.get().dirty)
+        lineDirty = true;
       part.get().dirty = false;
       if ((lines !== undefined && --lines <= 0) ||
           (onlyDirtyLines && !lineDirty && !part.get().dirty))
@@ -446,7 +468,7 @@ function highlight(from, onlyDirtyLines, lines){
     else {
       if (part.get().nodeName != "SPAN")
         throw "Parser out of sync. Expected SPAN.";
-      if (onlyDirtyLines && part.get().dirty)
+      if (part.get().dirty)
         lineDirty = true;
 
       if (correctPart(token, part.get())){
@@ -454,6 +476,7 @@ function highlight(from, onlyDirtyLines, lines){
         part.next();
       }
       else {
+        lineDirty = true;
         var newPart = tokenPart(token);
         body.insertBefore(newPart, part.get());
         var tokensize = token.value.length;
@@ -472,5 +495,8 @@ function highlight(from, onlyDirtyLines, lines){
       }
     }
   });
-  return lines;
+
+  return {left: lines,
+          node: part.get(),
+          dirty: lineDirty};
 }

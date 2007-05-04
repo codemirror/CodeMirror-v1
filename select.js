@@ -5,8 +5,10 @@ if (document.selection) {
     var selection = win.document.selection;
     var rects = selection.createRange().getClientRects();
     var start = rects[0], end = rects[rects.length - 1];
-    return {start: {x: start.left, y: start.top},
-            end: {x: end.right, y: end.top},
+    // The -1 is to prevent a problem where the cursor would end up on
+    // the next line sometimes.
+    return {start: {x: start.left - 1, y: start.top},
+            end: {x: end.right - 1, y: end.top},
             window: win};
   };
 
@@ -48,6 +50,8 @@ else {
           newNode = point.node.nextSibling;
         }
         point.node = newNode;
+        if (!newNode)
+          break;
       }
     }
     
