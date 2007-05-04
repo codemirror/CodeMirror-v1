@@ -47,7 +47,6 @@ function scanDOM(root) {
   }
 
   var leftOver = [];
-  var closing = false;
   function next() {
     if (leftOver.length > 0)
       return leftOver.shift();
@@ -59,19 +58,14 @@ function scanDOM(root) {
 
       if (node.nodeType == 3){
         leftOver = splitTextNode(node);
-        closing = false;
         if (leftOver.length > 0)
           return leftOver.shift();
       }
 
-      if (node.nodeName == "BR"){
-        closing = true;
+      if (node.nodeName == "BR")
         return node;
-      }
-      else if (!closing && node.nodeName in newlineElements){
-        closing = true;
+      else if (node.nodeName in newlineElements)
         return withDocument(doc, BR);
-      }
     }
   }
   return {next: next};
