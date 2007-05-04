@@ -25,12 +25,12 @@ span.variable {
 }
 
 span.variabledef {
-  color: #BB8800;
+  color: #00AA88;
   font-weight: bold;
 }
 
 span.localvariable {
-  color: #AA7700;
+  color: #00AA88;
 }
 
 span.comment {
@@ -38,5 +38,5 @@ span.comment {
 }
 
 span.string {
-  color: #00BBBB;
+  color: #AA7700;
 }
