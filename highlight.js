@@ -1,74 +1,56 @@
 var newlineElements = setObject("P", "DIV", "LI");
 
-function scanDOM(root) {
+function simplifyDOM(root) {
   var doc = root.ownerDocument;
   var current = root;
-  while (current.firstChild)
-    current = current.firstChild;
+  var result = [];
+  var leaving = false;
 
-  function nextNode() {
-    var result = current;
-    if (current) {
-      if (current.nextSibling) {
-        current = current.nextSibling;
-        while (current.firstChild)
-          current = current.firstChild;
-      }
-      else {
-        current = current.parentNode;
+  function simplifyNode(node) {
+    leaving = false;
+
+    if (node.nodeType == 3) {
+      simplifyText(node);
+    }
+    else if (node.nodeName == "BR" && node.childNodes.length == 0) {
+      result.push(node);
+    }
+    else {
+      forEach(node.childNodes, simplifyNode);
+      if (!leaving && node.nodeName in newlineElements) {
+        leaving = true;
+        result.push(withDocument(doc, BR));
       }
     }
-    return result;
   }
 
-  function splitTextNode(node) {
+  function simplifyText(node) {
     var text = node.nodeValue;
     if (text == "")
-      return [];
-    if (text.indexOf("\n") == -1)
-      return [node];
+      return;
+    if (text.indexOf("\n") == -1) {
+      result.push(node);
+      return;
+    }
 
-    var parts = [];
     var lines = text.split("\n");
     for (var i = 0; i != lines.length; i++) {
       if (i > 0){
         var br = withDocument(doc, BR);
-        parts.push(br);
         replaceSelection(node, br, 1);
+        result.push(br);
       }
       var line = lines[i];
       if (line.length > 0) {
-        var text = doc.createTextNode(line);
-        parts.push(text);
-        replaceSelection(node, text, line.length);
+        var textNode = doc.createTextNode(line);
+        replaceSelection(node, textNode, line.length);
+        result.push(textNode);
       }
     }
-    return parts;
   }
 
-  var leftOver = [];
-  function next() {
-    if (leftOver.length > 0)
-      return leftOver.shift();
-
-    while (true) {
-      var node = nextNode();
-      if (!node)
-        throw StopIteration;
-
-      if (node.nodeType == 3){
-        leftOver = splitTextNode(node);
-        if (leftOver.length > 0)
-          return leftOver.shift();
-      }
-
-      if (node.nodeName == "BR")
-        return node;
-      else if (node.nodeName in newlineElements)
-        return withDocument(doc, BR);
-    }
-  }
-  return {next: next};
+  simplifyNode(root);
+  return result;
 }
 
 function traverseDOM(start){
@@ -88,31 +70,23 @@ function traverseDOM(start){
   }
   var point = null;
 
-  function insertNewline(br){
-    br.dirty = true;
-    point(br);
-    return "\n";
-  }
-  function insertPart(text){
-    var part = withDocument(owner, partial(SPAN, {"class": "part"}, text));
-    part.text = text.nodeValue;
+  function insertPart(part){
+    var text = "\n";
+    if (part.nodeType == 3) {
+      var text = part.nodeValue;
+      part = withDocument(owner, partial(SPAN, {"class": "part"}, part));
+      part.text = text;
+    }
     part.dirty = true;
     point(part);
-    return part.text;
+    return text;
   }
 
   function writeNode(node, c){
-    var parts = scanDOM(node);
-    function handlePart(part){
-      if (part.nodeName == "BR")
-        return push(yield, insertNewline(part), iter());
-      else
-        return push(yield, insertPart(part), iter());
-    }
-    function iter(){
-      return tryNext(parts, handlePart, constantly(c));
-    }
-    return iter()();
+    var toYield = map(insertPart, simplifyDOM(node));
+    for (var i = toYield.length - 1; i >= 0; i--)
+      c = push(yield, toYield[i], c);
+    return c();
   }
 
   function partNode(node){

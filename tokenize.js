@@ -50,7 +50,7 @@ var keywords = function(){
 
 var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?\.]/);
 var isDigit = matcher(/[0-9]/);
-var isWordChar = matcher(/[\w$_]/);
+var isWordChar = matcher(/[\w\$_]/);
 function isWhiteSpace(ch){
   // Unfortunately, IE's regexp matcher thinks non-breaking spaces
   // aren't whitespace.
