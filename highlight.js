@@ -319,6 +319,7 @@ function JSEditor(place, width, height, content) {
 
 var safeKeys = setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                          "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT");
+closingChars = setObject("}", ")", "]");
 
 JSEditor.prototype = {
   linesPerShot: 10,
@@ -328,9 +329,8 @@ JSEditor.prototype = {
     this.container = this.doc.body;
     if (code)
       this.importCode(code);
-    if (document.selection)
-      connect(this.doc, "onkeydown", bind(this.insertEnter, this));
-    connect(this.doc, "onkeyup", bind(this.handleKey, this));
+    connect(this.doc, "onkeydown", bind(this.keyDown, this));
+    connect(this.doc, "onkeyup", bind(this.keyUp, this));
   },
 
   importCode: function(code) {
@@ -343,37 +343,44 @@ JSEditor.prototype = {
     }
   },
 
-  insertEnter: function(event) {
-    if (event.key().string == "KEY_ENTER"){
+  keyDown: function(event) {
+    var name = event.key().string;
+    if (window.selection && event.key().string == "KEY_ENTER") {
       insertNewlineAtCursor(this.win);
-      var cur = new Cursor(this.container);
-      this.indentAtCursor(cur);
+      this.indentAtCursor();
+      event.stop();
+    }
+    else if ((name == "KEY_SPACEBAR" || name == "KEY_I") && event.modifier().ctrl) {
+      this.indentAtCursor();
       event.stop();
     }
   },
 
-  handleKey: function(event) {
+  keyUp: function(event) {
     var name = event.key().string;
     if (name == "KEY_ENTER")
-      this.indentAtCursor(new Cursor(this.container));
+      this.indentAtCursor();
     else if (!(name in safeKeys))
       this.markCursorDirty();
   },
 
-  highlightAtCursor: function (cursor) {
-    if (cursor.valid && this.container.lastChild) {
+  highlightAtCursor: function(cursor) {
+    if (cursor.valid) {
       var node = cursor.after ? cursor.after.previousSibling : this.container.lastChild;
-      if (node.nodeType != 3)
-        node.dirty = true;
-      var sel = markSelection(this.win);
-      this.highlight(node, true);
-      selectMarked(sel);
-      cursor = new Cursor(this.container);
+      if (node) {
+        if (node.nodeType != 3)
+          node.dirty = true;
+        var sel = markSelection(this.win);
+        this.highlight(node, true);
+        selectMarked(sel);
+        cursor = new Cursor(this.container);
+      }
     }
     return cursor;
   },
 
-  indentAtCursor: function(cursor) {
+  indentAtCursor: function() {
+    var cursor = new Cursor(this.container)
     cursor = this.highlightAtCursor(cursor);
     if (!cursor.valid)
       return;
@@ -382,8 +389,12 @@ JSEditor.prototype = {
     var whiteSpace = start ? start.nextSibling : this.container.firstChild;
     if (whiteSpace && !hasClass(whiteSpace, "whitespace"))
       whiteSpace = null;
+    var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
 
     var indentDiff = (start ? start.indent : 0) - (whiteSpace ? whiteSpace.text.length : 0);
+    if (firstText && firstText.text && firstText.text.charAt(0) in closingChars)
+      indentDiff = Math.max(0, indentDiff - 2);
+
     if (indentDiff < 0) {
       whiteSpace.text.slice(-indentDiff);
       whiteSpace.firstChild.nodeValue = whiteSpace.text;
@@ -408,9 +419,12 @@ JSEditor.prototype = {
 
   markCursorDirty: function() {
     var cursor = new Cursor(this.container);
-    if (cursor.valid && this.container.lastChild) {
-      this.scheduleHighlight();
-      this.addDirtyNode(cursor.after ? cursor.after.previousSibling : this.container.lastChild);
+    if (cursor.valid) {
+      var node = cursor.after ? cursor.after.previousSibling : this.container.lastChild;
+      if (node) {
+        this.scheduleHighlight();
+        this.addDirtyNode(node);
+      }
     }
   },
 
