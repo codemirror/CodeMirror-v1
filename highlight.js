@@ -129,7 +129,7 @@ var atomicTypes = setObject("atom", "number", "variable", "string", "regexp");
 
 function parse(tokens){
   var cc = [statements];
-  var consume, markdef;
+  var consume, marked;
   var context = null;
   var lexical = {indented: -2, column: 0, type: "block", align: false};
   var column = 0;
@@ -157,15 +157,13 @@ function parse(tokens){
       lexical.align = true;
 
     while(true){
-      consume = markdef = false;
+      consume = marked = false;
       cc.pop()(token.type, token.name);
       if (consume){
-        if (token.type == "variable") {
-          if (markdef)
-            token.style = "variabledef";
-          else if (inScope(token.name))
-            token.style = "localvariable";
-        }
+        if (marked)
+          token.style = marked;
+        else if (token.type == "variable" && inScope(token.name))
+          token.style = "localvariable";
         return token;
       }
     }
@@ -197,6 +195,9 @@ function parse(tokens){
     push(arguments);
     consume = false;
   }
+  function mark(style){
+    marked = style;
+  }
 
   function pushcontext(){
     context = {prev: context, vars: {}};
@@ -206,7 +207,7 @@ function parse(tokens){
   }
   function register(varname){
     if (context){
-      markdef = true;
+      mark("variabledef");
       context.vars[varname] = true;
     }
   }
@@ -268,6 +269,11 @@ function parse(tokens){
   function maybeoperator(type){
     if (type == "operator") cont(expression);
     else if (type == "(") cont(pushlex("block"), expression, commaseparated, expect(")"), poplex);
+    else if (type == ".") cont(property, maybeoperator);
+    else if (type == "[") cont(pushlex("block"), expression, expect("]"), poplex);
+  }
+  function property(type){
+    if (type == "variable") {mark("property"); cont();}
   }
   function commaseparated(type){
     if (type == ",") cont(expression, commaseparated);

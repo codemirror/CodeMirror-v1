@@ -48,7 +48,7 @@ var keywords = function(){
   };
 }();
 
-var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?\.]/);
+var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?]/);
 var isDigit = matcher(/[0-9]/);
 var isWordChar = matcher(/[\w\$_]/);
 function isWhiteSpace(ch){
@@ -134,7 +134,7 @@ function tokenize(source){
       token = nextWhile(isWhiteSpace) || result("whitespace", "whitespace");
     else if (ch == "\"")
       token = nextUntilUnescaped("\"") || result("string", "string");
-    else if (/[\[\]{}\(\),;\:]/.test(ch))
+    else if (/[\[\]{}\(\),;\:\.]/.test(ch))
       token = result(ch, "punctuation");
     else if (isDigit(ch))
       token = readNumber();

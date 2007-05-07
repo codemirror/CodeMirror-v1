@@ -34,6 +34,10 @@ span.localvariable {
   color: #009900;
 }
 
+span.property {
+  color: #888888;
+}
+
 span.comment {
   color: #BB0000;
 }
