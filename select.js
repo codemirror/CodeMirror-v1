@@ -1,5 +1,14 @@
 // Selection
 
+function topLevelNodeAfter(node, top) {
+  while (!node.nextSibling && node.parentNode != top)
+    node = node.parentNode;
+  var after = node.nextSibling;
+  while (after && after.parentNode != top)
+    after = after.parentNode;
+  return after;
+}
+
 if (document.selection) {
   var markSelection = function (win) {
     var selection = win.document.selection;
@@ -24,10 +33,42 @@ if (document.selection) {
 
   var replaceSelection = function(){};
 
-  var cursorPos = function(win) {
-    var selected = win.document.selection.createRange();
-    selected.collapse(false);
-    return selected.parentElement();
+  var Cursor = function(container) {
+    this.container = container;
+    this.doc = container.ownerDocument;
+    var selection = this.doc.selection;
+    this.valid = !!selection;
+    if (this.valid) {
+      var range = selection.createRange();
+      range.collapse(false);
+      var around = range.parentElement();
+      if (around && isAncestor(container, around)) {
+        this.after = topLevelNodeAfter(around, container);
+      }
+      else {
+        range.pasteHTML("<span id='// temp //'></span>");
+        var temp = this.doc.getElementById("// temp //");
+        this.after = topLevelNodeAfter(temp, container);
+        removeElement(temp);
+      }
+    }
+  };
+
+  Cursor.prototype.focus = function () {
+    var range = this.doc.body.createTextRange();
+    range.moveToElementText(this.after || this.container);
+    range.collapse(true);
+    range.select();
+  };
+
+  var insertNewlineAtCursor = function(window) {
+    var selection = window.document.selection;
+    if (selection) {
+      var range = selection.createRange();
+      range.pasteHTML("<br/>");
+      range.collapse(false);
+      range.select();
+    }
   };
 }
 else {
@@ -65,6 +106,12 @@ else {
     return result;
   };
 
+  var selectRange = function(range, window) {
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  };
+   
   var selectMarked = function (sel) {
     if (!sel)
       return;
@@ -86,10 +133,7 @@ else {
 
     setPoint(sel.start, "Start");
     setPoint(sel.end, "End");
-
-    var selection = win.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
+    selectRange(range, win);
   };
 
   var replaceSelection = function(oldNode, newNode, length) {
@@ -110,14 +154,36 @@ else {
     replace("End");
   };
 
-  var cursorPos = function(win) {
-    var selection = win.getSelection();
-    if (!selection || selection.rangeCount == 0)
-      return null;
-    var range = selection.getRangeAt(0);
-    if (range.endContainer.nodeType == 3)
-      return range.endContainer;
-    else
-      return range.endContainer.childNodes[range.endOffset];
+  var Cursor = function(container) {
+    this.container = container;
+    this.win = container.ownerDocument.defaultView;
+    var selection = this.win.getSelection();
+    this.valid = selection && selection.rangeCount > 0;
+    if (this.valid) {
+      var range = selection.getRangeAt(0);
+      if (range.endContainer.nodeType != 3) {
+        this.after = range.endContainer.childNodes[range.endOffset];
+        while (this.after && this.after.parentNode != container)
+          this.after = this.after.parentNode;
+      }
+      else {
+        this.after = topLevelNodeAfter(range.endContainer, container);
+      }
+    }
+  };
+
+  Cursor.prototype.focus = function() {
+    var range = this.win.document.createRange();
+    range.setStartBefore(this.container);
+    range.setEndBefore(this.after || this.container);
+    range.collapse(false);
+    selectRange(range, this.win);
   };
 }
+
+Cursor.prototype.startOfLine = function() {
+  var start = this.after ? this.after.previousSibling : this.container.lastChild;
+  while (start && start.nodeName != "BR")
+    start = start.previousSibling;
+  return start;
+};

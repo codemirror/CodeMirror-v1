@@ -27,11 +27,15 @@ function copyArray(array) {
   return newArr;
 }
 </textarea>
-<p><button id="buttonA">Highlight text</button> <button id="buttonB">get selected</button></p>
+<p><button id="buttonA">Button 1</button> <button id="buttonB">Button 2</button></p>
 
     <script type="text/javascript">
       var js = new JSEditor(partial(swapDOM, $('foo')), 900, 500, $('foo').value);
       var fr = js.frame;
+
+      window.test = window.test || function(){alert("TEST");};
+
+      connect($('buttonA'), "onclick", test);
     </script>
   </body>
 </html>

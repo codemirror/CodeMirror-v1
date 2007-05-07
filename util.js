@@ -135,3 +135,27 @@ function repeatString(str, times) {
   while(times--) result.push(str);
   return result.join("");
 }
+
+function insertAfter(newNode, oldNode) {
+  var parent = oldNode.parentNode;
+  var next = oldNode.nextSibling;
+  if (next)
+    parent.insertBefore(newNode, next);
+  else
+    parent.appendChild(newNode);
+}
+
+function insertAtStart(node, container) {
+  if (container.firstChild)
+    container.insertBefore(node, container.firstChild);
+  else
+    container.appendChild(node);
+}
+
+function isAncestor(node, child) {
+  while (child = child.parentNode) {
+    if (node == child)
+      return true;
+  }
+  return false;
+}

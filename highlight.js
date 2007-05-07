@@ -26,8 +26,11 @@ function simplifyDOM(root) {
 
   function simplifyText(node) {
     var text = node.nodeValue;
+    if (text.indexOf("\r") != -1)
+      text = node.nodeValue = text.replace("\r", "");
     if (text == "")
       return;
+
     if (text.indexOf("\n") == -1) {
       result.push(node);
       return;
@@ -128,7 +131,7 @@ function parse(tokens){
   var cc = [statements];
   var consume, markdef;
   var context = null;
-  var lexical = null;
+  var lexical = {indented: -2, column: 0, type: "block", align: false};
   var column = 0;
   var indented = 0;
 
@@ -140,13 +143,16 @@ function parse(tokens){
       indented = token.value.length;
     column += token.value.length;
     if (token.type == "newline"){
+      while(cc[cc.length - 1].lex)
+        cc.pop()();
       indented = column = 0;
-      if (lexical && !("align" in lexical))
+      if (!("align" in lexical))
         lexical.align = false;
+      token.indent = currentIndentation();
     }
     if (token.type == "whitespace" || token.type == "newline" || token.type == "comment")
       return token;
-    if (lexical && !("align" in lexical))
+    if (!("align" in lexical))
       lexical.align = true;
 
     while(true){
@@ -214,12 +220,23 @@ function parse(tokens){
   }
 
   function pushlex(type){
-    return function(){
+    var result = function(){
       lexical = {prev: lexical, indented: indented, column: column, type: type};
     };
+    result.lex = true;
+    return result;
   }
   function poplex(){
     lexical = lexical.prev;
+  }
+  poplex.lex = true;
+  function currentIndentation(){
+    if (lexical.type == "stat")
+      return lexical.indented + 2;
+    else if (lexical.align)
+      return lexical.column + 1;
+    else
+      return lexical.indented + 2;
   }
 
   function expect(wanted){
@@ -233,12 +250,12 @@ function parse(tokens){
     return pass(statement, statements);
   }
   function statement(type){
-    if (type == "var") cont(pushlex("expr"), vardef1, expect(";"), poplex);
-    else if (type == "keyword a") cont(pushlex("expr"), expression, statement, poplex);
-    else if (type == "keyword b") cont(pushlex("expr"), statement, poplex);
+    if (type == "var") cont(pushlex("stat"), vardef1, expect(";"), poplex);
+    else if (type == "keyword a") cont(pushlex("stat"), expression, statement, poplex);
+    else if (type == "keyword b") cont(pushlex("stat"), statement, poplex);
     else if (type == "{") cont(pushlex("block"), block, poplex);
     else if (type == "function") cont(functiondef);
-    else pass(pushlex("expr"), expression, expect(";"), poplex);
+    else pass(pushlex("stat"), expression, expect(";"), poplex);
   }
   function expression(type){
     if (type in atomicTypes) cont(maybeoperator);
@@ -304,48 +321,99 @@ JSEditor.prototype = {
   shotDelay: 300,
 
   init: function (code) {
+    this.container = this.doc.body;
     if (code)
       this.importCode(code);
     connect(this.doc, "onmouseup", bind(this.markCursorDirty, this));
+    if (document.selection)
+      connect(this.doc, "onkeydown", bind(this.insertEnter, this));
     connect(this.doc, "onkeyup", bind(this.handleKey, this));
   },
 
   importCode: function(code) {
     code = code.replace(/[ \t]/g, nbsp);
-    replaceChildNodes(this.doc.body, this.doc.createTextNode(code));
-    exhaust(traverseDOM(this.doc.body.firstChild));
-    if (this.doc.body.firstChild){
-      this.addDirtyNode(this.doc.body.firstChild);
+    replaceChildNodes(this.container, this.doc.createTextNode(code));
+    exhaust(traverseDOM(this.container.firstChild));
+    if (this.container.firstChild){
+      this.addDirtyNode(this.container.firstChild);
       this.scheduleHighlight();
     }
   },
 
+  insertEnter: function(event) {
+    if (event.key().string == "KEY_ENTER"){
+      insertNewlineAtCursor(this.win);
+      var cur = new Cursor(this.container);
+      this.indentAtCursor(cur);
+      event.stop();
+    }
+  },
+
   handleKey: function(event) {
-/*    if (event.key().string == "KEY_ENTER")
-      this.indentAtCursor();
-    else*/
+    if (event.key().string == "KEY_ENTER")
+      this.indentAtCursor(new Cursor(this.container));
+    else
       this.markCursorDirty();
+  },
+
+  highlightAtCursor: function (cursor) {
+    if (cursor.valid && this.container.lastChild) {
+      var node = cursor.after ? cursor.after.previousSibling : this.container.lastChild;
+      if (node.nodeType != 3)
+        node.dirty = true;
+      var sel = markSelection(this.win);
+      this.highlight(node, true);
+      selectMarked(sel);
+      cursor = new Cursor(this.container);
+    }
+    return cursor;
+  },
+
+  indentAtCursor: function(cursor) {
+    cursor = this.highlightAtCursor(cursor);
+    if (!cursor.valid)
+      return;
+
+    var start = cursor.startOfLine();
+    var whiteSpace = start ? start.nextSibling : this.container.firstChild;
+    if (whiteSpace && !hasClass(whiteSpace, "whitespace"))
+      whiteSpace = null;
+
+    var indentDiff = (start ? start.indent : 0) - (whiteSpace ? whiteSpace.text.length : 0);
+    if (indentDiff < 0) {
+      whiteSpace.text.slice(-indentDiff);
+      whiteSpace.firstChild.nodeValue = whiteSpace.text;
+    }
+    else if (indentDiff > 0) {
+      if (whiteSpace) {
+        whiteSpace.text += repeatString(nbsp, indentDiff);
+        whiteSpace.firstChild.nodeValue = whiteSpace.text;
+      }
+      else {
+        var newNode = this.doc.createTextNode(repeatString(nbsp, indentDiff));
+        if (start)
+          insertAfter(newNode, start);
+        else
+          insertAtStart(newNode, this.containter);
+      }
+    }
+    cursor.focus();
   },
 
   highlight: highlight,
 
-  topLevelNode: function(from) {
-    while (from && from.parentNode != this.doc.body)
-      from = from.parentNode;
-    return from;
-  },
-
   markCursorDirty: function() {
-    var cursor = this.topLevelNode(cursorPos(this.frame.contentWindow));
-    if (cursor) {
+    var cursor = new Cursor(this.container);
+    if (cursor.valid && this.container.lastChild) {
       this.scheduleHighlight();
-      this.addDirtyNode(cursor);
+      this.addDirtyNode(cursor.after ? cursor.after.previousSibling : this.container.lastChild);
     }
   },
 
   addDirtyNode: function(node) {
     if (!member(this.dirty, node)){
-      node.dirty = true;
+      if (node.nodeType != 3)
+        node.dirty = true;
       this.dirty.push(node);
     }
   },
@@ -358,7 +426,7 @@ JSEditor.prototype = {
   getDirtyNode: function() {
     while (this.dirty.length > 0) {
       var found = this.dirty.pop();
-      if (found.dirty && found.parentNode)
+      if ((found.dirty || found.nodeType == 3) && found.parentNode)
         return found;
     }
     return null;
@@ -399,13 +467,15 @@ function highlight(from, onlyDirtyLines, lines){
     part.reduced = true;
   }
   function tokenPart(token){
-    return withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
+    var part = withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
+    part.text = token.value;
+    return part;
   }
 
   var parsed = from ? from.parserFromHere(tokenize(stringCombiner(traverseDOM(from.nextSibling))))
                     : parse(tokenize(stringCombiner(traverseDOM(body.firstChild))));
 
-  var part = {
+  var parts = {
     current: null,
     forward: false,
     get: function(){
@@ -433,44 +503,47 @@ function highlight(from, onlyDirtyLines, lines){
   var lineDirty = false;
 
   forEach(parsed, function(token){
+    var part = parts.get();
     if (token.type == "newline"){
-      if (part.get().nodeName != "BR")
-        throw "Parser out of sync. Expected BR.";
-      part.get().parserFromHere = parsed.copy();
-      if (part.get().dirty)
+      if (part.nodeName != "BR")
+        debugger;//throw "Parser out of sync. Expected BR.";
+      part.parserFromHere = parsed.copy();
+      part.indent = token.indent;
+      if (part.dirty)
         lineDirty = true;
-      part.get().dirty = false;
+      part.dirty = false;
       if ((lines !== undefined && --lines <= 0) ||
-          (onlyDirtyLines && !lineDirty && !part.get().dirty))
+          (onlyDirtyLines && !lineDirty))
         throw StopIteration;
       lineDirty = false;
-      part.next();
+      parts.next();
     }
     else {
-      if (part.get().nodeName != "SPAN")
-        throw "Parser out of sync. Expected SPAN.";
-      if (part.get().dirty)
+      if (part.nodeName != "SPAN")
+        debugger;//throw "Parser out of sync. Expected SPAN.";
+      if (part.dirty)
         lineDirty = true;
 
-      if (correctPart(token, part.get())){
-        part.get().dirty = false;
-        part.next();
+      if (correctPart(token, part)){
+        part.dirty = false;
+        parts.next();
       }
       else {
         lineDirty = true;
         var newPart = tokenPart(token);
-        body.insertBefore(newPart, part.get());
+        body.insertBefore(newPart, part);
         var tokensize = token.value.length;
         while (tokensize > 0) {
-          var partsize = part.get().text.length;
-          replaceSelection(part.get().firstChild, newPart.firstChild, tokensize);
+          part = parts.get();
+          var partsize = part.text.length;
+          replaceSelection(part.firstChild, newPart.firstChild, tokensize);
           if (partsize > tokensize){
-            shortenPart(part.get(), tokensize);
+            shortenPart(part, tokensize);
             tokensize = 0;
           }
           else {
             tokensize -= partsize;
-            part.remove();
+            parts.remove();
           }
         }
       }
@@ -478,6 +551,6 @@ function highlight(from, onlyDirtyLines, lines){
   });
 
   return {left: lines,
-          node: part.get(),
+          node: parts.get(),
           dirty: lineDirty};
 }
