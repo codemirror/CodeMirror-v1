@@ -316,6 +316,9 @@ function JSEditor(place, width, height, content) {
     connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
 }
 
+var safeKeys = setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
+                         "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT");
+
 JSEditor.prototype = {
   linesPerShot: 10,
   shotDelay: 300,
@@ -324,7 +327,6 @@ JSEditor.prototype = {
     this.container = this.doc.body;
     if (code)
       this.importCode(code);
-    connect(this.doc, "onmouseup", bind(this.markCursorDirty, this));
     if (document.selection)
       connect(this.doc, "onkeydown", bind(this.insertEnter, this));
     connect(this.doc, "onkeyup", bind(this.handleKey, this));
@@ -350,9 +352,10 @@ JSEditor.prototype = {
   },
 
   handleKey: function(event) {
-    if (event.key().string == "KEY_ENTER")
+    var name = event.key().string;
+    if (name == "KEY_ENTER")
       this.indentAtCursor(new Cursor(this.container));
-    else
+    else if (!(name in safeKeys))
       this.markCursorDirty();
   },
 
