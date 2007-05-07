@@ -138,13 +138,14 @@ function parse(tokens){
   var parser = {next: next, copy: copy};
 
   function next(){
+    while(cc[cc.length - 1].lex)
+      cc.pop()();
+
     var token = tokens.next();
     if (token.type == "whitespace" && column == 0)
       indented = token.value.length;
     column += token.value.length;
     if (token.type == "newline"){
-      while(cc[cc.length - 1].lex)
-        cc.pop()();
       indented = column = 0;
       if (!("align" in lexical))
         lexical.align = false;
@@ -234,7 +235,7 @@ function parse(tokens){
     if (lexical.type == "stat")
       return lexical.indented + 2;
     else if (lexical.align)
-      return lexical.column + 1;
+      return lexical.column;
     else
       return lexical.indented + 2;
   }
@@ -266,7 +267,7 @@ function parse(tokens){
   }
   function maybeoperator(type){
     if (type == "operator") cont(expression);
-    else if (type == "(") {cont(pushlex("block"), expression, commaseparated, expect(")"), poplex)};
+    else if (type == "(") cont(pushlex("block"), expression, commaseparated, expect(")"), poplex);
   }
   function commaseparated(type){
     if (type == ",") cont(expression, commaseparated);
@@ -280,7 +281,7 @@ function parse(tokens){
     else cont();
   }
   function vardef2(type, value){
-    if (value == "=") cont(expression, vardef2);
+    if (type == "operator") cont(expression, vardef2);
     else if (type == ",") cont(vardef1);
   }
   function functiondef(type, value){
