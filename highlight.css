@@ -17,7 +17,7 @@ span.keyword {
 }
 
 span.atom {
-  color: #00BB00;
+  color: #AA7700;
 }
 
 span.variable {
@@ -25,12 +25,13 @@ span.variable {
 }
 
 span.variabledef {
-  color: #00AA88;
+  color: #008800;
   font-weight: bold;
+  line-height: 90%;
 }
 
 span.localvariable {
-  color: #00AA88;
+  color: #009900;
 }
 
 span.comment {
@@ -38,5 +39,5 @@ span.comment {
 }
 
 span.string {
-  color: #AA7700;
+  color: #DD0000;
 }
