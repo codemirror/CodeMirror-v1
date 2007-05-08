@@ -78,7 +78,7 @@ function traverseDOM(start){
     if (part.nodeType == 3) {
       var text = part.nodeValue;
       part = withDocument(owner, partial(SPAN, {"class": "part"}, part));
-      part.text = text;
+      part.currentText = text;
     }
     part.dirty = true;
     point(part);
@@ -94,8 +94,8 @@ function traverseDOM(start){
 
   function partNode(node){
     if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3){
-      node.text = node.firstChild.nodeValue;
-      return node.text.length > 0;
+      node.currentText = node.firstChild.nodeValue;
+      return node.currentText.length > 0;
     }
     return false;
   }
@@ -106,8 +106,9 @@ function traverseDOM(start){
   function scanNode(node, c){
     if (node.nextSibling)
       c = push(scanNode, node.nextSibling, c);
+
     if (partNode(node)){
-      return yield(node.text, c);
+      return yield(node.currentText, c);
     }
     else if (newlineNode(node)){
       return yield("\n", c);
@@ -335,7 +336,7 @@ function JSEditor(place, width, height, content) {
 
   this.dirty = [];
 
-  if (document.selection) // better check?
+  if (ie_selection) // better check?
     this.init(content);
   else
     connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
@@ -368,7 +369,7 @@ JSEditor.prototype = {
 
   keyDown: function(event) {
     var name = event.key().string;
-    if (window.selection && event.key().string == "KEY_ENTER") {
+    if (ie_selection && event.key().string == "KEY_ENTER") {
       insertNewlineAtCursor(this.win);
       this.indentAtCursor();
       event.stop();
@@ -414,18 +415,18 @@ JSEditor.prototype = {
       whiteSpace = null;
 
     var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
-    var closing = firstText && firstText.text && firstText.text.charAt(0) == "}";
+    var closing = firstText && firstText.currentText && firstText.currentText.charAt(0) == "}";
     var indent = start ? indentation(start.lexicalContext, closing) : 0;
-    var indentDiff = indent - (whiteSpace ? whiteSpace.text.length : 0);
+    var indentDiff = indent - (whiteSpace ? whiteSpace.currentText.length : 0);
 
     if (indentDiff < 0) {
-      whiteSpace.text = repeatString(nbsp, indent);
-      whiteSpace.firstChild.nodeValue = whiteSpace.text;
+      whiteSpace.currentText = repeatString(nbsp, indent);
+      whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
     }
     else if (indentDiff > 0) {
       if (whiteSpace) {
-        whiteSpace.text += repeatString(nbsp, indentDiff);
-        whiteSpace.firstChild.nodeValue = whiteSpace.text;
+        whiteSpace.currentText += repeatString(nbsp, indentDiff);
+        whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
       }
       else {
         var newNode = this.doc.createTextNode(repeatString(nbsp, indentDiff));
@@ -501,15 +502,15 @@ function highlight(from, onlyDirtyLines, lines){
     return;
 
   function correctPart(token, part){
-    return !part.reduced && part.text == token.value && hasClass(part, token.style);
+    return !part.reduced && part.currentText == token.value && hasClass(part, token.style);
   }
   function shortenPart(part, minus){
-    part.text = part.text.substring(minus);
+    part.currentText = part.currentText.substring(minus);
     part.reduced = true;
   }
   function tokenPart(token){
     var part = withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
-    part.text = token.value;
+    part.currentText = token.value;
     return part;
   }
 
@@ -577,7 +578,7 @@ function highlight(from, onlyDirtyLines, lines){
         var offset = 0;
         while (tokensize > 0) {
           part = parts.get();
-          var partsize = part.text.length;
+          var partsize = part.currentText.length;
           replaceSelection(part.firstChild, newPart.firstChild, tokensize, offset);
           if (partsize > tokensize){
             shortenPart(part, tokensize);

@@ -1,5 +1,7 @@
 // Selection
 
+var ie_selection = document.selection && document.selection.getClientRects;
+
 function topLevelNodeAfter(node, top) {
   while (!node.nextSibling && node.parentNode != top)
     node = node.parentNode;
@@ -9,7 +11,7 @@ function topLevelNodeAfter(node, top) {
   return after;
 }
 
-if (document.selection) {
+if (ie_selection) {
   var markSelection = function (win) {
     var selection = win.document.selection;
     var rects = selection.createRange().getClientRects();
