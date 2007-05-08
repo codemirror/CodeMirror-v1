@@ -39,11 +39,11 @@ var keywords = function(){
   var operator = result("operator", "keyword");
   var atom = result("atom", "atom");
   return {
-    "if": keywordA, "switch": keywordA, "while": keywordA, "catch": keywordA, "for": keywordA,
+    "if": keywordA, "switch": keywordA, "while": keywordA, "catch": keywordA,
     "else": keywordB, "do": keywordB, "try": keywordB, "finally": keywordB,
     "return": keywordC, "new": keywordC, "delete": keywordC, "break": keywordC, "continue": keywordC,
     "in": operator, "typeof": operator,
-    "var": result("var", "keyword"), "function": result("function", "keyword"),
+    "var": result("var", "keyword"), "function": result("function", "keyword"), "for": result("for", "keyword"),
     "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom
   };
 }();

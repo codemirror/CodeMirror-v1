@@ -253,6 +253,7 @@ function parse(tokens){
   }
   function statement(type){
     if (type == "var") cont(pushlex("stat"), vardef1, expect(";"), poplex);
+    else if (type == "for") cont(pushlex("stat"), expect("("), pushlex("block"), forspec1, expect(")"), poplex, statement, poplex);
     else if (type == "keyword a") cont(pushlex("stat"), expression, statement, poplex);
     else if (type == "keyword b") cont(pushlex("stat"), statement, poplex);
     else if (type == "{") cont(pushlex("block"), block, poplex);
@@ -286,9 +287,17 @@ function parse(tokens){
     if (type == "variable"){register(value); cont(vardef2);}
     else cont();
   }
-  function vardef2(type, value){
+  function vardef2(type){
     if (type == "operator") cont(expression, vardef2);
     else if (type == ",") cont(vardef1);
+  }
+  function forspec1(type, value){
+    if (type == "var") cont(vardef1, forspec2);
+    else cont(expression, forspec2);
+  }
+  function forspec2(type){
+    if (type == ",") cont(forspec1);
+    if (type == ";") cont(expression, expect(";"), expression);
   }
   function functiondef(type, value){
     if (type == "variable"){register(value); cont(functiondef);}
