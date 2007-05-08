@@ -165,10 +165,16 @@ else {
     if (this.valid) {
       var range = selection.getRangeAt(0);
       var end = range.endContainer;
-      if (end.nodeType != 3 && end.childNodes.length > 0) {
+      if (end.nodeType != 3 && end.childNodes.length > range.endOffset) {
         this.after = end.childNodes[range.endOffset];
         while (this.after && this.after.parentNode != container)
           this.after = this.after.parentNode;
+      }
+      else if (end == container) {
+        this.after = null;
+      }
+      else if (end.nodeName == "HTML") { // Opera bug
+        this.valid = false;
       }
       else {
         this.after = topLevelNodeAfter(end, container);
