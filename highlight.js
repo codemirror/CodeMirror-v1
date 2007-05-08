@@ -149,7 +149,7 @@ function parse(tokens){
       indented = column = 0;
       if (!("align" in lexical))
         lexical.align = false;
-      token.indent = currentIndentation();
+      token.lexicalContext = lexical;
     }
     if (token.type == "whitespace" || token.type == "newline" || token.type == "comment")
       return token;
@@ -232,14 +232,6 @@ function parse(tokens){
     lexical = lexical.prev;
   }
   poplex.lex = true;
-  function currentIndentation(){
-    if (lexical.type == "stat")
-      return lexical.indented + 2;
-    else if (lexical.align)
-      return lexical.column;
-    else
-      return lexical.indented + 2;
-  }
 
   function expect(wanted){
     return function(type){
@@ -253,7 +245,7 @@ function parse(tokens){
   }
   function statement(type){
     if (type == "var") cont(pushlex("stat"), vardef1, expect(";"), poplex);
-    else if (type == "for") cont(pushlex("stat"), expect("("), pushlex("block"), forspec1, expect(")"), poplex, statement, poplex);
+    else if (type == "for") cont(pushlex("stat"), expect("("), pushlex("list"), forspec1, expect(")"), poplex, statement, poplex);
     else if (type == "keyword a") cont(pushlex("stat"), expression, statement, poplex);
     else if (type == "keyword b") cont(pushlex("stat"), statement, poplex);
     else if (type == "{") cont(pushlex("block"), block, poplex);
@@ -264,16 +256,16 @@ function parse(tokens){
     if (type in atomicTypes) cont(maybeoperator);
     else if (type == "function") cont(functiondef);
     else if (type == "keyword c") cont(expression);
-    else if (type == "(") cont(pushlex("block"), expression, expect(")"), poplex);
+    else if (type == "(") cont(pushlex("list"), expression, expect(")"), poplex);
     else if (type == "operator") cont(expression);
-    else if (type == "[") cont(pushlex("block"), commasep(expression), expect("]"), poplex);
-    else if (type == "{") cont(pushlex("block"), commasep(objprop), expect("}"), poplex);
+    else if (type == "[") cont(pushlex("list"), commasep(expression), expect("]"), poplex);
+    else if (type == "{") cont(pushlex("list"), commasep(objprop), expect("}"), poplex);
   }
   function maybeoperator(type){
     if (type == "operator") cont(expression);
-    else if (type == "(") cont(pushlex("block"), expression, commasep(expression), expect(")"), poplex);
+    else if (type == "(") cont(pushlex("list"), expression, commasep(expression), expect(")"), poplex);
     else if (type == ".") cont(property, maybeoperator);
-    else if (type == "[") cont(pushlex("block"), expression, expect("]"), poplex);
+    else if (type == "[") cont(pushlex("list"), expression, expect("]"), poplex);
   }
   function property(type){
     if (type == "variable") {mark("property"); cont();}
@@ -283,8 +275,11 @@ function parse(tokens){
     if (type in atomicTypes) cont(expect(":"), expression);
   }
   function commasep(what){
-    return function(type) {
-      if (type == ",") cont(what, commasep(what));
+    function proceed(type) {
+      if (type == ",") cont(what, proceed);
+    };
+    return function() {
+      pass(what, proceed);
     };
   }
   function block(type){
@@ -318,6 +313,15 @@ function parse(tokens){
   return parser;
 }
 
+function indentation(lexical, closing){
+  if (lexical.type == "stat")
+    return lexical.indented + 2;
+  else if (lexical.align)
+    return lexical.column;
+  else
+    return lexical.indented + (closing ? 0 : 2);
+}
+
 function JSEditor(place, width, height, content) {
   this.frame = createDOM("IFRAME", {"style": "border: 0; width: " + width + "px; height: " + height + "px;"});
   place(this.frame);
@@ -339,7 +343,6 @@ function JSEditor(place, width, height, content) {
 
 var safeKeys = setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                          "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT");
-closingChars = setObject("}", ")", "]");
 
 JSEditor.prototype = {
   linesPerShot: 10,
@@ -409,14 +412,14 @@ JSEditor.prototype = {
     var whiteSpace = start ? start.nextSibling : this.container.firstChild;
     if (whiteSpace && !hasClass(whiteSpace, "whitespace"))
       whiteSpace = null;
-    var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
 
-    var indentDiff = (start ? start.indent : 0) - (whiteSpace ? whiteSpace.text.length : 0);
-    if (firstText && firstText.text && firstText.text.charAt(0) in closingChars)
-      indentDiff = Math.max(0, indentDiff - 2);
+    var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
+    var closing = firstText && firstText.text && firstText.text.charAt(0) == "}";
+    var indent = start ? indentation(start.lexicalContext, closing) : 0;
+    var indentDiff = indent - (whiteSpace ? whiteSpace.text.length : 0);
 
     if (indentDiff < 0) {
-      whiteSpace.text.slice(-indentDiff);
+      whiteSpace.text = repeatString(nbsp, indent);
       whiteSpace.firstChild.nodeValue = whiteSpace.text;
     }
     else if (indentDiff > 0) {
@@ -546,7 +549,7 @@ function highlight(from, onlyDirtyLines, lines){
       if (part.nodeName != "BR")
         debugger;//throw "Parser out of sync. Expected BR.";
       part.parserFromHere = parsed.copy();
-      part.indent = token.indent;
+      part.lexicalContext = token.lexicalContext;
       if (part.dirty)
         lineDirty = true;
       part.dirty = false;
