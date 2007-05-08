@@ -266,18 +266,26 @@ function parse(tokens){
     else if (type == "keyword c") cont(expression);
     else if (type == "(") cont(pushlex("block"), expression, expect(")"), poplex);
     else if (type == "operator") cont(expression);
+    else if (type == "[") cont(pushlex("block"), commasep(expression), expect("]"), poplex);
+    else if (type == "{") cont(pushlex("block"), commasep(objprop), expect("}"), poplex);
   }
   function maybeoperator(type){
     if (type == "operator") cont(expression);
-    else if (type == "(") cont(pushlex("block"), expression, commaseparated, expect(")"), poplex);
+    else if (type == "(") cont(pushlex("block"), expression, commasep(expression), expect(")"), poplex);
     else if (type == ".") cont(property, maybeoperator);
     else if (type == "[") cont(pushlex("block"), expression, expect("]"), poplex);
   }
   function property(type){
     if (type == "variable") {mark("property"); cont();}
   }
-  function commaseparated(type){
-    if (type == ",") cont(expression, commaseparated);
+  function objprop(type){
+    if (type == "variable") mark("property");
+    if (type in atomicTypes) cont(expect(":"), expression);
+  }
+  function commasep(what){
+    return function(type) {
+      if (type == ",") cont(what, commasep(what));
+    };
   }
   function block(type){
     if (type == "}") cont();
@@ -301,13 +309,10 @@ function parse(tokens){
   }
   function functiondef(type, value){
     if (type == "variable"){register(value); cont(functiondef);}
-    else if (type == "(") cont(pushcontext, arglist1, expect(")"), statement, popcontext);
+    else if (type == "(") cont(pushcontext, commasep(funarg), expect(")"), statement, popcontext);
   }
-  function arglist1(type, value){
-    if (type == "variable"){register(value); cont(arglist2);}
-  }
-  function arglist2(type){
-    if (type == ",") cont(arglist1);
+  function funarg(type, value){
+    if (type == "variable"){register(value); cont();}
   }
 
   return parser;
