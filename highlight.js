@@ -251,6 +251,8 @@ function parse(tokens){
     else if (type == "keyword b") cont(pushlex("stat"), statement, poplex);
     else if (type == "{") cont(pushlex("block"), block, poplex);
     else if (type == "function") cont(functiondef);
+    else if (type == "case") cont(expression, expect(":"));
+    else if (type == "variable") cont(maybelabel);
     else pass(pushlex("stat"), expression, expect(";"), poplex);
   }
   function expression(type){
@@ -267,6 +269,10 @@ function parse(tokens){
     else if (type == "(") cont(pushlex("list"), expression, commasep(expression), expect(")"), poplex);
     else if (type == ".") cont(property, maybeoperator);
     else if (type == "[") cont(pushlex("list"), expression, expect("]"), poplex);
+  }
+  function maybelabel(type){
+    if (type == ":") cont(statement);
+    else pass(pushlex("stat"), maybeoperator, expect(";"), poplex);
   }
   function property(type){
     if (type == "variable") {mark("property"); cont();}
@@ -331,7 +337,7 @@ function JSEditor(place, width, height, content) {
   this.doc.designMode = "on";
   this.doc.open();
   this.doc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"highlight.css\"/></head>" +
-                 "<body class=\"editbox\" spellcheck=\"false\"></body></html>");
+                 "<body class=\"editbox\" spellcheck=\"false\"><div id=\"container\"></div></body></html>");
   this.doc.close();
 
   this.dirty = [];
@@ -350,7 +356,7 @@ JSEditor.prototype = {
   shotDelay: 300,
 
   init: function (code) {
-    this.container = this.doc.body;
+    this.container = this.doc.getElementById("container");
     if (code)
       this.importCode(code);
     connect(this.doc, "onkeydown", bind(this.keyDown, this));
@@ -492,9 +498,10 @@ JSEditor.prototype = {
 }
 
 function highlight(from, onlyDirtyLines, lines){
-  var doc = this.doc;
-  var body = doc.body;
-  if (!body.firstChild)
+  var container = this.container;
+  var document = this.doc;
+
+  if (!container.firstChild)
     return;
   while (from && !from.parserFromHere)
     from = from.previousSibling;
@@ -509,20 +516,20 @@ function highlight(from, onlyDirtyLines, lines){
     part.reduced = true;
   }
   function tokenPart(token){
-    var part = withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
+    var part = withDocument(document, partial(SPAN, {"class": "part " + token.style}, token.value));
     part.currentText = token.value;
     return part;
   }
 
   var parsed = from ? from.parserFromHere(tokenize(stringCombiner(traverseDOM(from.nextSibling))))
-                    : parse(tokenize(stringCombiner(traverseDOM(body.firstChild))));
+                    : parse(tokenize(stringCombiner(traverseDOM(container.firstChild))));
 
   var parts = {
     current: null,
     forward: false,
     get: function(){
       if (!this.current){
-        this.current = from ? from.nextSibling : body.firstChild;
+        this.current = from ? from.nextSibling : container.firstChild;
       }
       else if (this.forward){
         this.forward = false;
@@ -537,7 +544,7 @@ function highlight(from, onlyDirtyLines, lines){
     },
     remove: function(){
       this.current = this.get().previousSibling;
-      body.removeChild(this.current.nextSibling);
+      container.removeChild(this.current.nextSibling);
       this.forward = true;
     }
   };
@@ -573,7 +580,7 @@ function highlight(from, onlyDirtyLines, lines){
       else {
         lineDirty = true;
         var newPart = tokenPart(token);
-        body.insertBefore(newPart, part);
+        container.insertBefore(newPart, part);
         var tokensize = token.value.length;
         var offset = 0;
         while (tokensize > 0) {
