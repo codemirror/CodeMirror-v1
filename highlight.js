@@ -566,16 +566,18 @@ function highlight(from, onlyDirtyLines, lines){
         var newPart = tokenPart(token);
         body.insertBefore(newPart, part);
         var tokensize = token.value.length;
+        var offset = 0;
         while (tokensize > 0) {
           part = parts.get();
           var partsize = part.text.length;
-          replaceSelection(part.firstChild, newPart.firstChild, tokensize);
+          replaceSelection(part.firstChild, newPart.firstChild, tokensize, offset);
           if (partsize > tokensize){
             shortenPart(part, tokensize);
             tokensize = 0;
           }
           else {
             tokensize -= partsize;
+            offset += partsize;
             parts.remove();
           }
         }

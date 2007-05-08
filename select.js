@@ -79,8 +79,8 @@ else {
     var range = selection.getRangeAt(0);
 
     var result = {start: {node: range.startContainer, offset: range.startOffset},
-      end: {node: range.endContainer, offset: range.endOffset},
-      window: win};
+                  end: {node: range.endContainer, offset: range.endOffset},
+                  window: win};
     
     function normalize(point){
       while (point.node.nodeType != 3 && point.node.nodeName != "BR") {
@@ -136,7 +136,7 @@ else {
     selectRange(range, win);
   };
 
-  var replaceSelection = function(oldNode, newNode, length) {
+  var replaceSelection = function(oldNode, newNode, length, offset) {
     function replace(which) {
       var selObj = oldNode["select" + which];
       if (selObj) {
@@ -147,6 +147,7 @@ else {
           newNode["select" + which] = selObj;
           delete oldNode["select" + which];
           selObj.node = newNode;
+          selObj.offset += (offset || 0);
         }
       }
     }
@@ -161,13 +162,14 @@ else {
     this.valid = selection && selection.rangeCount > 0;
     if (this.valid) {
       var range = selection.getRangeAt(0);
-      if (range.endContainer.nodeType != 3) {
-        this.after = range.endContainer.childNodes[range.endOffset];
+      var end = range.endContainer;
+      if (end.nodeType != 3 && end.childNodes.length > 0) {
+        this.after = end.childNodes[range.endOffset];
         while (this.after && this.after.parentNode != container)
           this.after = this.after.parentNode;
       }
       else {
-        this.after = topLevelNodeAfter(range.endContainer, container);
+        this.after = topLevelNodeAfter(end, container);
       }
     }
   };
