@@ -50,6 +50,7 @@ var keywords = function(){
 
 var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?]/);
 var isDigit = matcher(/[0-9]/);
+var isHexDigit = matcher(/[0-9A-Fa-f]/);
 var isWordChar = matcher(/[\w\$_]/);
 function isWhiteSpace(ch){
   // Unfortunately, IE's regexp matcher thinks non-breaking spaces
@@ -81,6 +82,11 @@ function tokenize(source){
     }
   }
 
+  function readHexNumber(){
+    source.next(); // skip the 'x'
+    nextWhile(isHexDigit);
+    return result("number", "atom");
+  }
   function readNumber(){
     nextWhile(isDigit);
     if (source.peek() == "."){
@@ -136,6 +142,8 @@ function tokenize(source){
       token = nextUntilUnescaped("\"") || result("string", "string");
     else if (/[\[\]{}\(\),;\:\.]/.test(ch))
       token = result(ch, "punctuation");
+    else if (ch == "0" && (source.peek() == "x" || source.peek() == "X"))
+      token = readHexNumber();
     else if (isDigit(ch))
       token = readNumber();
     else if (ch == "/"){
