@@ -339,7 +339,7 @@ function JSEditor(place, width, height, content) {
   this.doc.designMode = "on";
   this.doc.open();
   this.doc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"highlight.css\"/></head>" +
-                 "<body class=\"editbox\" spellcheck=\"false\"><div id=\"container\"></div></body></html>");
+                 "<body class=\"editbox\" spellcheck=\"false\"></body></html>");
   this.doc.close();
 
   this.dirty = [];
@@ -358,7 +358,7 @@ JSEditor.prototype = {
   shotDelay: 300,
 
   init: function (code) {
-    this.container = this.doc.getElementById("container");
+    this.container = this.doc.body;
     if (code)
       this.importCode(code);
     connect(this.doc, "onkeydown", bind(this.keyDown, this));
