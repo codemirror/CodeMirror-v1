@@ -1,6 +1,6 @@
 // Selection
 
-var ie_selection = document.selection && document.selection.createRange;
+var ie_selection = document.selection && document.selection.createRangeCollection;
 
 function topLevelNodeAfter(node, top) {
   while (!node.nextSibling && node.parentNode != top)
