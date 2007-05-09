@@ -558,10 +558,10 @@ function highlight(from, onlyDirtyLines, lines){
     if (token.type == "newline"){
       if (part.nodeName != "BR")
         debugger;//throw "Parser out of sync. Expected BR.";
+      if (part.dirty || !part.lexicalContext)
+        lineDirty = true;
       part.parserFromHere = parsed.copy();
       part.lexicalContext = token.lexicalContext;
-      if (part.dirty)
-        lineDirty = true;
       part.dirty = false;
       if ((lines !== undefined && --lines <= 0) ||
           (onlyDirtyLines && !lineDirty))
