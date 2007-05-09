@@ -59,7 +59,6 @@ function simplifyDOM(root) {
 function traverseDOM(start){
   function yield(value, c){cc = c; return value;}
   function push(fun, arg, c){return function(){return fun(arg, c);};}
-  function chain(fun, c){return function(){fun(); return c();};}
   var cc = push(scanNode, start, function(){throw StopIteration;});
   var owner = start.ownerDocument;
 
@@ -86,10 +85,11 @@ function traverseDOM(start){
   }
 
   function writeNode(node, c){
-    var toYield = map(insertPart, simplifyDOM(node));
-    for (var i = toYield.length - 1; i >= 0; i--)
-      c = push(yield, toYield[i], c);
-    return c();
+    var toYield = [];
+    forEach(simplifyDOM(node), function(part) {
+      toYield.push(insertPart(part));
+    });
+    return yield(toYield.join(""), c);
   }
 
   function partNode(node){
@@ -172,12 +172,12 @@ function parse(tokens){
   function copy(){
     var _context = context, _lexical = lexical, _cc = copyArray(cc), _regexp = tokens.regexp, _comment = tokens.inComment;
 
-    return function(newTokens){
+    return function(_tokens){
       context = _context;
       lexical = _lexical;
       cc = copyArray(_cc);
       column = indented = 0;
-      tokens = newTokens;
+      tokens = _tokens;
       tokens.regexp = _regexp;
       tokens.inComment = _comment;
       return parser;
@@ -245,7 +245,7 @@ function parse(tokens){
     return pass(statement, statements);
   }
   function statement(type){
-    if (type == "var") cont(pushlex("stat"), vardef1, expect(";"), poplex);
+    if (type == "var") cont(pushlex("vardef"), vardef1, expect(";"), poplex);
     else if (type == "for") cont(pushlex("stat"), expect("("), pushlex("list"), forspec1, expect(")"), poplex, statement, poplex);
     else if (type == "keyword a") cont(pushlex("stat"), expression, statement, poplex);
     else if (type == "keyword b") cont(pushlex("stat"), statement, poplex);
@@ -321,6 +321,8 @@ function parse(tokens){
 }
 
 function indentation(lexical, closing){
+  if (lexical.type == "vardef")
+    return lexical.indented + 4;
   if (lexical.type == "stat")
     return lexical.indented + 2;
   else if (lexical.align)

@@ -163,8 +163,8 @@ function tokenize(source){
     else
       token = readWord();
 
-    if (token.style != "whitespace")
-      this.regexp = token.type == "operator" || token.type.match(/[\[{}\(,;]/);
+    if (token.style != "whitespace" && token != "comment")
+      this.regexp = token.type == "operator" || token.type.match(/[\[{}\(,;:]/);
     return token;
   }
 
