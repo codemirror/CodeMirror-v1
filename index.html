@@ -12,13 +12,23 @@
     <link rel="stylesheet" type="text/css" href="highlight.css"/>
     <title>Javascript syntax highlighting</title>
   </head>
-  <body>
+  <body style="padding: 20px;">
 
+<div style="border: 1px solid black; padding: 3px;">
 <textarea id="foo" cols="120" rows="30">
-function hasClass(element, className){
-  var classes = element.className;
-  return classes && new RegExp("(^| )" + className + "($| )").test(classes);
+if (2 > 3) {
+  alert("Impossible!");
+} else {
+  alert("The universe is in order.");
 }
+
+var firstName = {miller: "Henry",
+                 thompson: "Hunter",
+                 nietzsche: "Friedrich"};
+
+"5 onions and 6 potatoes".replace(/\d/g, function(x){
+  return parseInt(x) + 1;
+});
 
 function copyArray(array) {
   var newArr = new Array(array.length);
@@ -27,20 +37,43 @@ function copyArray(array) {
 
   return newArr;
 }
-
-var obj = {foo: 22, bar: "blah", 242: 2 + 4};
-var arr = [4, 1, "stuff"];
-
 </textarea>
-<p><button id="buttonA">Button 1</button> <button id="buttonB">Button 2</button></p>
+</div>
+<div>
+  <div style="float: left; padding-right: 10px;"><img src="people.jpg" alt="nonsense"/></div>
+  <div style="font-family: tahoma, arial, sans-serif; padding-left: 190px;">
+  <p>The above block of code demonstrates an in-browser,
+  syntax-highlighting, auto-indenting JavaScript editor. It is not
+  entirely complete yet, but should be usable. Use ctrl-i or
+  ctrl-space (depending on which one your browser interferes with) to
+  re-indent the current line. Known issues are...</p>
 
-    <script type="text/javascript">
-      var js = new JSEditor(partial(swapDOM, $('foo')), 900, 500, $('foo').value);
-      var fr = js.frame;
+  <ul>
+    <li>Opera has a bug which makes it impossible to get proper
+    information about the cursor position when it is not inside a text
+    node. This causes the editor to screw up when you press enter. (If
+    someone knows of a workaround for this, tell me!)</li>
+    <li>On Firefox, the editor occasionally fails to indent when
+    pressing enter. Unfortunately, I haven't been able to find a
+    situation where this happens consistently.</li>
+  </ul>
 
-      window.test = window.test || function(){alert("TEST");};
+  <p>I have not been able to test this on Safari yet -- if you get a
+  chance, I would be grateful if you tell me how it behaves there.
+  (Most likely it will fail in some way, but that is good to know too.)
+  </p>
 
-      connect($('buttonA'), "onclick", test);
-    </script>
+  <p>The JavaScript code used by this page (except for <a
+  href="http://www.mochikit.com">MochiKit</a>, which is not mine) is
+  released under a <a href="LICENSE">BSD-like license</a>, if you
+  think you can figure it out (documentation will come later,
+  seriously) you can use it for your own purposes. Comments, bugs, and
+  ridicule can be sent to mar&#x69;jnh@gmail.com.</p>
+  </div>
+</div>
+
+<script>
+  var js = new JSEditor(partial(swapDOM, $('foo')), 900, 350, $('foo').value);
+</script>
   </body>
 </html>
