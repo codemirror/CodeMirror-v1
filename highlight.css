@@ -6,6 +6,7 @@ body {
 
 .editbox {
   font-family: monospace;
+  font-size: 10pt;
 }
 
 .editbox p {
