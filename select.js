@@ -14,12 +14,14 @@ function topLevelNodeAfter(node, top) {
 if (ie_selection) {
   var markSelection = function (win) {
     var selection = win.document.selection;
-    var rects = selection.createRange().getClientRects();
-    var start = rects[0], end = rects[rects.length - 1];
-    // The -1 is to prevent a problem where the cursor would end up on
-    // the next line sometimes.
-    return {start: {x: start.left - 1, y: start.top},
-            end: {x: end.right - 1, y: end.top},
+    var start = selection.createRange(), end = start.duplicate();
+    start.collapse(true);
+    end.collapse(false);
+    
+    // And we better hope no fool gave this window a padding or a
+    // margin, or all these computations will be in vain.
+    return {start: {x: start.boundingLeft - 1, y: start.boundingTop + win.document.body.scrollTop},
+            end: {x: end.boundingLeft - 1, y: end.boundingTop + win.document.body.scrollTop},
             window: win};
   };
 
