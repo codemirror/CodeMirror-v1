@@ -76,6 +76,8 @@ if (ie_selection) {
   };
 }
 else {
+  var opera_scroll = !window.scrollX && !window.scrollY;
+
   var markSelection = function (win) {
     var selection = win.getSelection();
     if (!selection || selection.rangeCount == 0)
@@ -84,7 +86,9 @@ else {
 
     var result = {start: {node: range.startContainer, offset: range.startOffset},
                   end: {node: range.endContainer, offset: range.endOffset},
-                  window: win};
+                  window: win,
+                  scrollX: opera_scroll && win.document.body.scrollLeft,
+                  scrollY: opera_scroll && win.document.body.scrollTop};
     
     function normalize(point){
       while (point.node.nodeType != 3 && point.node.nodeName != "BR") {
@@ -135,6 +139,10 @@ else {
       }
     }
 
+    if (opera_scroll){
+      sel.window.document.body.scrollLeft = sel.scrollX;
+      sel.window.document.body.scrollTop = sel.scrollY;
+    }
     setPoint(sel.start, "Start");
     setPoint(sel.end, "End");
     selectRange(range, win);
