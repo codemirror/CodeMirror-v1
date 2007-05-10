@@ -18,7 +18,7 @@ span.keyword {
 }
 
 span.atom {
-  color: #AA7700;
+  color: #00BBBB;
 }
 
 span.variable {
@@ -40,9 +40,9 @@ span.property {
 }
 
 span.comment {
-  color: #BB0000;
+  color: #CC0000;
 }
 
 span.string {
-  color: #DD0000;
+  color: #BB7700;
 }
