@@ -39,13 +39,13 @@ var keywords = function(){
   var operator = result("operator", "keyword");
   var atom = result("atom", "atom");
   return {
-    "if": keywordA, "switch": keywordA, "while": keywordA, "switch": keywordA,
+    "if": keywordA, "switch": keywordA, "while": keywordA,
     "else": keywordB, "do": keywordB, "try": keywordB, "finally": keywordB,
     "return": keywordC, "break": keywordC, "continue": keywordC, "new": keywordC, "delete": keywordC, "throw": keywordC,
-    "in": operator, "typeof": operator,
+    "in": operator, "typeof": operator, "instanceof": operator,
     "var": result("var", "keyword"), "function": result("function", "keyword"), "catch": result("catch", "keyword"),
     "for": result("for", "keyword"), "case": result("case", "keyword"),
-    "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom
+    "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom, "Infinity": atom
   };
 }();
 
@@ -141,6 +141,8 @@ function tokenize(source){
       token = nextWhile(isWhiteSpace) || result("whitespace", "whitespace");
     else if (ch == "\"")
       token = nextUntilUnescaped("\"") || result("string", "string");
+    else if (ch == "'")
+      token = nextUntilUnescaped("'") || result("string", "string");
     else if (/[\[\]{}\(\),;\:\.]/.test(ch))
       token = result(ch, "punctuation");
     else if (ch == "0" && (source.peek() == "x" || source.peek() == "X"))

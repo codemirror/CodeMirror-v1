@@ -18,10 +18,13 @@ if (ie_selection) {
     start.collapse(true);
     end.collapse(false);
     
+    var body = win.document.body;
     // And we better hope no fool gave this window a padding or a
     // margin, or all these computations will be in vain.
-    return {start: {x: start.boundingLeft - 1, y: start.boundingTop + win.document.body.scrollTop},
-            end: {x: end.boundingLeft - 1, y: end.boundingTop + win.document.body.scrollTop},
+    return {start: {x: start.boundingLeft + body.scrollLeft - 1,
+                    y: start.boundingTop + body.scrollTop},
+            end: {x: end.boundingLeft + body.scrollLeft - 1,
+                  y: end.boundingTop + body.scrollTop},
             window: win};
   };
 

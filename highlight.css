@@ -1,10 +1,7 @@
-body {
+.editbox {
   border-width: 0;
   margin: 0;
   padding: 0;
-}
-
-.editbox {
   font-family: monospace;
   font-size: 10pt;
 }
@@ -22,17 +19,16 @@ span.atom {
 }
 
 span.variable {
-  color: #0044BB;
+  color: #003399;
 }
 
 span.variabledef {
   color: #008800;
-  font-weight: bold;
   line-height: 90%;
 }
 
 span.localvariable {
-  color: #009900;
+  color: #007700;
 }
 
 span.property {
