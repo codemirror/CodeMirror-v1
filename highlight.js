@@ -524,8 +524,8 @@ function highlight(from, onlyDirtyLines, lines){
     return part;
   }
 
-  var parsed = from ? from.parserFromHere(tokenize(stringCombiner(traverseDOM(from.nextSibling))))
-                    : parse(tokenize(stringCombiner(traverseDOM(container.firstChild))));
+  var parsed = from ? from.parserFromHere(tokenize(multiStringStream(traverseDOM(from.nextSibling))))
+                    : parse(tokenize(multiStringStream(traverseDOM(container.firstChild))));
 
   var parts = {
     current: null,
