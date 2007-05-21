@@ -345,7 +345,7 @@ function JSEditor(place, width, height, content) {
 
   this.dirty = [];
 
-  if (ie_selection) // better check?
+  if (this.doc.body)
     this.init(content);
   else
     connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
