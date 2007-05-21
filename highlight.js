@@ -561,7 +561,7 @@ var JSEditor = function(){
       var part = parts.get();
       if (token.type == "newline"){
         if (part.nodeName != "BR")
-          debugger;//throw "Parser out of sync. Expected BR.";
+          throw "Parser out of sync. Expected BR.";
         if (part.dirty || !part.lexicalContext)
           lineDirty = true;
         part.parserFromHere = parsed.copy();
@@ -575,7 +575,7 @@ var JSEditor = function(){
       }
       else {
         if (part.nodeName != "SPAN")
-          debugger;//throw "Parser out of sync. Expected SPAN.";
+          throw "Parser out of sync. Expected SPAN.";
         if (part.dirty)
           lineDirty = true;
 
