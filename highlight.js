@@ -1,6 +1,11 @@
-var JSEditor = function(){
-  var newlineElements = setObject("P", "DIV", "LI");
+var JSEOptions = window.JSEOptions || {};
+setdefault(JSEOptions,
+           {newlineElements: setObject("P", "DIV", "LI"),
+            safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
+                                "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
+            stylesheet: "highlight.css"});
 
+var JSEditor = function(){
   function simplifyDOM(root) {
     var doc = root.ownerDocument;
     var current = root;
@@ -18,7 +23,7 @@ var JSEditor = function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && node.nodeName in newlineElements) {
+        if (!leaving && node.nodeName in JSEOptions.newlineElements) {
           leaving = true;
           result.push(withDocument(doc, BR));
         }
@@ -334,13 +339,13 @@ var JSEditor = function(){
   }
 
   function JSEditor(place, width, height, content) {
-    this.frame = createDOM("IFRAME", {"style": "border: 0; width: " + width + "px; height: " + height + "px;"});
+    this.frame = createDOM("IFRAME", {"style": "border: 0; width: " + (width || 400) + "px; height: " + (height || 200) + "px;"});
     place(this.frame);
     this.win = this.frame.contentWindow;
     this.doc = this.win.document;
     this.doc.designMode = "on";
     this.doc.open();
-    this.doc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"highlight.css\"/></head>" +
+    this.doc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"" + JSEOptions.stylesheet + "\"/></head>" +
                    "<body class=\"editbox\" spellcheck=\"false\"></body></html>");
     this.doc.close();
 
@@ -351,9 +356,6 @@ var JSEditor = function(){
     else
       connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
   }
-
-  var safeKeys = setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
-                           "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT");
 
   JSEditor.prototype = {
     linesPerShot: 10,
@@ -394,7 +396,7 @@ var JSEditor = function(){
       var name = event.key().string;
       if (name == "KEY_ENTER")
         this.indentAtCursor();
-      else if (!(name in safeKeys))
+      else if (!(name in JSEOptions.safeKeys))
         this.markCursorDirty();
     },
 
