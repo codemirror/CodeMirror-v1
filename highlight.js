@@ -379,6 +379,15 @@ var JSEditor = function(){
       }
     },
 
+    getCode: function() {
+      if (!this.container.firstChild)
+        return "";
+
+      var accum = [];
+      forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
+      return accum.join("");
+    },
+
     keyDown: function(event) {
       var name = event.key().string;
       if (ie_selection && event.key().string == "KEY_ENTER") {
