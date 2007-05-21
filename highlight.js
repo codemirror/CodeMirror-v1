@@ -345,6 +345,8 @@ var JSEditor = function(){
       this.container = this.doc.body;
       if (code)
         this.importCode(code);
+      else
+        this.container.appendChild(withDocument(this.doc, BR));
       connect(this.doc, "onkeydown", bind(this.keyDown, this));
       connect(this.doc, "onkeyup", bind(this.keyUp, this));
     },
