@@ -34,7 +34,7 @@ var JSEditor = function(){
       var text = node.nodeValue;
       if (text.indexOf("\r") != -1)
         text = node.nodeValue = text.replace("\r", "");
-      if (text == "")
+      if (/^\n*$/.test(text))
         return;
 
       if (text.indexOf("\n") == -1) {
