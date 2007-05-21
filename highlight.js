@@ -32,30 +32,10 @@ var JSEditor = function(){
 
     function simplifyText(node) {
       var text = node.nodeValue;
-      if (text.indexOf("\r") != -1)
-        text = node.nodeValue = text.replace("\r", "");
-      if (/^\n*$/.test(text))
+      if (/^\s*$/.test(text))
         return;
-
-      if (text.indexOf("\n") == -1) {
-        result.push(node);
-        return;
-      }
-
-      var lines = text.split("\n");
-      for (var i = 0; i != lines.length; i++) {
-        if (i > 0){
-          var br = withDocument(doc, BR);
-          replaceSelection(node, br, 1);
-          result.push(br);
-        }
-        var line = lines[i];
-        if (line.length > 0) {
-          var textNode = doc.createTextNode(line);
-          replaceSelection(node, textNode, line.length);
-          result.push(textNode);
-        }
-      }
+      node.nodeValue = text.replace("\w+", " ");
+      result.push(node);
     }
 
     simplifyNode(root);
@@ -370,9 +350,15 @@ var JSEditor = function(){
     },
 
     importCode: function(code) {
-      code = code.replace(/[ \t]/g, nbsp);
-      replaceChildNodes(this.container, this.doc.createTextNode(code));
-      exhaust(traverseDOM(this.container.firstChild));
+      replaceChildNodes(this.container);
+      var lines = code.replace(/\r/, "").replace(/[ \t]/g, nbsp).split("\n");
+      for (var i = 0; i != lines.length; i++) {
+        if (i > 0)
+          this.container.appendChild(withDocument(this.doc, BR));
+        var line = lines[i];
+        if (line.length > 0)
+          this.container.appendChild(this.doc.createTextNode(line));
+      }
       if (this.container.firstChild){
         this.addDirtyNode(this.container.firstChild);
         this.scheduleHighlight();
