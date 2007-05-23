@@ -45,7 +45,8 @@ var JSEditor = function(){
   function traverseDOM(start){
     function yield(value, c){cc = c; return value;}
     function push(fun, arg, c){return function(){return fun(arg, c);};}
-    var cc = push(scanNode, start, function(){throw StopIteration;});
+    function stop(){cc = stop; throw StopIteration;};
+    var cc = push(scanNode, start, stop);
     var owner = start.ownerDocument;
 
     function pointAt(node){
@@ -99,10 +100,7 @@ var JSEditor = function(){
       else if (newlineNode(node)){
         return yield("\n", c);
       }
-      // The check for parentNode is a hack to prevent weird problem in
-      // FF where empty nodes seem to spontaneously remove themselves
-      // from the DOM tree.
-      else if (node.parentNode) {
+      else {
         point = pointAt(node);
         removeElement(node);
         return writeNode(node, c);
