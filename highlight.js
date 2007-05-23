@@ -441,9 +441,9 @@ var JSEditor = function(){
             insertAfter(newNode, start);
           else
             insertAtStart(newNode, this.containter);
-          if (cursor.start == start)
-            cursor.start = newNode;
         }
+        if (cursor.start == start)
+          cursor.start = whiteSpace || newNode;
       }
       cursor.focus();
     },

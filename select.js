@@ -191,7 +191,10 @@ else {
         this.valid = false;
       }
       else if (end == container) {
-        this.start = end.childNodes[range.endOffset - 1];
+        if (range.endOffset == 0)
+          this.start = null;
+        else
+          this.start = end.childNodes[range.endOffset - 1];
       }
       else {
         if (range.endOffset == end.childNodes.length)
@@ -212,7 +215,7 @@ else {
     else if (this.start)
       range.setEndAfter(this.start);
     else
-      range.setEndBefore(this.container);
+      range.setEndBefore(this.container.firstChild || this.container);
     range.collapse(false);
     selectRange(range, this.win);
   };
