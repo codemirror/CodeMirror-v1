@@ -236,7 +236,7 @@ var JSEditor = function(){
       else if (type == "function") cont(functiondef);
       else if (type == "for") cont(pushlex("stat"), expect("("), pushlex("list"), forspec1, expect(")"), poplex, statement, poplex);
       else if (type == "case") cont(expression, expect(":"));
-      else if (type == "variable") cont(maybelabel);
+      else if (type == "variable") cont(pushlex("stat"), maybelabel);
       else if (type == "catch") cont(pushlex("stat"), pushcontext, expect("("), funarg, expect(")"), statement, poplex, popcontext);
       else pass(pushlex("stat"), expression, expect(";"), poplex);
     }
@@ -256,8 +256,8 @@ var JSEditor = function(){
       else if (type == "[") cont(pushlex("list"), expression, expect("]"), poplex);
     }
     function maybelabel(type){
-      if (type == ":") cont(statement);
-      else pass(pushlex("stat"), maybeoperator, expect(";"), poplex);
+      if (type == ":") cont(poplex, statement);
+      else pass(maybeoperator, expect(";"), poplex);
     }
     function property(type){
       if (type == "variable") {mark("property"); cont();}
