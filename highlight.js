@@ -436,14 +436,14 @@ var JSEditor = function(){
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
         else {
-          var newNode = this.doc.createTextNode(repeatString(nbsp, indentDiff));
+          whiteSpace = withDocument(this.doc, function(){return SPAN({"class": "part whitespace"}, repeatString(nbsp, indentDiff))});
           if (start)
-            insertAfter(newNode, start);
+            insertAfter(whiteSpace, start);
           else
-            insertAtStart(newNode, this.containter);
+            insertAtStart(whiteSpace, this.containter);
         }
         if (cursor.start == start)
-          cursor.start = whiteSpace || newNode;
+          cursor.start = whiteSpace;
       }
       cursor.focus();
     },
