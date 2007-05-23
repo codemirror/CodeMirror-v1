@@ -31,10 +31,10 @@ var JSEditor = function(){
     }
 
     function simplifyText(node) {
-      var text = node.nodeValue;
-      if (/^\s*$/.test(text))
+      var text = node.nodeValue.replace(/[\n\r]/, "");
+      if (text == "")
         return;
-      node.nodeValue = text.replace("\w+", " ");
+      node.nodeValue = text;
       result.push(node);
     }
 
