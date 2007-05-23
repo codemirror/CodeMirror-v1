@@ -141,7 +141,7 @@ else {
           range["set" + which](point.node, point.offset);
       }
       else {
-        range.setStartAfter(win.document.body);
+        range.setStartAfter(win.document.body.lastChild || win.document.body);
       }
     }
 
