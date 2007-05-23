@@ -16,7 +16,8 @@ var JSEditor = function(){
       leaving = false;
 
       if (node.nodeType == 3) {
-        simplifyText(node);
+        node.nodeValue = node.nodeValue.replace(/[\n\r]/, "");
+        result.push(node);
       }
       else if (node.nodeName == "BR" && node.childNodes.length == 0) {
         result.push(node);
@@ -28,14 +29,6 @@ var JSEditor = function(){
           result.push(withDocument(doc, BR));
         }
       }
-    }
-
-    function simplifyText(node) {
-      var text = node.nodeValue.replace(/[\n\r]/, "");
-      if (text == "")
-        return;
-      node.nodeValue = text;
-      result.push(node);
     }
 
     simplifyNode(root);
@@ -82,12 +75,9 @@ var JSEditor = function(){
     function partNode(node){
       if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3){
         node.currentText = node.firstChild.nodeValue;
-        return node.currentText.length > 0;
+        return true;
       }
       return false;
-    }
-    function newlineNode(node){
-      return node.nodeName == "BR";
     }
 
     function scanNode(node, c){
@@ -97,7 +87,7 @@ var JSEditor = function(){
       if (partNode(node)){
         return yield(node.currentText, c);
       }
-      else if (newlineNode(node)){
+      else if (node.nodeName == "BR") {
         return yield("\n", c);
       }
       else {

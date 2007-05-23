@@ -187,8 +187,8 @@ else {
         else
           this.start = topLevelNodeBefore(end, this.container);
       }
-      else if (end.nodeName == "HTML") { // Opera bug
-        this.valid = false;
+      else if (end.nodeName == "HTML") {
+        this.start = (range.endOffset == 1 ? null : container.lastChild);
       }
       else if (end == container) {
         if (range.endOffset == 0)
@@ -209,10 +209,8 @@ else {
 
   Cursor.prototype.focus = function() {
     var range = this.win.document.createRange();
-    range.setStartBefore(this.container);
-    if (this.start && this.start.nodeType == "BR" && !this.start.nextSibling)
-      range.setEndBefore(this.start);
-    else if (this.start)
+    range.setStartBefore(this.container.firstChild || this.container);
+    if (this.start)
       range.setEndAfter(this.start);
     else
       range.setEndBefore(this.container.firstChild || this.container);
