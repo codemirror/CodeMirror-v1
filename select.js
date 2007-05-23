@@ -2,13 +2,16 @@
 
 var ie_selection = document.selection && document.selection.createRangeCollection;
 
-function topLevelNodeAfter(node, top) {
-  while (!node.nextSibling && node.parentNode != top)
+function topLevelNodeAt(node, top) {
+  while (node && node.parentNode != top)
     node = node.parentNode;
-  var after = node.nextSibling;
-  while (after && after.parentNode != top)
-    after = after.parentNode;
-  return after;
+  return node;
+}
+
+function topLevelNodeBefore(node, top) {
+  while (!node.previousSibling && node.parentNode != top)
+    node = node.parentNode;
+  return topLevelNodeAt(node.previousSibling, top);
 }
 
 if (ie_selection) {
@@ -50,12 +53,12 @@ if (ie_selection) {
       range.collapse(false);
       var around = range.parentElement();
       if (around && isAncestor(container, around)) {
-        this.after = topLevelNodeAfter(around, container);
+        this.start = topLevelNodeAt(around, container);
       }
       else {
         range.pasteHTML("<span id='// temp //'></span>");
         var temp = this.doc.getElementById("// temp //");
-        this.after = topLevelNodeAfter(temp, container);
+        this.start = topLevelNodeBefore(temp, container);
         removeElement(temp);
       }
     }
@@ -63,8 +66,8 @@ if (ie_selection) {
 
   Cursor.prototype.focus = function () {
     var range = this.doc.body.createTextRange();
-    range.moveToElementText(this.after || this.container);
-    range.collapse(true);
+    range.moveToElementText(this.start || this.container);
+    range.collapse(!this.start);
     range.select();
   };
 
@@ -178,19 +181,25 @@ else {
     if (this.valid) {
       var range = selection.getRangeAt(0);
       var end = range.endContainer;
-      if (end.nodeType != 3 && end.childNodes.length > range.endOffset) {
-        this.after = end.childNodes[range.endOffset];
-        while (this.after && this.after.parentNode != container)
-          this.after = this.after.parentNode;
-      }
-      else if (end == container) {
-        this.after = null;
+      if (end.nodeType == 3){
+        if (range.endOffset > 0)
+          this.start = topLevelNodeAt(end, this.container);
+        else
+          this.start = topLevelNodeBefore(end, this.container);
       }
       else if (end.nodeName == "HTML") { // Opera bug
         this.valid = false;
       }
+      else if (end == container) {
+        this.start = end.childNodes[range.endOffset - 1];
+      }
       else {
-        this.after = topLevelNodeAfter(end, container);
+        if (range.endOffset == end.childNodes.length)
+          this.start = topLevelNodeAt(end, this.container);
+        else if (range.endOffset == 0)
+          this.start = topLevelNodeBefore(end, this.container);
+        else
+          this.start = topLevelNodeAt(end.childNodes[range.endOffset - 1], this.container);
       }
     }
   };
@@ -198,14 +207,19 @@ else {
   Cursor.prototype.focus = function() {
     var range = this.win.document.createRange();
     range.setStartBefore(this.container);
-    range.setEndBefore(this.after || this.container);
+    if (this.start && this.start.nodeType == "BR" && !this.start.nextSibling)
+      range.setEndBefore(this.start);
+    else if (this.start)
+      range.setEndAfter(this.start);
+    else
+      range.setEndBefore(this.container);
     range.collapse(false);
     selectRange(range, this.win);
   };
 }
 
 Cursor.prototype.startOfLine = function() {
-  var start = this.after ? this.after.previousSibling : this.container.lastChild;
+  var start = this.start || this.container.firstChild;
   while (start && start.nodeName != "BR")
     start = start.previousSibling;
   return start;

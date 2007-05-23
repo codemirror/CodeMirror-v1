@@ -397,7 +397,7 @@ var JSEditor = function(){
 
     highlightAtCursor: function(cursor) {
       if (cursor.valid) {
-        var node = cursor.after ? cursor.after.previousSibling : this.container.lastChild;
+        var node = cursor.start || this.container.firstChild;
         if (node) {
           if (node.nodeType != 3)
             node.dirty = true;
@@ -417,7 +417,7 @@ var JSEditor = function(){
         return;
 
       var start = cursor.startOfLine();
-      var whiteSpace = start ? start.nextSibling : this.container.firstChild;
+      var whiteSpace = start ? start.nextSibling : this.container.lastChild;
       if (whiteSpace && !hasClass(whiteSpace, "whitespace"))
         whiteSpace = null;
 
@@ -441,6 +441,8 @@ var JSEditor = function(){
             insertAfter(newNode, start);
           else
             insertAtStart(newNode, this.containter);
+          if (cursor.start == start)
+            cursor.start = newNode;
         }
       }
       cursor.focus();
@@ -451,7 +453,7 @@ var JSEditor = function(){
     markCursorDirty: function() {
       var cursor = new Cursor(this.container);
       if (cursor.valid) {
-        var node = cursor.after ? cursor.after.previousSibling : this.container.lastChild;
+        var node = cursor.start || this.container.firstChild;
         if (node) {
           this.scheduleHighlight();
           this.addDirtyNode(node);
