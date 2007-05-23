@@ -343,10 +343,10 @@ var JSEditor = function(){
       this.container = this.doc.body;
       if (code)
         this.importCode(code);
-      else
-        this.container.appendChild(withDocument(this.doc, BR));
-      connect(this.doc, "onkeydown", bind(this.keyDown, this));
-      connect(this.doc, "onkeyup", bind(this.keyUp, this));
+      connect(this.doc, "onkeydown", method(this, "keyDown"));
+      connect(this.doc, "onkeyup", method(this, "keyUp"));
+      if (!ie_selection)
+        connect(this.doc, "onclick", method(this, "focus"));
     },
 
     importCode: function(code) {
@@ -363,6 +363,20 @@ var JSEditor = function(){
         this.addDirtyNode(this.container.firstChild);
         this.scheduleHighlight();
       }
+    },
+
+    // Hack to make it possible to focus the frame when it is empty in
+    // FF.
+    focus: function() {
+      if (this.win.getSelection().rangeCount == 0) {
+        if (!this.container.firstChild)
+          this.container.appendChild(this.doc.createTextNode(""));
+        var range = this.doc.createRange();
+        range.selectNode(this.container.firstChild);
+        range.collapse(true);
+        selectRange(range, this.win);
+      }
+      this.win.focus();
     },
 
     getCode: function() {
