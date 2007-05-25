@@ -206,7 +206,7 @@ function tokenize(source){
       token = readWord();
 
     if (token.style != "whitespace" && token != "comment")
-      this.regexp = token.type == "operator" || token.type.match(/[\[{}\(,;:]/);
+      this.regexp = token.type == "operator" || token.type == "keyword c" || token.type.match(/[\[{}\(,;:]/);
     return token;
   }
 
