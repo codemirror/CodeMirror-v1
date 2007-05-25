@@ -1,9 +1,10 @@
 .editbox {
   border-width: 0;
-  margin: 0;
+  margin: .4em;
   padding: 0;
   font-family: monospace;
   font-size: 10pt;
+  color: black;
 }
 
 .editbox p {
@@ -11,34 +12,37 @@
 }
 
 span.keyword {
-  color: #880099;
+  color: #770088;
 }
 
 span.atom {
-  color: #00BBBB;
+  color: #448888;
 }
 
 span.variable {
-  color: #003399;
+  color: black;
 }
 
 span.variabledef {
-  color: #008800;
-  line-height: 90%;
+  color: #0000FF;
 }
 
 span.localvariable {
-  color: #007700;
+  color: #004499;
 }
 
 span.property {
-  color: #888888;
+  color: black;
 }
 
 span.comment {
-  color: #CC0000;
+  color: #AA7700;
 }
 
 span.string {
-  color: #BB7700;
+  color: #AA2222;
+}
+
+pre.code, .editbox {
+  color: #666666;
 }
