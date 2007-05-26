@@ -339,7 +339,7 @@ var JSEditor = function(){
 
     importCode: function(code) {
       replaceChildNodes(this.container);
-      var lines = code.replace(/\r/, "").replace(/[ \t]/g, nbsp).split("\n");
+      var lines = code.replace(/[ \t]/g, nbsp).replace(/\r\n?/g, "\n").split("\n");
       for (var i = 0; i != lines.length; i++) {
         if (i > 0)
           this.container.appendChild(withDocument(this.doc, BR));
