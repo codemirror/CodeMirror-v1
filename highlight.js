@@ -417,6 +417,8 @@ var JSEditor = function(){
       if (indentDiff < 0) {
         whiteSpace.currentText = repeatString(nbsp, indent);
         whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
+        if (cursor.start == whiteSpace)
+          cursor.focus();
       }
       else if (indentDiff > 0) {
         if (whiteSpace) {
@@ -430,10 +432,11 @@ var JSEditor = function(){
           else
             insertAtStart(whiteSpace, this.containter);
         }
-        if (cursor.start == start)
+        if (cursor.start == start){
           cursor.start = whiteSpace;
+          cursor.focus();
+        }
       }
-      cursor.focus();
     },
 
     highlight: highlight,
@@ -545,6 +548,10 @@ var JSEditor = function(){
     forEach(parsed, function(token){
       var part = parts.get();
       if (token.type == "newline"){
+        while (part.nodeName == "SPAN" && part.currentText == ""){
+          parts.next();
+          part = parts.get();
+        }
         if (part.nodeName != "BR")
           throw "Parser out of sync. Expected BR.";
         if (part.dirty || !part.lexicalContext)
