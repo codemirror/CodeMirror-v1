@@ -417,8 +417,6 @@ var JSEditor = function(){
       if (indentDiff < 0) {
         whiteSpace.currentText = repeatString(nbsp, indent);
         whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
-        if (cursor.start == whiteSpace)
-          cursor.focus();
       }
       else if (indentDiff > 0) {
         if (whiteSpace) {
@@ -432,11 +430,11 @@ var JSEditor = function(){
           else
             insertAtStart(whiteSpace, this.containter);
         }
-        if (cursor.start == start){
+        if (cursor.start == start)
           cursor.start = whiteSpace;
-          cursor.focus();
-        }
       }
+      if (cursor.start == whiteSpace)
+        cursor.focus();
     },
 
     highlight: highlight,
