@@ -16,7 +16,7 @@ var JSEditor = function(){
       leaving = false;
 
       if (node.nodeType == 3) {
-        node.nodeValue = node.nodeValue.replace(/[\n\r]/, "");
+        node.nodeValue = node.nodeValue.replace(/[\n\r]/g, "").replace(/[\t ]/g, nbsp);
         result.push(node);
       }
       else if (node.nodeName == "BR" && node.childNodes.length == 0) {
