@@ -538,18 +538,24 @@ var JSEditor = function(){
         this.current = this.get().previousSibling;
         container.removeChild(this.current.nextSibling);
         this.forward = true;
+      },
+      nextNonEmpty: function(){
+        var part = this.get();
+        while (part.nodeName == "SPAN" && part.currentText == ""){
+          var old = part;
+          this.remove();
+          part = this.get();
+          replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
+        }
+        return part;
       }
     };
 
     var lineDirty = false;
 
     forEach(parsed, function(token){
-      var part = parts.get();
+      var part = parts.nextNonEmpty();
       if (token.type == "newline"){
-        while (part.nodeName == "SPAN" && part.currentText == ""){
-          parts.next();
-          part = parts.get();
-        }
         if (part.nodeName != "BR")
           throw "Parser out of sync. Expected BR.";
         if (part.dirty || !part.lexicalContext)
