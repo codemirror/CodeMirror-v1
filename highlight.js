@@ -325,6 +325,8 @@ var JSEditor = function(){
       connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
   }
 
+  var nbspRegexp = new RegExp(nbsp, "g");
+
   JSEditor.prototype = {
     linesPerShot: 10,
     shotDelay: 300,
@@ -359,7 +361,7 @@ var JSEditor = function(){
 
       var accum = [];
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
-      return accum.join("");
+      return accum.join("").replace(nbspRegexp, " ");
     },
 
     keyDown: function(event) {
