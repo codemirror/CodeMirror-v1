@@ -538,7 +538,7 @@ var JSEditor = function(){
       },
       remove: function(){
         this.current = this.get().previousSibling;
-        container.removeChild(this.current.nextSibling);
+        container.removeChild(this.current ? this.current.nextSibling : container.firstChild);
         this.forward = true;
       },
       nextNonEmpty: function(){
