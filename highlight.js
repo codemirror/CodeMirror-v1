@@ -3,7 +3,8 @@ setdefault(JSEOptions,
            {newlineElements: setObject("P", "DIV", "LI"),
             safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                                 "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
-            stylesheet: "highlight.css"});
+            stylesheet: "highlight.css",
+            indentOnClosingBrace: true});
 
 var JSEditor = function(){
   function simplifyDOM(root) {
@@ -379,9 +380,9 @@ var JSEditor = function(){
 
     keyUp: function(event) {
       var name = event.key().string;
-      if (name == "KEY_ENTER")
+      if (name == "KEY_ENTER" || (JSEOptions.indentOnClosingBrace && name == "KEY_RIGHT_SQUARE_BRACKET"))
         this.indentAtCursor();
-      else if (!(JSEOptions.safeKeys.hasOwnProperty(name)))
+      else if (!JSEOptions.safeKeys.hasOwnProperty(name))
         this.markCursorDirty();
     },
 
