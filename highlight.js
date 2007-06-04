@@ -24,7 +24,7 @@ var JSEditor = function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && node.nodeName in JSEOptions.newlineElements) {
+        if (!leaving && JSEOptions.newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
           result.push(withDocument(doc, BR));
         }
@@ -231,7 +231,7 @@ var JSEditor = function(){
       else pass(pushlex("stat"), expression, expect(";"), poplex);
     }
     function expression(type){
-      if (type in atomicTypes) cont(maybeoperator);
+      if (atomicTypes.hasOwnProperty(type)) cont(maybeoperator);
       else if (type == "function") cont(functiondef);
       else if (type == "keyword c") cont(expression);
       else if (type == "(") cont(pushlex("list"), expression, expect(")"), poplex);
@@ -254,7 +254,7 @@ var JSEditor = function(){
     }
     function objprop(type){
       if (type == "variable") mark("property");
-      if (type in atomicTypes) cont(expect(":"), expression);
+      if (atomicTypes.hasOwnProperty(type)) cont(expect(":"), expression);
     }
     function commasep(what){
       function proceed(type) {
@@ -381,7 +381,7 @@ var JSEditor = function(){
       var name = event.key().string;
       if (name == "KEY_ENTER")
         this.indentAtCursor();
-      else if (!(name in JSEOptions.safeKeys))
+      else if (!(JSEOptions.safeKeys.hasOwnProperty(name)))
         this.markCursorDirty();
     },
 
