@@ -224,7 +224,7 @@ var JSEditor = function(){
       else if (type == "keyword b") cont(pushlex("stat"), statement, poplex);
       else if (type == "{") cont(pushlex("block"), block, poplex);
       else if (type == "function") cont(functiondef);
-      else if (type == "for") cont(pushlex("stat"), expect("("), pushlex("list"), forspec1, expect(")"), poplex, statement, poplex);
+      else if (type == "for") cont(pushlex("stat"), expect("("), pushlex(")"), forspec1, expect(")"), poplex, statement, poplex);
       else if (type == "case") cont(expression, expect(":"));
       else if (type == "variable") cont(pushlex("stat"), maybelabel);
       else if (type == "catch") cont(pushlex("stat"), pushcontext, expect("("), funarg, expect(")"), statement, poplex, popcontext);
@@ -234,16 +234,16 @@ var JSEditor = function(){
       if (atomicTypes.hasOwnProperty(type)) cont(maybeoperator);
       else if (type == "function") cont(functiondef);
       else if (type == "keyword c") cont(expression);
-      else if (type == "(") cont(pushlex("list"), expression, expect(")"), poplex);
+      else if (type == "(") cont(pushlex(")"), expression, expect(")"), poplex);
       else if (type == "operator") cont(expression);
-      else if (type == "[") cont(pushlex("list"), commasep(expression), expect("]"), poplex);
-      else if (type == "{") cont(pushlex("list"), commasep(objprop), expect("}"), poplex);
+      else if (type == "[") cont(pushlex("]"), commasep(expression), expect("]"), poplex);
+      else if (type == "{") cont(pushlex("}"), commasep(objprop), expect("}"), poplex);
     }
     function maybeoperator(type){
       if (type == "operator") cont(expression);
-      else if (type == "(") cont(pushlex("list"), expression, commasep(expression), expect(")"), poplex);
+      else if (type == "(") cont(pushlex(")"), expression, commasep(expression), expect(")"), poplex);
       else if (type == ".") cont(property, maybeoperator);
-      else if (type == "[") cont(pushlex("list"), expression, expect("]"), poplex);
+      else if (type == "[") cont(pushlex("]"), expression, expect("]"), poplex);
     }
     function maybelabel(type){
       if (type == ":") cont(poplex, statement);
@@ -301,7 +301,7 @@ var JSEditor = function(){
     if (lexical.type == "stat")
       return lexical.indented + 2;
     else if (lexical.align)
-      return lexical.column;
+      return lexical.column - (closing ? 1 : 0);
     else
       return lexical.indented + (closing ? 0 : 2);
   }
@@ -412,7 +412,7 @@ var JSEditor = function(){
         whiteSpace = null;
 
       var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
-      var closing = firstText && firstText.currentText && firstText.currentText.charAt(0) == "}";
+      var closing = start && firstText && firstText.currentText && firstText.currentText.charAt(0) == start.lexicalContext.type;
       var indent = start ? indentation(start.lexicalContext, closing) : 0;
       var indentDiff = indent - (whiteSpace ? whiteSpace.currentText.length : 0);
 
