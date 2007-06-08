@@ -176,7 +176,7 @@ var JSEditor = function(){
     }
 
     function pushcontext(){
-      context = {prev: context, vars: {}};
+      context = {prev: context, vars: {"this": true, "arguments": true}};
     }
     function popcontext(){
       context = context.prev;
