@@ -58,6 +58,7 @@ function insertAfter(newNode, oldNode) {
     parent.insertBefore(newNode, next);
   else
     parent.appendChild(newNode);
+  return newNode;
 }
 
 function insertAtStart(node, container) {
@@ -65,6 +66,7 @@ function insertAtStart(node, container) {
     container.insertBefore(node, container.firstChild);
   else
     container.appendChild(node);
+  return node;
 }
 
 function isAncestor(node, child) {
