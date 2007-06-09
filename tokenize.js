@@ -80,7 +80,7 @@ var keywords = function(){
   var atom = result("atom", "atom");
   return {
     "if": keywordA, "switch": keywordA, "while": keywordA,
-    "else": keywordB, "do": keywordB, "try": keywordB, "finally": keywordB,
+    "else": keywordB, "do": keywordB, "try": keywordB, "finally": keywordB, "with": keywordB,
     "return": keywordC, "break": keywordC, "continue": keywordC, "new": keywordC, "delete": keywordC, "throw": keywordC,
     "in": operator, "typeof": operator, "instanceof": operator,
     "var": result("var", "keyword"), "function": result("function", "keyword"), "catch": result("catch", "keyword"),
