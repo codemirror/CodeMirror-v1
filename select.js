@@ -217,6 +217,18 @@ else {
     range.collapse(false);
     selectRange(range, this.win);
   };
+
+  var insertNewlineAtCursor = function(window) {
+    var selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      var range = selection.getRangeAt(0);
+      var br = withDocument(window.document, BR);
+      range.insertNode(br);
+      range.setEndAfter(br);
+      range.collapse(false);
+      selectRange(range, window);
+    }
+  };
 }
 
 Cursor.prototype.startOfLine = function() {

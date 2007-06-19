@@ -327,6 +327,7 @@ var JSEditor = function(){
   }
 
   var nbspRegexp = new RegExp(nbsp, "g");
+  var safari = navigator.vendor && /Apple/.test(navigator.vendor);
 
   JSEditor.prototype = {
     linesPerShot: 10,
@@ -367,12 +368,12 @@ var JSEditor = function(){
 
     keyDown: function(event) {
       var name = event.key().string;
-      if (ie_selection && event.key().string == "KEY_ENTER") {
+      if ((ie_selection || safari) && event.key().string == "KEY_ENTER") {
         insertNewlineAtCursor(this.win);
         this.indentAtCursor();
         event.stop();
       }
-      else if ((name == "KEY_SPACEBAR" || name == "KEY_I") && event.modifier().ctrl) {
+      else if (name == "KEY_TAB" || ((name == "KEY_SPACEBAR" || name == "KEY_I") && event.modifier().ctrl)) {
         this.indentAtCursor();
         event.stop();
       }
