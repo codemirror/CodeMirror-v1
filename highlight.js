@@ -523,13 +523,11 @@ var JSEditor = function(){
       current: null,
       forward: false,
       get: function(){
-        if (!this.current){
+        if (!this.current)
           this.current = from ? from.nextSibling : container.firstChild;
-        }
-        else if (this.forward){
-          this.forward = false;
+        else if (this.forward)
           this.current = this.current.nextSibling;
-        }
+        this.forward = false;
         return this.current;
       },
       next: function(){
