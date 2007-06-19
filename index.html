@@ -38,6 +38,11 @@ function copyArray(array) {
 <div>
   <div style="float: left; padding-right: 10px;"><img src="people.jpg" alt="nonsense"/></div>
   <div style="font-family: tahoma, arial, sans-serif; padding-left: 190px;">
+
+  <p><strong>Update:</strong> This should now work in Safari, at least
+  the Windows version. If you still come across problems using the
+  editor in Safari, please let me know.</p>
+
   <p>The above block of code demonstrates an in-browser,
   syntax-highlighting, auto-indenting JavaScript editor. Use ctrl-i or
   ctrl-space (depending on which one your browser interferes with) to
@@ -48,9 +53,9 @@ function copyArray(array) {
     information about the cursor position when it is not inside a text
     node. This causes the editor to screw up when you press enter. (If
     you happen to know of a workaround for this, tell me!)</li>
-    <li>I have not been able to properly test this on Safari yet, but
-    have been told it does not work. This will be looked into as soon
-    as I manage to get access to a Safari browser.</li>
+    <li>There an obscure bug that occasionally causes the code to use
+    an invalid subscript on a childNodes array, but I have been unable
+    to reproduce it or even locate where in the code it happens.</li>
   </ul>
 
   <p>Eventually, this editor will be integrated into a kind of
