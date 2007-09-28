@@ -1,7 +1,33 @@
+/* CodeMirror main module
+ *
+ * Implements the CodeMirror constructor and prototype, which take care
+ * of initializing the editor and managing the highlighting and
+ * indentation, and some functions for transforming arbitrary DOM
+ * structures into plain sequences of <span> and <br> elements.
+ */
+
+// The MirrorOptions object is used to specify a default
+// configuration. If you specify such an object before loading this
+// file, the values you put into it will override the defaults given
+// below.
 var MirrorOptions = window.MirrorOptions || {};
+
+// safeKeys specifies the set of keys that will probably not modify
+//   the content of the editor, and thus do not have to be responded to.
+//   You usually won't have to change this.
+// reindentKeys gives the keys that should cause the editor to
+//   re-indent the current line
+// reindentAfterKeys works like reindentKeys, but in this case the
+//   key's normal effect is first allowed to take place. Use this for
+//   keys that might change the indentation level of the current line.
+// stylesheet is the filename of the stylesheet that should be used to
+//   color the code in the editor.
+// parser should refer to a function that, when given a string stream
+//   (see stringstream.js), produces an object that acts as a stream of
+//   tokens plus some other functionality. See parsejavascript.js for an
+//   example and more information.
 setdefault(MirrorOptions,
-           {newlineElements: setObject("P", "DIV", "LI"),
-            safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
+           {safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                                 "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
 	    reindentKeys: setObject("KEY_TAB"),
 	    reindentAfterKeys: setObject("KEY_RIGHT_SQUARE_BRACKET"),
@@ -9,6 +35,8 @@ setdefault(MirrorOptions,
             parser: parseJavaScript});
 
 var CodeMirror = function(){
+  var newlineElements = setObject("P", "DIV", "LI");
+
   function simplifyDOM(root) {
     var doc = root.ownerDocument;
     var current = root;
@@ -27,7 +55,7 @@ var CodeMirror = function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && MirrorOptions.newlineElements.hasOwnProperty(node.nodeName)) {
+        if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
           result.push(withDocument(doc, BR));
         }
