@@ -57,7 +57,7 @@ var JSEditor = function(){
     function insertPart(part){
       var text = "\n";
       if (part.nodeType == 3) {
-        var text = part.nodeValue;
+        text = part.nodeValue;
         part = withDocument(owner, partial(SPAN, {"class": "part"}, part));
         part.currentText = text;
       }
