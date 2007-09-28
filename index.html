@@ -25,16 +25,16 @@ license(CodeMirror, "BSD-like");
 dependencies(CodeMirror, [MochiKit]); // http://www.mochikit.com
 
 function browserSupported(browser, version) {
-   if (browser == "Firefox" && version >= 1.5)
-     return true;
-   else if (browser == "Internet Explorer" && version >= 6)
-     return true;
-   else if (browser == "Safari" && version >= 3)
-     return true;
-   else
-     return false;
-   // (Once the Opera people get around to fixing one particular
-   // show-stopping bug, that browser will also be supported.)
+  if (browser == "Firefox" && version >= 1.5)
+    return true;
+  else if (browser == "Internet Explorer" && version >= 6)
+    return true;
+  else if (browser == "Safari" && version >= 3)
+    return true;
+  else
+    return false;
+  // (Once the Opera people get around to fixing one particular
+  // show-stopping bug, that browser will also be supported.)
 }
 
 function getCodeMirror(hackTolerance) {
