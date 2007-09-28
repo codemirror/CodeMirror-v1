@@ -3,8 +3,9 @@ setdefault(MirrorOptions,
            {newlineElements: setObject("P", "DIV", "LI"),
             safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                                 "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
+	    reindentKeys: setObject("KEY_TAB"),
+	    reindentAfterKeys: setObject("KEY_RIGHT_SQUARE_BRACKET"),
             stylesheet: "highlight.css",
-            indentOnClosingBrace: true,
             parser: parseJavaScript});
 
 var CodeMirror = function(){
@@ -181,7 +182,7 @@ var CodeMirror = function(){
         this.indentAtCursor();
         event.stop();
       }
-      else if (name == "KEY_TAB") {
+      else if (this.options.reindentKeys.hasOwnProperty(name)) {
         this.indentAtCursor();
         event.stop();
       }
@@ -189,7 +190,7 @@ var CodeMirror = function(){
 
     keyUp: function(event) {
       var name = event.key().string;
-      if (this.options.indentOnClosingBrace && name == "KEY_RIGHT_SQUARE_BRACKET")
+      if (this.options.reindentAfterKeys.hasOwnProperty(name))
         this.indentAtCursor();
       else if (!this.options.safeKeys.hasOwnProperty(name))
         this.markCursorDirty();
