@@ -177,7 +177,7 @@ var JSEditor = function(){
     keyDown: function(event) {
       var name = event.key().string;
       if (name == "KEY_ENTER") {
-        insertNewlineAtCursor(this.win);
+        select.insertNewlineAtCursor(this.win);
         this.indentAtCursor();
         event.stop();
       }
@@ -201,17 +201,17 @@ var JSEditor = function(){
         if (node) {
           if (node.nodeType != 3)
             node.dirty = true;
-          var sel = markSelection(this.win);
+          var sel = select.markSelection(this.win);
           this.highlight(node, true);
-          selectMarked(sel);
-          cursor = new Cursor(this.container);
+          select.selectMarked(sel);
+          cursor = new select.Cursor(this.container);
         }
       }
       return cursor;
     },
 
     indentAtCursor: function() {
-      var cursor = new Cursor(this.container)
+      var cursor = new select.Cursor(this.container)
       cursor = this.highlightAtCursor(cursor);
       if (!cursor.valid)
         return;
@@ -252,7 +252,7 @@ var JSEditor = function(){
     highlight: highlight,
 
     markCursorDirty: function() {
-      var cursor = new Cursor(this.container);
+      var cursor = new select.Cursor(this.container);
       if (cursor.valid) {
         var node = cursor.start || this.container.firstChild;
         if (node) {
@@ -285,7 +285,7 @@ var JSEditor = function(){
     },
 
     highlightDirty: function(lines) {
-      var sel = markSelection(this.win);
+      var sel = select.markSelection(this.win);
       var start;
       while (lines > 0 && (start = this.getDirtyNode())){
         var result = this.highlight(start, true, lines);
@@ -295,7 +295,7 @@ var JSEditor = function(){
             this.addDirtyNode(result.node);
         }
       }
-      selectMarked(sel);
+      select.selectMarked(sel);
       if (start)
         this.scheduleHighlight();
     }
@@ -355,7 +355,7 @@ var JSEditor = function(){
           var old = part;
           this.remove();
           part = this.get();
-          replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
+          select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
         }
         return part;
       }
@@ -398,7 +398,7 @@ var JSEditor = function(){
           while (tokensize > 0) {
             part = parts.get();
             var partsize = part.currentText.length;
-            replaceSelection(part.firstChild, newPart.firstChild, tokensize, offset);
+            select.replaceSelection(part.firstChild, newPart.firstChild, tokensize, offset);
             if (partsize > tokensize){
               shortenPart(part, tokensize);
               tokensize = 0;
