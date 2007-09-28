@@ -1,12 +1,32 @@
 var parseJavaScript = function() {
   var atomicTypes = setObject("atom", "number", "variable", "string", "regexp");  
-  
+
+  function JSLexical(indented, column, type, align, prev) {
+    this.indented = indented;
+    this.column = column;
+    this.type = type;
+    if (align != null)
+      this.align = align;
+    this.prev = prev;
+  }
+  JSLexical.prototype.indentation = function(firstChar) {
+    var closing = firstChar == this.type;
+    if (this.type == "vardef")
+      return this.indented + 4;
+    if (this.type == "stat")
+      return this.indented + 2;
+    else if (this.align)
+      return this.column - (closing ? 1 : 0);
+    else
+      return this.indented + (closing ? 0 : 2);
+  }
+
   return function(input){
     var tokens = tokenizeJavaScript(input)
     var cc = [statements];
     var consume, marked;
     var context = null;
-    var lexical = {indented: -2, column: 0, type: "block", align: false};
+    var lexical = new JSLexical(-2, 0, "block", false);
     var column = 0;
     var indented = 0;
   
@@ -98,7 +118,7 @@ var parseJavaScript = function() {
   
     function pushlex(type){
       var result = function(){
-        lexical = {prev: lexical, indented: indented, column: column, type: type};
+        lexical = new JSLexical(indented, column, type, null, lexical)
       };
       result.lex = true;
       return result;

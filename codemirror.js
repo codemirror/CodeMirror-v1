@@ -133,17 +133,6 @@ var CodeMirror = function(){
 
   var nbspRegexp = new RegExp(nbsp, "g");
 
-  function indentation(lexical, closing){
-    if (lexical.type == "vardef")
-      return lexical.indented + 4;
-    if (lexical.type == "stat")
-      return lexical.indented + 2;
-    else if (lexical.align)
-      return lexical.column - (closing ? 1 : 0);
-    else
-      return lexical.indented + (closing ? 0 : 2);
-  }
-  
   function CodeMirror(place, width, height, content, options) {
     this.options = options || {}
     setdefault(this.options, MirrorOptions);
@@ -251,8 +240,8 @@ var CodeMirror = function(){
         whiteSpace = null;
 
       var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
-      var closing = start && firstText && firstText.currentText && firstText.currentText.charAt(0) == start.lexicalContext.type;
-      var indent = start ? indentation(start.lexicalContext, closing) : 0;
+      var firstChar = (start && firstText && firstText.currentText) ? firstText.currentText.charAt(0) : "";
+      var indent = start ? start.lexicalContext.indentation(firstChar) : 0;
       var indentDiff = indent - (whiteSpace ? whiteSpace.currentText.length : 0);
 
       if (indentDiff < 0) {
