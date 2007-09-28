@@ -1,5 +1,5 @@
-var JSEOptions = window.JSEOptions || {};
-setdefault(JSEOptions,
+var MirrorOptions = window.MirrorOptions || {};
+setdefault(MirrorOptions,
            {newlineElements: setObject("P", "DIV", "LI"),
             safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                                 "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
@@ -7,7 +7,7 @@ setdefault(JSEOptions,
             indentOnClosingBrace: true,
             parser: parseJavaScript});
 
-var JSEditor = function(){
+var CodeMirror = function(){
   function simplifyDOM(root) {
     var doc = root.ownerDocument;
     var current = root;
@@ -26,7 +26,7 @@ var JSEditor = function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && JSEOptions.newlineElements.hasOwnProperty(node.nodeName)) {
+        if (!leaving && MirrorOptions.newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
           result.push(withDocument(doc, BR));
         }
@@ -115,9 +115,9 @@ var JSEditor = function(){
       return lexical.indented + (closing ? 0 : 2);
   }
   
-  function JSEditor(place, width, height, content, options) {
+  function CodeMirror(place, width, height, content, options) {
     this.options = options || {}
-    setdefault(this.options, JSEOptions);
+    setdefault(this.options, MirrorOptions);
   
     this.frame = createDOM("IFRAME", {"style": "border: 0; width: " + (width || 400) + "px; height: " + (height || 200) + "px; display: block;"});
     place(this.frame);
@@ -137,7 +137,7 @@ var JSEditor = function(){
       connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
   }
 
-  JSEditor.prototype = {
+  CodeMirror.prototype = {
     linesPerShot: 10,
     shotDelay: 300,
 
@@ -181,7 +181,7 @@ var JSEditor = function(){
         this.indentAtCursor();
         event.stop();
       }
-      else if (name == "KEY_TAB" || ((name == "KEY_SPACEBAR" || name == "KEY_I") && event.modifier().ctrl)) {
+      else if (name == "KEY_TAB") {
         this.indentAtCursor();
         event.stop();
       }
@@ -418,5 +418,5 @@ var JSEditor = function(){
             dirty: lineDirty};
   }
 
-  return JSEditor;
+  return CodeMirror;
 }();
