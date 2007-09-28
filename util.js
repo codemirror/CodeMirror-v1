@@ -9,10 +9,6 @@ function nextOr(iter, alternative){
   }
 }
 
-function constantly(value){
-  return function(){return value;}
-}
-
 function setObject(){
   var obj = {};
   forEach(arguments, function(value){
@@ -76,3 +72,5 @@ function isAncestor(node, child) {
   }
   return false;
 }
+
+var nbsp = String.fromCharCode(160);
