@@ -21,15 +21,15 @@ var MirrorOptions = window.MirrorOptions || {};
 //   key's normal effect is first allowed to take place. Use this for
 //   keys that might change the indentation level of the current line.
 // stylesheet is the filename of the stylesheet that should be used to
-//   color the code in the editor.
+//   colour the code in the editor.
 // parser should refer to a function that, when given a string stream
 //   (see stringstream.js), produces an object that acts as a stream of
 //   tokens plus some other functionality. See parsejavascript.js for an
 //   example and more information.
 // linesPerPass is the maximum amount of lines that the highlighter
-//   tries to color in one shot. Setting this too high will cause the
+//   tries to colour in one shot. Setting this too high will cause the
 //   code to 'freeze' the browser for noticeable intervals.
-// passDelay gives the amount of milliseconds between coloring passes
+// passDelay gives the amount of milliseconds between colouring passes
 setdefault(MirrorOptions,
            {safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                                 "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
@@ -212,7 +212,7 @@ var CodeMirror = function(){
     },
 
     // Split a chunk of code into lines, put them in the frame, and
-    // schedule them to be colored.
+    // schedule them to be coloured.
     importCode: function(code) {
       replaceChildNodes(this.container);
       var lines = code.replace(/[ \t]/g, nbsp).replace(/\r\n?/g, "\n").split("\n");
@@ -266,7 +266,7 @@ var CodeMirror = function(){
     },
 
     // Ensure that the start of the line the cursor is on is parsed
-    // and colored properly, so that the correct indentation can be
+    // and coloured properly, so that the correct indentation can be
     // computed.
     highlightAtCursor: function(cursor) {
       if (cursor.valid) {
@@ -388,7 +388,7 @@ var CodeMirror = function(){
     getDirtyNode: function() {
       while (this.dirty.length > 0) {
         var found = this.dirty.pop();
-	// If the node has been colored in the meantime, or is no
+	// If the node has been coloured in the meantime, or is no
 	// longer in the document, it should not be returned.
         if ((found.dirty || found.nodeType == 3) && found.parentNode)
           return found;
@@ -421,14 +421,14 @@ var CodeMirror = function(){
     }
   }
 
-  // The function that does the actual highlighting/coloring (with
+  // The function that does the actual highlighting/colouring (with
   // help from the parser and the DOM normalizer). Its interface is
   // rather overcomplicated, because it is used in different
   // situations: ensuring that a certain line is highlighted, or
   // highlighting up to X lines starting from a certain point. The
   // 'from' argument gives the node at which it should start. If this
   // is null, it will start at the beginning of the frame. When a
-  // number of lines is given with the 'lines' argument, it will color
+  // number of lines is given with the 'lines' argument, it will colour
   // no more than that amount. If at any time it comes across a
   // 'clean' line (no dirty nodes), it will stop.
   function highlight(from, lines){
@@ -525,7 +525,7 @@ var CodeMirror = function(){
     // corresponding DOM nodes.
     forEach(parsed, function(token){
       var part = parts.nextNonEmpty();
-      if (token.type == "newline"){
+      if (token.value == "\n"){
 	// The idea of the two streams actually staying synchronized
 	// is such a long shot that we explicitly check.
         if (part.nodeName != "BR")
