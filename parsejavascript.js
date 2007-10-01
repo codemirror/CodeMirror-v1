@@ -64,12 +64,12 @@ var parseJavaScript = function() {
       }
     }
     function copy(){
-      var _context = context, _lexical = lexical, _cc = copyArray(cc), _regexp = tokens.regexp, _comment = tokens.inComment;
+      var _context = context, _lexical = lexical, _cc = cc.concat([]), _regexp = tokens.regexp, _comment = tokens.inComment;
   
       return function(input){
         context = _context;
         lexical = _lexical;
-        cc = copyArray(_cc);
+        cc = _cc.concat([]); // copies the array
         column = indented = 0;
         tokens = tokenizeJavaScript(input);
         tokens.regexp = _regexp;
