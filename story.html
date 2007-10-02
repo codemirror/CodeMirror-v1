@@ -497,7 +497,7 @@
     <ul>
       <li>Creating a selection 'snapshot' that can be restored after
       highlighting, in such a way that it still works if some of the nodes
-      that were selected are replaced by other, nodes with the same
+      that were selected are replaced by other nodes with the same
       size but a different structure.</li>
       <li>Finding the top-level node around or before the cursor, to mark it
       dirty or to insert indentation whitespace at the start of that line.</li>
@@ -525,19 +525,21 @@
       reflect the fact that part of the old node has been replaced.</li>
     </ul>
 
-    <p>Now in the second case (getting the top-level node at the cursor) the
-    Internet Explorer cheat does not work. In the W3C model this is rather
-    easy, you have to do some creative parent- and sibling-pointer
-    following to arrive at the correct top-level node, but nothing weird.
-    In Internet Explorer, all we have to go on is the <code>parentElement</code>
-    method on a <code>TextRange</code>, which gives the first element that completely
-    envelops the selection. If the cursor is inside a text node, this is
-    good, that text node tells us where we are. If the cursor is between
-    nodes, for example between two <code>br</code> nodes, you get to top-level node
-    itself back, which is markably useless. In cases like this I stoop to
-    a rather ugly hack (which fortunately turned out to be remarkably
-    fast) &#x2015; I create a temporary empty <code>span</code> with an ID inside the
-    selection, get a reference to this <code>span</code> by ID, take its
+    <p>Now in the second case (getting the top-level node at the
+    cursor) the Internet Explorer cheat does not work. In the W3C
+    model this is rather easy, you have to do some creative parent-
+    and sibling-pointer following to arrive at the correct top-level
+    node, but nothing weird. In Internet Explorer, all we have to go
+    on is the <code>parentElement</code> method on a
+    <code>TextRange</code>, which gives the first element that
+    completely envelops the selection. If the cursor is inside a text
+    node, this is good, that text node tells us where we are. If the
+    cursor is between nodes, for example between two <code>br</code>
+    nodes, you get to top-level node itself back, which is remarkably
+    useless. In cases like this I stoop to a rather ugly hack (which
+    fortunately turned out to be acceptably fast) &#x2015; I create a
+    temporary empty <code>span</code> with an ID inside the selection,
+    get a reference to this <code>span</code> by ID, take its
     <code>previousSibling</code>, and remove it again.</p>
 
     <p>Unfortunately, Opera's selection implementation is buggy, and it
@@ -546,17 +548,19 @@
     a workaround for that or it gets fixed, the highlighter doesn't work
     properly in Opera.</p>
 
-    <p>Also, when one presses enter in a <code>disignMode</code> document in Firefox or
-    Opera, a <code>br</code> tag is inserted. In Internet Explorer, pressing enter
-    causes some maniacal gnome to come out and start wrapping all the
-    content before and after the cursor in <code>p</code> tags. I suppose there is
-    something to be said for that, in principle, though if you saw the tag
-    soup of <code>font</code>s and nested paragraphs Internet Explorer generates you
-    would soon enough forget all about principle. Anyway, getting unwanted
-    <code>p</code> tags slowed the highlighter down terribly &#x2015; it had to overhaul
-    the whole DOM tree to remove them again, every time the user pressed
-    enter, but fortunately I could fix this by capturing the enter presses
-    and manually inserting a <code>br</code> tag at the cursor.</p>
+    <p>Also, when one presses enter in a <code>disignMode</code>
+    document in Firefox or Opera, a <code>br</code> tag is inserted.
+    In Internet Explorer, pressing enter causes some maniacal gnome to
+    come out and start wrapping all the content before and after the
+    cursor in <code>p</code> tags. I suppose there is something to be
+    said for that, in principle, though if you saw the tag soup of
+    <code>font</code>s and nested paragraphs Internet Explorer
+    generates you would soon enough forget all about principle.
+    Anyway, getting unwanted <code>p</code> tags slowed the
+    highlighter down terribly &#x2015; it had to overhaul the whole
+    DOM tree to remove them again, every time the user pressed enter.
+    Fortunately I could fix this by capturing the enter presses and
+    manually inserting a <code>br</code> tag at the cursor.</p>
 
     <p>On the subject of Internet Explorer's tag soup, here is an interesting
     anecdote: One time, when testing the effect that modifying the content
@@ -592,16 +596,16 @@
     applications, when it is even possible, is <em>painful</em> process.</p>
 
     <p>And who likes pain? Sure, when finding that crazy workaround,
-    subdueing that damn browser, and getting everything to work, there is
-    a certain macho thrill. But one can't help wondering how much easier
-    things like preventing the user from pasting pictures in his source
-    code would be on another platform. Maybe something like Silverlight or
-    whatever other new browser plugin gizmos people are pushing these days
-    will become the way to solve things like this in the future. But,
-    personally, I would prefer for those browser companies to put some
-    real effort into things like cleaning up and standardising shady things
-    like <code>designMode</code>, fixing their bugs, and getting serious about
-    ECMAScript 4.</p>
+    subdueing the damn browser, and getting everything to work, there
+    is a certain macho thrill. But one can't help wondering how much
+    easier things like preventing the user from pasting pictures in
+    his source code would be on another platform. Maybe something like
+    Silverlight or whatever other new browser plugin gizmos people are
+    pushing these days will become the way to solve things like this
+    in the future. But, personally, I would prefer for those browser
+    companies to put some real effort into things like cleaning up and
+    standardising shady things like <code>designMode</code>, fixing
+    their bugs, and getting serious about ECMAScript 4.</p>
 
     <p>Which is probably not realistically going to happen anytime soon.</p>
 
@@ -619,10 +623,11 @@
 
     <hr/>
 
-    <p>If you have any remarks, criticism, or hints related to the above,
-    drop me an e-mail at&#160;mar&#x69;jnh&#x40;gmail.com. If you say something generally
-    interesting, I'll include your reaction here at the bottom of this
-    page.</p>
+    <p>If you have any remarks, criticism, or hints related to the
+    above, drop me an e-mail at <a
+    href="mailto:marijnh@gmail.com">maijnh@gmail.com</a>. If you say
+    something generally interesting, I'll include your reaction here
+    at the bottom of this page.</p>
 
   </body>
 </html>
