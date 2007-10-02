@@ -223,7 +223,7 @@ var parseJavaScript = function() {
     function poplex(){
       lexical = lexical.prev;
     }
-    poplex.lex = true;\
+    poplex.lex = true;
     // The 'lex' flag on these actions is used by the 'next' function
     // to know they can (and have to) be ran before moving on to the
     // next token.
