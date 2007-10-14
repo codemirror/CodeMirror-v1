@@ -86,7 +86,7 @@ var keybindings = {
 </div>
 
 <script type="text/javascript">
-  var js = new CodeMirror(partial(swapDOM, $('code')), 900, 350, $('code').value);
+  var js = new CodeMirror(partial(swapDOM, $('code')), {height: "350px", content: $('code').value});
 </script>
   </body>
 </html>

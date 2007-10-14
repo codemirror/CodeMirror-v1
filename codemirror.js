@@ -2,34 +2,52 @@
  *
  * Implements the CodeMirror constructor and prototype, which take care
  * of initializing the editor and managing the highlighting and
- * indentation, and some functions for transforming arbitrary DOM
- * structures into plain sequences of <span> and <br> elements.
+ * indentation. This file also holds some functions for transforming
+ * arbitrary DOM structures into plain sequences of <span> and <br>
+ * elements.
  */
 
 // The MirrorOptions object is used to specify a default
 // configuration. If you specify such an object before loading this
 // file, the values you put into it will override the defaults given
-// below.
+// below. You can also assign to it after loading.
 var MirrorOptions = window.MirrorOptions || {};
+
+// The following properties are recognized in this object:
 
 // safeKeys specifies the set of keys that will probably not modify
 //   the content of the editor, and thus do not have to be responded to.
 //   You usually won't have to change this.
+
 // reindentKeys gives the keys that should cause the editor to
 //   re-indent the current line
+
 // reindentAfterKeys works like reindentKeys, but in this case the
 //   key's normal effect is first allowed to take place. Use this for
 //   keys that might change the indentation level of the current line.
+
 // stylesheet is the filename of the stylesheet that should be used to
 //   colour the code in the editor.
+
 // parser should refer to a function that, when given a string stream
 //   (see stringstream.js), produces an object that acts as a stream of
 //   tokens plus some other functionality. See parsejavascript.js for an
 //   example and more information.
+
 // linesPerPass is the maximum amount of lines that the highlighter
 //   tries to colour in one shot. Setting this too high will cause the
 //   code to 'freeze' the browser for noticeable intervals.
-// passDelay gives the amount of milliseconds between colouring passes
+
+// passDelay gives the amount of milliseconds between colouring passes.
+
+// width is the width of the editor frame, as a style-sheet quantity
+//   ("600px", "100%").
+// height is its height.
+
+// content gives the starting content of the editor. You'll probably not
+//   want to provide a global default for this, but add it to the
+//   options object passed to inividual editors as they are created.
+
 setdefault(MirrorOptions,
            {safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
                                 "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
@@ -38,7 +56,9 @@ setdefault(MirrorOptions,
             stylesheet: "highlight.css",
             parser: parseJavaScript,
 	    linesPerPass: 10,
-	    passDelay: 300});
+	    passDelay: 300,
+	    width: "100%",
+	    height: "300px"});
 // These default options can be overridden by passing a set of options
 // to a specific CodeMirror constructor.
 
@@ -170,23 +190,28 @@ var CodeMirror = function(){
 
   var nbspRegexp = new RegExp(nbsp, "g");
 
-  // The first argument is a function that the <iframe> node will be
-  // fed to, it should place it somewhere in the document.
-  function CodeMirror(place, width, height, content, options) {
+  // The first argument is either a DOM node that the editor should be
+  // appended to, or a function that the <iframe> node will be fed to,
+  // and which should should place it somewhere in the document.
+  function CodeMirror(place, options) {
     // Use passed options, if any, to override defaults.
     this.options = options || {}
     setdefault(this.options, MirrorOptions);
 
     // display: block occasionally suppresses some Firefox bugs, so we
     // always add it, redundant as it sounds.
-    this.frame = createDOM("IFRAME", {"style": "border: 0; width: " + (width || 400) + "px; height: " + (height || 200) + "px; display: block;"});
-    place(this.frame);
+    this.frame = createDOM("IFRAME", {style: "border: 0; display: block; width: " + options.width +
+				      "; " + "height: " + options.height + ";"});
+    if (place.appendChild)
+      place.appendChild(this.frame);
+    else
+      place(this.frame);
     this.win = this.frame.contentWindow;
     this.doc = this.win.document;
     this.doc.designMode = "on";
     this.doc.open();
     this.doc.write("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"" + this.options.stylesheet + "\"/></head>" +
-                   "<body class=\"editbox\" spellcheck=\"false\"></body></html>");
+                   "<body style=\"border-width: 0;\" class=\"editbox\" spellcheck=\"false\"></body></html>");
     this.doc.close();
 
     // An array of known dirty nodes, nodes that have been modified
@@ -196,9 +221,9 @@ var CodeMirror = function(){
     // Some browsers immediately produce a <body> in a new <iframe>,
     // others only do so later and fire an onload event when they do.
     if (this.doc.body)
-      this.init(content);
+      this.init(options.content);
     else
-      connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(content);}, this));
+      connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(options.content);}, this));
   }
 
   CodeMirror.prototype = {
