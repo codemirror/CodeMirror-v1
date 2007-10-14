@@ -49,10 +49,10 @@ var MirrorOptions = window.MirrorOptions || {};
 //   options object passed to inividual editors as they are created.
 
 setdefault(MirrorOptions,
-           {safeKeys: makeSet("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
-                              "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
-	    reindentKeys: makeSet("KEY_TAB"),
-	    reindentAfterKeys: makeSet("KEY_RIGHT_SQUARE_BRACKET"),
+           {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
+                             "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
+	    reindentKeys: keySet("TAB"),
+	    reindentAfterKeys: keySet("RIGHT_SQUARE_BRACKET"),
             stylesheet: "highlight.css",
             parser: parseJavaScript,
 	    linesPerPass: 10,
@@ -65,7 +65,7 @@ setdefault(MirrorOptions,
 var CodeMirror = function(){
   // The HTML elements whose content should be suffixed by a newline
   // when converting them to flat text.
-  var newlineElements = makeSet("P", "DIV", "LI");
+  var newlineElements = {"P": true, "DIV": true, "LI": true};
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
@@ -86,7 +86,7 @@ var CodeMirror = function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && inSet(newlineElements, node.nodeName)) {
+        if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
           result.push(withDocument(doc, BR));
         }
@@ -267,13 +267,12 @@ var CodeMirror = function(){
     // Intercept enter and any keys that are specified to re-indent
     // the current line.
     keyDown: function(event) {
-      var name = event.key().string;
-      if (name == "KEY_ENTER") {
+      if (event.key().string == "KEY_ENTER") {
         select.insertNewlineAtCursor(this.win);
         this.indentAtCursor();
         event.stop();
       }
-      else if (inSet(this.options.reindentKeys, name)) {
+      else if (this.options.reindentKeys(event)) {
         this.indentAtCursor();
         event.stop();
       }
@@ -283,10 +282,9 @@ var CodeMirror = function(){
     // mark the node at the cursor dirty when a non-safe key is
     // released.
     keyUp: function(event) {
-      var name = event.key().string;
-      if (inSet(this.options.reindentAfterKeys, name))
+      if (this.options.reindentAfterKeys(event))
         this.indentAtCursor();
-      else if (!inSet(this.options.safeKeys, name))
+      else if (!this.options.safeKeys(event))
         this.markCursorDirty();
     },
 

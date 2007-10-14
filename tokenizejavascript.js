@@ -108,7 +108,7 @@ var tokenizeJavaScript = function(){
     function readWord(){
       nextWhile(isWordChar);
       var word = source.get();
-      var known = inSet(keywords, word) && keywords[word];
+      var known = keywords.hasOwnProperty(word) && keywords.propertyIsEnumerable(word) && keywords[word];
       return known ? result(known.type, known.style, word) : result("variable", "variable", word);
     }
     function readRegexp(){

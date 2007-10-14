@@ -13,23 +13,6 @@ function nextOr(iter, alternative){
   }
 }
 
-// Create an ojbect to represent a set. Takes any number of strings as
-// arguments, and returns an object in which the properties named by
-// these strings are set to true.
-function makeSet(){
-  var obj = {};
-  forEach(arguments, function(value){
-    obj[value] = true;
-  });
-  return obj;
-}
-
-// Check whether a property exists in a set.
-function inSet(set, value) {
-  return Object.prototype.hasOwnProperty.call(set, value) &&
-    Object.prototype.propertyIsEnumerable.call(set, value);
-}
-
 // Create a predicate function that tests a string againsts a given
 // regular expression.
 function matcher(regexp){
@@ -80,3 +63,28 @@ function isAncestor(node, child) {
 
 // The non-breaking space character.
 var nbsp = String.fromCharCode(160);
+
+// Produces a function that checks a MochiKit key event and returns a
+// boolean indicating whether the relevant key is part of the given
+// set. Arguments should be strings corresponding to MochiKit key
+// strings, without the "KEY_" prefix, and can optionally be prefixed
+// by modifiers ("ctrl", "alt", "shift") separated by spaces. Thus
+// "ctrl TAB" refers control-tab.
+function keySet() {
+  var check = function() {return false;};
+  var set = {};
+  forEach(arguments, function(keydesc) {
+    var next = check;
+    var parts = keydesc.split(" ");
+    var _name = "KEY_" + parts[parts.length - 1];
+    var _mods = parts.slice(0, parts.length - 1);
+    set[_name] = true;
+    check = function(name, mods) {
+      return (name == _name && every(_mods, function(m){return mods[m];})) || next(name, mods);
+    };
+  });
+  return function(event) {
+    var name = event.key().string;
+    return set.hasOwnProperty(name) && check(name, event.modifier());
+  };
+}
