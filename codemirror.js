@@ -357,11 +357,12 @@ var CodeMirror = function(){
     // Add a node to the set of dirty nodes, if it isn't already in
     // there.
     addDirtyNode: function(node) {
-      if (this.dirty.indexOf(node) == -1) {
-        if (node.nodeType != 3)
-          node.dirty = true;
-        this.dirty.push(node);
-      }
+      for (var i = 0; i < this.dirty.length; i++)
+	if (this.dirty[i] == node) return;
+
+      if (node.nodeType != 3)
+        node.dirty = true;
+      this.dirty.push(node);
     },
 
     // Cause a highlight pass to happen in options.passDelay
