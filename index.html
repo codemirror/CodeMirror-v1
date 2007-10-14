@@ -24,6 +24,16 @@ features(CodeMirror,
 license(CodeMirror, "BSD-like");
 dependencies(CodeMirror, [MochiKit]); // http://www.mochikit.com
 
+function getCodeMirror(hackTolerance) {
+  if (hackTolerance < 99)
+    throw new Error("CodeMirror might not be for you.");
+
+  // There is not much packaging, but this directory is a darcs
+  // repository (see http://darcs.net).
+  install("darcs");
+  shell.run("darcs get http://marijn.haverbeke.nl/codemirror/");
+}
+
 function browserSupported(browser, version) {
   if (browser == "Firefox" && version >= 1.5)
     return true;
@@ -37,16 +47,6 @@ function browserSupported(browser, version) {
   // show-stopping bug, that browser will also be supported.)
 }
 
-function getCodeMirror(hackTolerance) {
-  if (hackTolerance < 99)
-    throw new Error("CodeMirror might not be for you.");
-
-  // There is not much packaging, but this directory is a darcs
-  // repository (see http://darcs.net).
-  Darcs.install();
-  Darcs.checkout("http://marijn.haverbeke.nl/codemirror/");
-}
-
 var keybindings = {
   enter: "newline-and-indent",
   tab: "reindent-current-line"
@@ -58,7 +58,7 @@ var keybindings = {
   <div style="font-family: tahoma, arial, sans-serif; padding-left: 190px;">
 
   <p>The above block of code introduces and demonstrates CodeMirror,
-  my attempt to write a workable in-browser code editor. It works
+  my attempt to write a practical in-browser code editor. It works
   rather well, though there are probably some combinations of
   browsers, platforms, and situations that cause it to break
   completely. The editor is currently being used in an <a
