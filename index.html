@@ -24,14 +24,12 @@ features(CodeMirror,
 license(CodeMirror, "BSD-like");
 dependencies(CodeMirror, [MochiKit]); // http://www.mochikit.com
 
-function getCodeMirror(hackTolerance) {
-  if (hackTolerance < 99)
-    throw new Error("CodeMirror might not be for you.");
-
-  // There is not much packaging, but this directory is a darcs
-  // repository (see http://darcs.net).
-  install("darcs");
-  shell.run("darcs get http://marijn.haverbeke.nl/codemirror/");
+function getCodeMirror(easy) {
+  if (easy)
+    download("http://marijn.haverbeke.nl/codemirror/codemirror.zip");
+  else
+    shell.run("darcs get http://marijn.haverbeke.nl/codemirror/");
+  // Darcs (a code versioning system) can be found at http://darcs.net
 }
 
 function browserSupported(browser, version) {
@@ -78,9 +76,10 @@ var keybindings = {
   <p>Due to limitations of browsers (and my taste for weird hacks) the
   implementation of CodeMirror is rather complicated. <a
   href="story.html">Here</a> is a document with some notes about its
-  internals. Beyond the comments in the code and that document, I am
-  afraid there is currently no documentation. Any comments, bug
-  reports, and hate mail can be sent to marijnh@gmail.com.</p>
+  internals. For simple use, the <a href="manual.html">manual</a>
+  should explain everything, and for detailed information about the
+  code, you can try looking at the comments. Any remarks, bug reports,
+  and fan/hate mail can be sent to marijnh@gmail.com.</p>
 
   </div>
 </div>

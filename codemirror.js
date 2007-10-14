@@ -13,41 +13,7 @@
 // below. You can also assign to it after loading.
 var MirrorOptions = window.MirrorOptions || {};
 
-// The following properties are recognized in this object:
-
-// safeKeys specifies the set of keys that will probably not modify
-//   the content of the editor, and thus do not have to be responded to.
-//   You usually won't have to change this.
-
-// reindentKeys gives the keys that should cause the editor to
-//   re-indent the current line
-
-// reindentAfterKeys works like reindentKeys, but in this case the
-//   key's normal effect is first allowed to take place. Use this for
-//   keys that might change the indentation level of the current line.
-
-// stylesheet is the filename of the stylesheet that should be used to
-//   colour the code in the editor.
-
-// parser should refer to a function that, when given a string stream
-//   (see stringstream.js), produces an object that acts as a stream of
-//   tokens plus some other functionality. See parsejavascript.js for an
-//   example and more information.
-
-// linesPerPass is the maximum amount of lines that the highlighter
-//   tries to colour in one shot. Setting this too high will cause the
-//   code to 'freeze' the browser for noticeable intervals.
-
-// passDelay gives the amount of milliseconds between colouring passes.
-
-// width is the width of the editor frame, as a style-sheet quantity
-//   ("600px", "100%").
-// height is its height.
-
-// content gives the starting content of the editor. You'll probably not
-//   want to provide a global default for this, but add it to the
-//   options object passed to inividual editors as they are created.
-
+// See manual.html for the meaning of these options.
 setdefault(MirrorOptions,
            {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
                              "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),

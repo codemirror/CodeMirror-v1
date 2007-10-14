@@ -1,0 +1,185 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>CodeMirror user manual</title>
+    <style type="text/css">
+      body {
+        font-family: tahoma, arial, sans-serif;
+        padding: 3em 8em;
+      }
+      h1 {
+        text-align: center;
+        margin: 0;
+      }
+      h2 {
+        font-size: 130%;
+      }
+      code {
+        font-family: courier, monospace;
+        font-size: 80%;
+        color: #448888;
+      }
+      p {
+        margin: 1em 0;
+      }
+      pre.code {
+        margin: 1.1em 12px;
+        border: 1px solid #CCCCCC;
+	color: black;
+        padding: .4em;
+        font-family: courier, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CodeMirror user manual</h1>
+
+    <p style="font-size: 80%">
+      <b>Author</b>: <a href="mailto:marijnh@gmail.com">Marijn Haverbeke</a><br/>
+      <b>Last updated</b>: October 14th 2007<br/>
+    </p>
+
+    <h2>Getting and installing</h2>
+
+    <p>CodeMirror itself consists of a bunch of JavaScript files. For
+    getting started it can be useful to also have an example HTML
+    document and stylesheet. All this, plus this documentation, can be
+    downloaded from <a
+    href="http://marijn.haverbeke.nl/codemirror/codemirror.zip">here</a>.</p>
+
+    <p>Those planning to do development on CodeMirror, or wanting to
+    keep up with the very latest changes can get the <a
+    href="http://darcs.net">darcs</a> repository like this:</p>
+
+    <pre class="code">darcs get http://marijn.haverbeke.nl/codemirror</pre>
+
+    <p>When using CodeMirror in a production system, you will probably
+    want to run it through a JavaScript-compressor of some kind to get
+    rid of all the comments, and concatenate all the files together
+    into a single .js file. These are the files that make up the
+    system, in the recommended inclusion order:</p>
+
+    <dl>
+    <dt><code>Mochi.js</code></dt><dd>This file contains a compressed
+    version of the Base, DOM, Style, Signal, and Iter modules of <a
+    href="http://www.mochikit.com">MochiKit</a>. The rest of the
+    library depends on these.</dd>
+    <dt><a href="util.js"><code>util.js</code></a></dt><dd>A few
+    generic utility functions.</dd>
+    <dt><a
+    href="tokenizejavascript.js"><code>tokenizejavascript.js</code></a></dt><dd>A
+    tokenizer for JavaScript code. If you do not use the JavaScript
+    parser, but your own custom parser, this file is not needed.</dd>
+    <dt><a
+    href="parsejavascript.js"><code>parsejavascript.js</code></a></dt><dd>The
+    JavaScript parser. Again, only needed if you want to highlight
+    JavaScript code.</dd>
+    <dt><a
+    href="stringstream.js"><code>stringstream.js</code></a></dt><dd>Objects
+    for wrapping the textual input to the parser.</dd>
+    <dt><a href="select.js"><code>select.js</code></a></dt><dd>Some
+    helper utilities for working with selected text.</dd>
+    <dt><a
+    href="codemirror.js"><code>codemirror.js</code></a></dt><dd>Defines
+    the <code>CodeMirror</code> object, the interface to the
+    editor.</dd>
+    </dl>
+
+    <h2>Usage</h2>
+
+    <p>An editor can be added to a document in a very simple way:</p>
+
+    <pre class="code">var editor = new CodeMirror(document.body);</pre>
+
+    <p>This will append the new editor to the end of the document
+    body. When you need more control over the placement of the editor
+    frame, you can also pass a function instead of a DOM node. The
+    function will be called with the frame node as argument.</p>
+
+    <pre class="code">var editor = new CodeMirror(partial(swapDOM, $("textarea")));</pre>
+
+    <p>(Where <code>partial</code>, <code>swapDOM</code>, and
+    <code>$</code> are MochiKit functions.) The frame must be inserted
+    into the document right away, or it won't initialize properly on
+    some browsers, and strange things will happen.</p>
+
+    <p>To get more control over the behaviour of editors,
+    configuration objects can be used. There are three ways to do
+    this:<p>
+
+    <ul>
+    <li>If you define a global <code>MirrorOptions</code> object
+    before loading <code>codemirror.js</code>, the configuration
+    options in that object will override the defaults.</li>
+    <li>By assigning to the properties of the
+    <code>MirrorOptions</code> object, configuration defaults can be
+    overridden after loading <code>codemirror.js</code>.</li>
+    <li>The <code>CodeMirror</code> constructor can be given a second
+    argument, and object, which will override some options for just
+    that editor. Options not mentioned in this object will default to
+    the values in the <code>MirrorOptions</code> object.</li>
+    </ul>
+
+    <p>The options that can be specified are these (they all have
+    sensible defaults specified at the top of <a
+    href="codemirror.js"><code>codemirror.js</code></a>):</p>
+
+    <dl>
+
+    <dt><code>reindentKeys</code></dt><dd>Gives the keys that should
+    cause the editor to re-indent the current line. Use the
+    <code>keySet</code> function to create the set. It takes any
+    amount of arguments, each of which must be a MochiKit key ID (use
+    <a
+    href="http://mochikit.com/examples/key_events/index.html">this</a>
+    page to find the IDs for a key) without its <code>"KEY_"</code>
+    prefix. It can be optionally prefixed by modifiers
+    (<code>"ctrl"</code>, <code>"alt"</code>, and
+    <code>"shift"</code>) separated by spaces. Thus <code>"A"</code>
+    refers to the A key, and <code>"alt SPACEBAR"</code> refers to the
+    space bar with alt held down.</dd>
+
+    <dt><code>reindentAfterKeys</code></dt><dd>Like reindentKeys, but
+    in this case the key's normal effect is first allowed to take
+    place. Use this for keys that might change the indentation level
+    of the current line, such as a closing brace in C-like
+    languages.</dd>
+
+    <dt><code>safeKeys</code></dt><dd>Specifies the set of keys that
+    will probably not modify the content of the editor, and thus do
+    not have to be responded to. You usually won't have to change
+    this. Again, use <code>keySet</code>.</dd>
+
+    <dt><code>stylesheet</code></dt><dd>The filename of the stylesheet
+    that should be used to colour the code in the editor frame. See <a
+    href="highlight.css"><code>highlight.css</code></a> for an
+    example.</dd>
+
+    <dt><code>parser</code></dt><dd>This should refer to a function
+    that, when given a string stream (see <a
+    href="stringstream.js"><code>stringstream.js</code></a>), produces
+    an object that acts as a stream of tokens plus some other
+    functionality. See <a
+    href="parsejavascript.js"><code>parsejavascript.js</code></a> for
+    an example and a more detailed description of the interface.</dd>
+
+    <dt><code>linesPerPass</code></dt><dd>Specifies the maximum amount
+    of lines that the highlighter tries to colour in one shot. Setting
+    this too high will cause the code to 'freeze' the browser for
+    noticeable intervals.</dd>
+
+    <dt><code>passDelay</code></dt><dd>Gives the amount of
+    milliseconds between colouring passes.</dd>
+
+    <dt><code>width</code>, <code>height</code></dt><dd>The size of
+    the editor frame, given as a style-sheet quantities (for example
+    <code>"600px"</code> or <code>"100%"</code>).</dd>
+
+    <dt><code>content</code></dt><dd>The starting content of the
+    editor. You'll probably not want to provide a global default for
+    this, but add it to the <code>options</code> object passed to
+    inividual editors as they are created.</dd>
+
+    </dl>
+
+  </body>
+</html>
