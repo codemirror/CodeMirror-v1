@@ -16,12 +16,18 @@ function nextOr(iter, alternative){
 // Create an ojbect to represent a set. Takes any number of strings as
 // arguments, and returns an object in which the properties named by
 // these strings are set to true.
-function setObject(){
+function makeSet(){
   var obj = {};
   forEach(arguments, function(value){
     obj[value] = true;
   });
   return obj;
+}
+
+// Check whether a property exists in a set.
+function inSet(set, value) {
+  return Object.prototype.hasOwnProperty.call(set, value) &&
+    Object.prototype.propertyIsEnumerable.call(set, value);
 }
 
 // Create a predicate function that tests a string againsts a given

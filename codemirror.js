@@ -49,10 +49,10 @@ var MirrorOptions = window.MirrorOptions || {};
 //   options object passed to inividual editors as they are created.
 
 setdefault(MirrorOptions,
-           {safeKeys: setObject("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
-                                "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
-	    reindentKeys: setObject("KEY_TAB"),
-	    reindentAfterKeys: setObject("KEY_RIGHT_SQUARE_BRACKET"),
+           {safeKeys: makeSet("KEY_ARROW_UP", "KEY_ARROW_DOWN", "KEY_ARROW_LEFT", "KEY_ARROW_RIGHT", "KEY_END", "KEY_HOME",
+                              "KEY_PAGE_UP", "KEY_PAGE_DOWN", "KEY_SHIFT", "KEY_CTRL", "KEY_ALT", "KEY_SELECT"),
+	    reindentKeys: makeSet("KEY_TAB"),
+	    reindentAfterKeys: makeSet("KEY_RIGHT_SQUARE_BRACKET"),
             stylesheet: "highlight.css",
             parser: parseJavaScript,
 	    linesPerPass: 10,
@@ -65,7 +65,7 @@ setdefault(MirrorOptions,
 var CodeMirror = function(){
   // The HTML elements whose content should be suffixed by a newline
   // when converting them to flat text.
-  var newlineElements = setObject("P", "DIV", "LI");
+  var newlineElements = makeSet("P", "DIV", "LI");
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
@@ -86,7 +86,7 @@ var CodeMirror = function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
+        if (!leaving && inSet(newlineElements, node.nodeName)) {
           leaving = true;
           result.push(withDocument(doc, BR));
         }
@@ -273,7 +273,7 @@ var CodeMirror = function(){
         this.indentAtCursor();
         event.stop();
       }
-      else if (this.options.reindentKeys.hasOwnProperty(name)) {
+      else if (inSet(this.options.reindentKeys, name)) {
         this.indentAtCursor();
         event.stop();
       }
@@ -284,9 +284,9 @@ var CodeMirror = function(){
     // released.
     keyUp: function(event) {
       var name = event.key().string;
-      if (this.options.reindentAfterKeys.hasOwnProperty(name))
+      if (inSet(this.options.reindentAfterKeys, name))
         this.indentAtCursor();
-      else if (!this.options.safeKeys.hasOwnProperty(name))
+      else if (!inSet(this.options.safeKeys, name))
         this.markCursorDirty();
     },
 

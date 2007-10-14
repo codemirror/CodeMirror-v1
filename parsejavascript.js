@@ -32,7 +32,7 @@
 // parentheses, etc, and know when you are inside a string or comment.
 var parseJavaScript = function() {
   // Token types that can be considered to be atoms.
-  var atomicTypes = setObject("atom", "number", "variable", "string", "regexp");  
+  var atomicTypes = makeSet("atom", "number", "variable", "string", "regexp");  
 
   // Constructor for the lexical context objects.
   function JSLexical(indented, column, type, align, prev) {
@@ -257,7 +257,7 @@ var parseJavaScript = function() {
     }
     // Dispatch expression types.
     function expression(type){
-      if (atomicTypes.hasOwnProperty(type)) cont(maybeoperator);
+      if (inSet(atomicTypes, type)) cont(maybeoperator);
       else if (type == "function") cont(functiondef);
       else if (type == "keyword c") cont(expression);
       else if (type == "(") cont(pushlex(")"), expression, expect(")"), poplex);
@@ -288,7 +288,7 @@ var parseJavaScript = function() {
     // This parses a property and its value in an object literal.
     function objprop(type){
       if (type == "variable") mark("property");
-      if (atomicTypes.hasOwnProperty(type)) cont(expect(":"), expression);
+      if (inSet(atomicTypes, type)) cont(expect(":"), expression);
     }
     // Parses a comma-separated list of the things that are recognized
     // by the 'what' argument.
