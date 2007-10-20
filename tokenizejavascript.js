@@ -67,8 +67,7 @@ var tokenizeJavaScript = function(){
     // true. (The characters that are 'consumed' like this can later
     // be retrieved by calling source.get()).
     function nextWhile(test){
-      var next;
-      while((next = source.peek()) && test(next))
+      while(test(source.peek()))
         source.next();
     }
     // Advance the stream until the given character (not preceded by a
