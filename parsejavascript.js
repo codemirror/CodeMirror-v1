@@ -22,7 +22,7 @@
  * object that resumes parsing using the old state and the new input
  * stream. It may assume that only one parser is active at a time, and
  * clobber the state of the old parser (the implementation below
- * certianly does).
+ * certainly does).
  */
 
 // Parse function for JavaScript. Makes use of the tokenizer from
