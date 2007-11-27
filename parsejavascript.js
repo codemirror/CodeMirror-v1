@@ -6,8 +6,10 @@
  * returns a MochiKit-style iterator (object with a 'next' method).
  * This iterator, when called, consumes some input from the string
  * stream, and returns a token object. Token objects must have a
- * 'value' property (the text they represent), a 'style' property (the
- * CSS style that should be used to colour them). Tokens for newline
+ * 'value' property (the text they represent), and a 'style' property
+ * (the CSS style that should be used to colour them -- can be
+ * anything, except that any whitespace at the start of a line should
+ * always have class "whitespace"). Tokens for newline
  * characters must also have a 'lexicalContext' property, which has an
  * 'indentation' method that can be used to determine the proper
  * indentation level for the next line. This method optionally takes
