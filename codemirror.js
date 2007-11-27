@@ -18,7 +18,10 @@ setdefault(MirrorOptions,
            {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
                              "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
 	    reindentKeys: keySet("TAB"),
-	    reindentAfterKeys: keySet("RIGHT_SQUARE_BRACKET"),
+            // This is unfortunately US-keyboard-specific, but there
+            // is no reliable cross-browser method for determining the
+            // character from a keyUp event.
+	    reindentAfterKeys: keySet("shift RIGHT_SQUARE_BRACKET", "shift LEFT_SQUARE_BRACKET"),
             stylesheet: "highlight.css",
             parser: parseJavaScript,
 	    linesPerPass: 10,

@@ -41,7 +41,7 @@ var parseJavaScript = function() {
     this.indented = indented;
     // column at which this scope was opened
     this.column = column;
-    // type of scope ('vardef', 'stat' (statement), '[', '{', or '(')
+    // type of scope ('vardef', 'stat' (statement), 'form' (special form), '[', '{', or '(')
     this.type = type;
     // '[', '{', or '(' blocks that have any text after their opening
     // character are said to be 'aligned' -- any lines below are
@@ -56,7 +56,9 @@ var parseJavaScript = function() {
     var closing = firstChar == this.type;
     if (this.type == "vardef")
       return this.indented + 4;
-    if (this.type == "stat")
+    else if (this.type == "form" && firstChar == "{")
+      return this.indented;
+    else if (this.type == "stat" || this.type == "form")
       return this.indented + 2;
     else if (this.align)
       return this.column - (closing ? 1 : 0);
@@ -246,14 +248,14 @@ var parseJavaScript = function() {
     // current token.
     function statement(type){
       if (type == "var") cont(pushlex("vardef"), vardef1, expect(";"), poplex);
-      else if (type == "keyword a") cont(pushlex("stat"), expression, statement, poplex);
-      else if (type == "keyword b") cont(pushlex("stat"), statement, poplex);
+      else if (type == "keyword a") cont(pushlex("form"), expression, statement, poplex);
+      else if (type == "keyword b") cont(pushlex("form"), statement, poplex);
       else if (type == "{") cont(pushlex("}"), block, poplex);
       else if (type == "function") cont(functiondef);
-      else if (type == "for") cont(pushlex("stat"), expect("("), pushlex(")"), forspec1, expect(")"), poplex, statement, poplex);
-      else if (type == "case") cont(expression, expect(":"));
+      else if (type == "for") cont(pushlex("form"), expect("("), pushlex(")"), forspec1, expect(")"), poplex, statement, poplex);
       else if (type == "variable") cont(pushlex("stat"), maybelabel);
-      else if (type == "catch") cont(pushlex("stat"), pushcontext, expect("("), funarg, expect(")"), statement, poplex, popcontext);
+      else if (type == "case") cont(expression, expect(":"));
+      else if (type == "catch") cont(pushlex("form"), pushcontext, expect("("), funarg, expect(")"), statement, poplex, popcontext);
       else pass(pushlex("stat"), expression, expect(";"), poplex);
     }
     // Dispatch expression types.
