@@ -37,10 +37,9 @@ var tokenizeJavaScript = function(){
   var isHexDigit = matcher(/[0-9A-Fa-f]/);
   var isWordChar = matcher(/[\w\$_]/);
   function isWhiteSpace(ch){
-    // Unfortunately, IE's regexp matcher thinks non-breaking spaces
-    // aren't whitespace. Also, in our scheme newlines are no
-    // whitespace (they are another special case).
-    return ch != "\n" && (ch == nbsp || /\s/.test(ch));
+    // In our scheme newlines are no whitespace (they are another
+    // special case).
+    return ch != "\n" && realWhiteSpace.test(ch);
   }
 
   // This function produces a MochiKit-style iterator that tokenizes
