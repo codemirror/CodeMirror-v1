@@ -18,7 +18,7 @@ span.attribute {
   color: #228811;
 }
 
-span.punctiuation {
+span.punctuation {
   color: black;
 }
 
@@ -28,6 +28,10 @@ span.attname {
 
 span.comment {
   color: #AA7700;
+}
+
+span.cdata {
+  color: #4488AA;
 }
 
 span.entity {

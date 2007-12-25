@@ -1,22 +1,43 @@
+/* This file defines an XML parser, with a few kludges to make it
+ * useable for HTML: XMLKludges.autoSelfClosers defines a set of
+ * tag names that are expected to not have a closing tag, and
+ * XMLKludges.doNotIndent specifies the tags inside of which no
+ * indentation should happen.
+ */
+
 var XMLKludges = {
   autoSelfClosers: {"br": true, "img": true},
   doNotIndent: {"pre": true},
 };
 
+// Simple stateful tokenizer for XML documents. Returns a
+// MochiKit-style iterator, with a state property that contains a
+// function encapsulating the current state.
 function tokenizeXML(source, startState) {
   function isWhiteSpace(ch) {
     return ch != "\n" && realWhiteSpace.test(ch);
   }
 
+  // The following functions are all state functions -- they 'consume'
+  // and label the next token based on the current parser state.
   function inText() {
     var ch = this.source.next();
     if (ch == "<") {
       if (this.source.peek() == "!") {
         this.source.next();
-        if (this.source.peek() == "-") this.source.next();
-        if (this.source.peek() == "-") this.source.next();
-        this.state = inComment;
-        return this.state();
+        if (this.source.peek() == "[") {
+          this.source.next();
+          this.state = inBlock("cdata", "]]>");
+          return this.state();
+        }
+        else if (this.source.peek() == "-") {
+          this.source.next();
+          this.state = inBlock("comment", "-->");
+          return this.state();
+        }
+        else {
+          return "text";
+        }
       }
       else {
         if (/[?\/]/.test(this.source.peek())) this.source.next();
@@ -81,22 +102,24 @@ function tokenizeXML(source, startState) {
       return "attribute";
     };
   }
-  function inComment() {
-    var rest = "-->";
-    while (this.source.more() && this.source.peek() != "\n") {
-      var ch = this.source.next();
-      if (ch == rest.charAt(0)) {
-        rest = rest.slice(1);
-        if (rest.length == 0) {
-          this.state = inText;
-          break;
+  function inBlock(style, terminator) {
+    return function() {
+      var rest = terminator;
+      while (this.source.more() && this.source.peek() != "\n") {
+        var ch = this.source.next();
+        if (ch == rest.charAt(0)) {
+          rest = rest.slice(1);
+          if (rest.length == 0) {
+            this.state = inText;
+            break;
+          }
+        }
+        else {
+          rest = terminator;
         }
       }
-      else {
-        rest = "-->";
-      }
-    }
-    return "comment";
+      return style;
+    };
   }
 
   return {
@@ -120,7 +143,7 @@ function tokenizeXML(source, startState) {
         style: (ch == "\n" ? this.newLine() : this.state()),
         content: this.source.get()
       };
-      if (token.content != "\n") // newlines stand alone
+      if (token.content != "\n") // newlines must stand alone
         this.readWhile(isWhiteSpace);
       token.value = token.content + this.source.get();
       return token;
@@ -128,7 +151,9 @@ function tokenizeXML(source, startState) {
   };
 }
 
-// TODO CDATA
+// The parser. The structure of this function largely follows that of
+// parseJavaScript in parsejavascript.js (there is actually a bit more
+// shared code than I'd like), but it is quite a bit simpler.
 var parseXML = function(source) {
   var tokens = tokenizeXML(source);
   var cc = [base];
@@ -192,11 +217,12 @@ var parseXML = function(source) {
   function base() {
     return pass(element, base);
   }
+  var harmlessTokens = {"text": true, "entity": true, "comment": true, "cdata": true};
   function element(style, content) {
     if (content == "<") cont(tagname, attributes, endtag(tokenNr == 1));
     else if (content == "</") cont(closetagname, expect(">"));
     else if (content == "<?") cont(tagname, attributes, expect("?>"));
-    else if (style == "text" || style == "entity" || style == "comment") cont();
+    else if (harmlessTokens.hasOwnProperty(style)) cont();
     else mark("error") || cont();
   }
   function tagname(style, content) {
