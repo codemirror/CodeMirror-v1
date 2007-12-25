@@ -9,12 +9,12 @@
  * 'value' property (the text they represent), and a 'style' property
  * (the CSS style that should be used to colour them -- can be
  * anything, except that any whitespace at the start of a line should
- * always have class "whitespace"). Tokens for newline
- * characters must also have a 'lexicalContext' property, which has an
- * 'indentation' method that can be used to determine the proper
- * indentation level for the next line. This method optionally takes
- * the first character of the next line as an argument, which it can
- * use to adjust the indentation level.
+ * always have class "whitespace"). Each newline character *must*
+ * have its own separate token, which also has an 'indentation'
+ * property, a function that can be used to determine the proper
+ * indentation level for the next line.This function optionally takes
+ * the text in the fixt token of the next line as an argument, which
+ * it can use to adjust the indentation level.
  *
  * So far this should be easy. The hard part is that the iterator
  * produced by the parse function must also have a 'copy' method. This
@@ -52,18 +52,21 @@ var parseJavaScript = function() {
     this.prev = prev;
   }
   // My favourite JavaScript indentation rules.
-  JSLexical.prototype.indentation = function(firstChar) {
-    var closing = firstChar == this.type;
-    if (this.type == "vardef")
-      return this.indented + 4;
-    else if (this.type == "form" && firstChar == "{")
-      return this.indented;
-    else if (this.type == "stat" || this.type == "form")
-      return this.indented + 2;
-    else if (this.align)
-      return this.column - (closing ? 1 : 0);
-    else
-      return this.indented + (closing ? 0 : 2);
+  function indentJS(lexical) {
+    return function(firstChars) {
+      var firstChar = firstChars && firstChars.charAt(0);
+      var closing = firstChar == lexical.type;
+      if (lexical.type == "vardef")
+        return lexical.indented + 4;
+      else if (lexical.type == "form" && firstChar == "{")
+        return lexical.indented;
+      else if (lexical.type == "stat" || lexical.type == "form")
+        return lexical.indented + 2;
+      else if (lexical.align)
+        return lexical.column - (closing ? 1 : 0);
+      else
+        return lexical.indented + (closing ? 0 : 2);
+    };
   }
 
   // The parser-iterator-producing function itself.
@@ -115,7 +118,7 @@ var parseJavaScript = function() {
           lexical.align = false;
 	// Newline tokens get a lexical context associated with them,
 	// which is used for indentation.
-        token.lexicalContext = lexical;
+        token.indentation = indentJS(lexical);
       }
       // No more processing for meaningless tokens.
       if (token.type == "whitespace" || token.type == "newline" || token.type == "comment")

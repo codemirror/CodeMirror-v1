@@ -305,11 +305,11 @@ var CodeMirror = function(){
       // Sometimes the first character on a line can influence the
       // correct indentation, so we retrieve it.
       var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
-      var firstChar = (start && firstText && firstText.currentText) ? firstText.currentText.charAt(0) : "";
+      var nextChars = (start && firstText && firstText.currentText) ? firstText.currentText : "";
 
       // Ask the lexical context for the correct indentation, and
       // compute how much this differs from the current indentation.
-      var indent = start ? start.lexicalContext.indentation(firstChar) : 0;
+      var indent = start ? start.indentation(nextChars) : 0;
       var indentDiff = indent - (whiteSpace ? whiteSpace.currentText.length : 0);
 
       // If there is too much, this is just a matter of shrinking a span.
@@ -523,14 +523,14 @@ var CodeMirror = function(){
 	// is such a long shot that we explicitly check.
         if (part.nodeName != "BR")
           throw "Parser out of sync. Expected BR.";
-        if (part.dirty || !part.lexicalContext)
+        if (part.dirty || !part.indentation)
           lineDirty = true;
 	// Every <br> gets a copy of the parser state and a lexical
 	// context assigned to it. The first is used to be able to
 	// later resume parsing from this point, the second is used
 	// for indentation.
         part.parserFromHere = parsed.copy();
-        part.lexicalContext = token.lexicalContext;
+        part.indentation = token.indentation;
         part.dirty = false;
 	// A clean line means we are done. Throwing a StopIteration is
 	// the way to break out of a MochiKit forEach loop.
