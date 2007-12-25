@@ -6,7 +6,7 @@
  */
 
 var XMLKludges = {
-  autoSelfClosers: {"br": true, "img": true},
+  autoSelfClosers: {"br": true, "img": true, "hr": true},
   doNotIndent: {"pre": true},
 };
 
@@ -185,23 +185,16 @@ var parseXML = function(source) {
   }
 
   function pushContext(tagname, startOfLine) {
-    context = {prev: context, name: tagname, indent: indented, startOfLine: startOfLine};
+    var noIndent = XMLKludges.doNotIndent.hasOwnProperty(tagname) || (context && context.noIndent);
+    context = {prev: context, name: tagname, indent: indented, startOfLine: startOfLine, noIndent: noIndent};
   }
   function popContext() {
     context = context.prev;
   }
-  function doNotIndentContext(context) {
-    while(context) {
-      if (XMLKludges.doNotIndent.hasOwnProperty(context.name))
-        return true;
-      context = context.prev;
-    }
-    return false;
-  }
   function computeIndentation(baseContext) {
     return function(nextChars) {
       var context = baseContext;
-      if (doNotIndentContext(context))
+      if (context.noIndent)
         return 0;
       if (context && /^<\//.test(nextChars))
         context = context.prev;
