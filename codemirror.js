@@ -22,7 +22,7 @@ setdefault(MirrorOptions,
             // is no reliable cross-browser method for determining the
             // character from a keyUp event.
 	    reindentAfterKeys: keySet("shift RIGHT_SQUARE_BRACKET", "shift LEFT_SQUARE_BRACKET"),
-            stylesheet: "highlight.css",
+            stylesheet: "jscolors.css",
             parser: window.parseJavaScript,
 	    linesPerPass: 10,
 	    passDelay: 300,
