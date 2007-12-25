@@ -65,7 +65,7 @@ function isAncestor(node, child) {
 var nbsp = String.fromCharCode(160);
 // Unfortunately, IE's regexp matcher thinks non-breaking spaces
 // aren't whitespace.
-var realWhiteSpace = new RegExp("^[\\s" + nbsp + "]*$", "g");
+var realWhiteSpace = new RegExp("^[\\s" + nbsp + "]*$");
 
 // Produces a function that checks a MochiKit key event and returns a
 // boolean indicating whether the relevant key is part of the given

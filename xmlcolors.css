@@ -1,0 +1,39 @@
+.editbox {
+  margin: .4em;
+  padding: 0;
+  font-family: monospace;
+  font-size: 10pt;
+  color: black;
+}
+
+.editbox p {
+  margin: 0;
+}
+
+span.tagname {
+  color: #AA00BB;
+}
+
+span.attribute {
+  color: #228811;
+}
+
+span.punctiuation {
+  color: black;
+}
+
+span.attname {
+  color: #0000FF;
+}
+
+span.comment {
+  color: #AA7700;
+}
+
+span.entity {
+  color: #AA2222;
+}
+
+span.error {
+  color: #FF0000;
+}

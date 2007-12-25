@@ -1,0 +1,283 @@
+var XMLKludges = {
+  autoSelfClosers: {"br": true, "img": true},
+  doNotIndent: {"pre": true},
+};
+
+function tokenizeXML(source, startState) {
+  function isWhiteSpace(ch) {
+    return ch != "\n" && realWhiteSpace.test(ch);
+  }
+
+  function inText() {
+    var ch = this.source.next();
+    if (ch == "<") {
+      if (this.source.peek() == "!") {
+        this.source.next();
+        if (this.source.peek() == "-") this.source.next();
+        if (this.source.peek() == "-") this.source.next();
+        this.state = inComment;
+        return this.state();
+      }
+      else {
+        if (/[?\/]/.test(this.source.peek())) this.source.next();
+        this.state = inTag;
+        return "punctuation";
+      }
+    }
+    else if (ch == "&") {
+      while (this.source.more() && this.source.peek() != "\n") {
+        if (this.source.next() == ";")
+          break;
+      }
+      return "entity";
+    }
+    else if (isWhiteSpace(ch)) {
+      this.readWhile(isWhiteSpace);
+      return "whitespace";
+    }
+    else {
+      this.readWhile(matcher(/[^&<\n]/));
+      return "text";
+    }
+  }
+  function inTag() {
+    var ch = this.source.next();
+    if (ch == ">") {
+      this.state = inText;
+      return "punctuation";
+    }
+    else if (/[?\/]/.test(ch) && this.source.peek() == ">") {
+      this.source.next();
+      this.state = inText;
+      return "punctuation";
+    }
+    else if (ch == "=") {
+      return "punctuation";
+    }
+    else if (/[\'\"]/.test(ch)) {
+      this.state = inAttribute(ch);
+      return this.state();
+    }
+    else if (isWhiteSpace(ch)) {
+      this.readWhile(isWhiteSpace);
+      return "whitespace";
+    }
+    else {
+      this.readWhile(matcher(/[^\s=>\"\'\/?]/));
+      return "name";
+    }
+  }
+  function inAttribute(quote) {
+    return function() {
+      var escaped = false;
+      while (this.source.more() && this.source.peek() != "\n") {
+        var ch = this.source.next();
+        escaped = (ch == "\\");
+        if (ch == quote && !escaped) {
+          this.state = inTag;
+          break;
+        }
+      }
+      return "attribute";
+    };
+  }
+  function inComment() {
+    var rest = "-->";
+    while (this.source.more() && this.source.peek() != "\n") {
+      var ch = this.source.next();
+      if (ch == rest.charAt(0)) {
+        rest = rest.slice(1);
+        if (rest.length == 0) {
+          this.state = inText;
+          break;
+        }
+      }
+      else {
+        rest = "-->";
+      }
+    }
+    return "comment";
+  }
+
+  return {
+    state: startState || inText,
+    source: source,
+    
+    readWhile: function(test) {
+      while(test(this.source.peek()))
+        this.source.next();
+    },
+    newLine: function() {
+      this.source.next();
+      return "whitespace";
+    },
+
+    next: function(){
+      var ch = this.source.peek();
+      if (!ch) throw StopIteration;
+   
+      var token = {
+        style: (ch == "\n" ? this.newLine() : this.state()),
+        content: this.source.get()
+      };
+      if (token.content != "\n") // newlines stand alone
+        this.readWhile(isWhiteSpace);
+      token.value = token.content + this.source.get();
+      return token;
+    }
+  };
+}
+
+// TODO CDATA
+var parseXML = function(source) {
+  var tokens = tokenizeXML(source);
+  var cc = [base];
+  var tokenNr = 0, indented = 0;
+  var currentTag = null, context = null;
+  var consume, marked;
+  
+  function push(fs) {
+    for (var i = fs.length - 1; i >= 0; i--)
+      cc.push(fs[i]);
+  }
+  function cont() {
+    push(arguments);
+    consume = true;
+  }
+  function pass() {
+    push(arguments);
+    consume = false;
+  }
+
+  function mark(style) {
+    marked = style;
+  }
+  function expect(text) {
+    return function(style, content) {
+      if (content == text) cont();
+      else mark("error") || cont(arguments.callee);
+    };
+  }
+
+  function pushContext(tagname, startOfLine) {
+    context = {prev: context, name: tagname, indent: indented, startOfLine: startOfLine};
+  }
+  function popContext() {
+    context = context.prev;
+  }
+  function doNotIndentContext(context) {
+    while(context) {
+      if (XMLKludges.doNotIndent.hasOwnProperty(context.name))
+        return true;
+      context = context.prev;
+    }
+    return false;
+  }
+  function computeIndentation(baseContext) {
+    return function(nextChars) {
+      var context = baseContext;
+      if (doNotIndentContext(context))
+        return 0;
+      if (context && /^<\//.test(nextChars))
+        context = context.prev;
+      while (context && !context.startOfLine)
+        context = context.prev;
+      if (context)
+        return context.indent + 2;
+      else
+        return 0;
+    };
+  }
+
+  function base() {
+    return pass(element, base);
+  }
+  function element(style, content) {
+    if (content == "<") cont(tagname, attributes, endtag(tokenNr == 1));
+    else if (content == "</") cont(closetagname, expect(">"));
+    else if (content == "<?") cont(tagname, attributes, expect("?>"));
+    else if (style == "text" || style == "entity" || style == "comment") cont();
+    else mark("error") || cont();
+  }
+  function tagname(style, content) {
+    if (style == "name") {
+      currentTag = content;
+      mark("tagname");
+    }
+    else {
+      currentTag = null;
+      mark("error");
+    }
+    cont();
+  }
+  function closetagname(style, content) {
+    if (style == "name" && context && content == context.name) {
+      popContext();
+      mark("tagname");
+    }
+    else {
+      mark("error");
+    }
+    cont();
+  }
+  function endtag(startOfLine) {
+    return function(style, content) {
+      if (content == "/>" || (content == ">" && XMLKludges.autoSelfClosers.hasOwnProperty(currentTag))) cont();
+      else if (content == ">") pushContext(currentTag, startOfLine) || cont();
+      else mark("error") || pass();
+    };
+  }
+  function attributes(style) {
+    if (style == "name") mark("attname") || cont(attribute, attributes);
+    else pass();
+  }
+  function attribute(style, content) {
+    if (content == "=") cont(value);
+    else if (content == ">" || content == "/>") pass(endtag);
+    else pass();
+  }
+  function value(style) {
+    if (style == "attribute") cont(value);
+    else pass();
+  }
+
+  return {
+    next: function(){
+      var token = tokens.next();
+      if (token.style == "whitespace" && tokenNr == 0)
+        indented = token.value.length;
+      else
+        tokenNr++;
+      if (token.content == "\n") {
+        indented = tokenNr = 0;
+        token.indentation = computeIndentation(context);
+      }
+
+      if (token.style == "whitespace" || token.type == "comment")
+        return token;
+
+      while(true){
+        consume = marked = false;
+        cc.pop()(token.style, token.content);
+        if (consume){
+          if (marked)
+            token.style = marked;
+          return token;
+        }
+      }
+    },
+
+    copy: function(){
+      var _cc = cc.concat([]), _tokenState = tokens.state, _context = context;
+      var parser = this;
+  
+      return function(input){
+        cc = _cc.concat([]);
+        tokenNr = indented = 0;
+        context = _context;
+        tokens = tokenizeXML(input, _tokenState);
+        return parser;
+      };
+    }
+  };
+}

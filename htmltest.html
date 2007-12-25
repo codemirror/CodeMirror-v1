@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <script src="Mochi.js" type="text/javascript"></script>
+    <script src="util.js" type="text/javascript"></script>
+    <script src="stringstream.js" type="text/javascript"></script>
+    <script src="select.js" type="text/javascript"></script>
+    <script src="codemirror.js" type="text/javascript"></script>
+    <script src="parsexml.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="highlight.css"/>
+    <title>CodeMirror: In-browser code editing</title>
+  </head>
+  <body style="padding: 20px;">
+
+<div style="border: 1px solid black; padding: 3px;">
+<textarea id="code" cols="120" rows="30">
+&lt;html style="color: green"&gt;
+  &lt;!-- this is a comment --&gt;
+  &lt;head&gt;
+    &lt;title&gt;HTML Example&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    The indentation tries to be <emp>somewhat
+    &amp;quot;do what I mean&amp;quot;</emp>... but might not match your style.
+  &lt;/body&gt;
+&lt;/html&gt;
+</textarea>
+</div>
+<div style="font-family: tahoma, arial, sans-serif;">
+  <p>This is a simple demonstration of the XML/HTML indentation module
+  for CodeMirror. The <a href="parsexml.js">javascript</a> file
+  contains some comments with more information.</p>
+
+  <p>(<a href="index.html">back to index</a>)</p>
+  </div>
+</div>
+
+<script type="text/javascript">
+  MirrorOptions.reindentAfterKeys = keySet("SOLIDUS");
+  MirrorOptions.parser = parseXML;
+  MirrorOptions.stylesheet = "xmlcolors.css";
+
+  var editor = new CodeMirror(partial(swapDOM, $('code')), {height: "350px", content: $('code').value});
+</script>
+  </body>
+</html>
