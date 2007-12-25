@@ -17,6 +17,10 @@ function singleStringStream(string) {
       return null;
   }
 
+  function more() {
+    return pos < string.length;
+  }
+
   function next() {
     if (pos >= string.length)
       throw StopIteration;
@@ -29,7 +33,7 @@ function singleStringStream(string) {
     return result;
   }
 
-  return {peek: peek, next: next, get: get};
+  return {peek: peek, more: more, next: next, get: get};
 }
 
 // Make a string stream out of an iterator that returns strings. This
@@ -39,12 +43,15 @@ function multiStringStream(source){
   source = iter(source);
   var current = "", pos = 0;
   var peeked = null, accum = "";
-  var result = {peek: peek, next: next, get: get};
+  var result = {peek: peek, more: more, next: next, get: get};
 
   function peek(){
     if (!peeked)
       peeked = nextOr(result, null);
     return peeked;
+  }
+  function more(){
+    return this.peek() !== null;
   }
   function next(){
     if (peeked){
