@@ -23,7 +23,7 @@ setdefault(MirrorOptions,
             // character from a keyUp event.
 	    reindentAfterKeys: keySet("shift RIGHT_SQUARE_BRACKET", "shift LEFT_SQUARE_BRACKET"),
             stylesheet: "highlight.css",
-            parser: parseJavaScript,
+            parser: window.parseJavaScript,
 	    linesPerPass: 10,
 	    passDelay: 300,
 	    width: "100%",
