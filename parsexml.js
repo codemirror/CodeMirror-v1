@@ -7,7 +7,7 @@
 
 var XMLKludges = {
   autoSelfClosers: {"br": true, "img": true, "hr": true},
-  doNotIndent: {"pre": true},
+  doNotIndent: {"pre": true}
 };
 
 // Simple stateful tokenizer for XML documents. Returns a
