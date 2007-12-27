@@ -41,3 +41,7 @@ span.entity {
 span.error {
   color: #FF0000;
 }
+
+span.text {
+  color: black;
+}

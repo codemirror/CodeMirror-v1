@@ -17,7 +17,7 @@ function tokenizeXML(source, startState) {
   function isWhiteSpace(ch) {
     return ch != "\n" && realWhiteSpace.test(ch);
   }
-
+  var nameMatch = matcher(new RegExp("[^\\s" + nbsp + "=<>\\\"\\'\\/?]"));
   // The following functions are all state functions -- they 'consume'
   // and label the next token based on the current parser state.
   function inText() {
@@ -84,7 +84,7 @@ function tokenizeXML(source, startState) {
       return "whitespace";
     }
     else {
-      this.readWhile(matcher(/[^\s=>\"\'\/?]/));
+      this.readWhile(nameMatch);
       return "name";
     }
   }
@@ -222,12 +222,12 @@ var parseXML = function(source) {
     if (style == "name") {
       currentTag = content;
       mark("tagname");
+      cont();
     }
     else {
       currentTag = null;
-      mark("error");
+      pass();
     }
-    cont();
   }
   function closetagname(style, content) {
     if (style == "name" && context && content == context.name) {
@@ -243,7 +243,7 @@ var parseXML = function(source) {
     return function(style, content) {
       if (content == "/>" || (content == ">" && XMLKludges.autoSelfClosers.hasOwnProperty(currentTag))) cont();
       else if (content == ">") pushContext(currentTag, startOfLine) || cont();
-      else mark("error") || pass();
+      else mark("error") || cont(arguments.callee);
     };
   }
   function attributes(style) {
