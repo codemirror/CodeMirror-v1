@@ -6,7 +6,7 @@
  */
 
 var XMLKludges = {
-  autoSelfClosers: {"br": true, "img": true, "hr": true},
+  autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true, "meta": true},
   doNotIndent: {"pre": true}
 };
 
