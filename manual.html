@@ -147,6 +147,12 @@
     of the current line, such as a closing brace in C-like
     languages.</dd>
 
+    <dt><code>reparseBufferKeys</code></dt><dd>This set of keys causes
+    the whole buffer to be parsed/coloured again, which can be useful
+    when a modification in the buffer causes code at some distance
+    from the modification to change meaning (fixing a tag mismatch in
+    XML mode, for example).</dd>
+
     <dt><code>safeKeys</code></dt><dd>Specifies the set of keys that
     will probably not modify the content of the editor, and thus do
     not have to be responded to. You usually won't have to change

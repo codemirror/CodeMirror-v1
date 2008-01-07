@@ -18,6 +18,7 @@ setdefault(MirrorOptions,
            {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
                              "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
 	    reindentKeys: keySet("TAB"),
+            reparseBufferKeys: keySet("ctrl alt A", "ctrl TAB"),
             // This is unfortunately US-keyboard-specific, but there
             // is no reliable cross-browser method for determining the
             // character from a keyUp event.
@@ -247,6 +248,10 @@ var CodeMirror = function(){
         this.indentAtCursor();
         event.stop();
       }
+      else if (this.options.reparseBufferKeys(event)) {
+        this.reparseBuffer();
+        event.stop();
+      }
       else if (this.options.reindentKeys(event)) {
         this.indentAtCursor();
         event.stop();
@@ -361,6 +366,12 @@ var CodeMirror = function(){
           this.addDirtyNode(node);
         }
       }
+    },
+
+    reparseBuffer: function() {
+      forEach(this.container.childNodes, function(node) {node.dirty = true;});
+      if (this.container.firstChild)
+        this.addDirtyNode(this.container.firstChild);
     },
 
     // Add a node to the set of dirty nodes, if it isn't already in
