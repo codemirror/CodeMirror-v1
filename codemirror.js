@@ -21,7 +21,7 @@ setdefault(MirrorOptions,
             // This is unfortunately US-keyboard-specific, but there
             // is no reliable cross-browser method for determining the
             // character from a keyUp event.
-	    reindentAfterKeys: keySet("shift RIGHT_SQUARE_BRACKET", "shift LEFT_SQUARE_BRACKET"),
+	    reindentAfterKeys: keySet("RIGHT_SQUARE_BRACKET", "LEFT_SQUARE_BRACKET"),
             stylesheet: "jscolors.css",
             parser: window.parseJavaScript,
 	    linesPerPass: 10,
@@ -203,6 +203,12 @@ var CodeMirror = function(){
         this.importCode(code);
       connect(this.doc, "onkeydown", method(this, "keyDown"));
       connect(this.doc, "onkeyup", method(this, "keyUp"));
+
+      // Hack for Opera, in which stopping a keydown event does not
+      // prevent the associated keypress event from happening, so we
+      // have to explicitly cancel enter and tab there.
+      if (window.opera)
+        connect(this.doc, "onkeypress", function(event) {if (event.key().code == 13 || event.key().code == 9) event.stop();});
     },
 
     // Split a chunk of code into lines, put them in the frame, and

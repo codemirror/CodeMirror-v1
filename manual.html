@@ -106,7 +106,7 @@
 
     <p>To get more control over the behaviour of editors,
     configuration objects can be used. There are three ways to do
-    this:<p>
+    this:</p>
 
     <ul>
     <li>If you define a global <code>MirrorOptions</code> object
@@ -135,10 +135,11 @@
     href="http://mochikit.com/examples/key_events/index.html">this</a>
     page to find the IDs for a key) without its <code>"KEY_"</code>
     prefix. It can be optionally prefixed by modifiers
-    (<code>"ctrl"</code>, <code>"alt"</code>, and
-    <code>"shift"</code>) separated by spaces. Thus <code>"A"</code>
-    refers to the A key, and <code>"alt SPACEBAR"</code> refers to the
-    space bar with alt held down.</dd>
+    (<code>"ctrl"</code>, <code>"alt"</code>, and <code>"shift"</code>
+    -- though only control seems to behave consistently across
+    platforms and browsers) separated by spaces. Thus <code>"A"</code>
+    refers to the A key, and <code>"ctrl SPACEBAR"</code> refers to
+    the space bar with control held down.</dd>
 
     <dt><code>reindentAfterKeys</code></dt><dd>Like reindentKeys, but
     in this case the key's normal effect is first allowed to take

@@ -286,8 +286,14 @@ var select = {};
     select.Cursor.prototype.focus = function() {
       var range = this.win.document.createRange();
       range.setStartBefore(this.container.firstChild || this.container);
-      if (this.start)
-	range.setEndAfter(this.start);
+      // In Opera, setting the end of a range at the end of a line
+      // (before a BR) will cause the cursor to appear on the next
+      // line, so we set the end inside of the start node when
+      // possible.
+      if (this.start && !this.start.firstChild)
+        range.setEndAfter(this.start);
+      else if (this.start)
+        range.setEnd(this.start, this.start.childNodes.length);
       else
 	range.setEndBefore(this.container.firstChild || this.container);
       range.collapse(false);
@@ -299,7 +305,17 @@ var select = {};
       if (selection && selection.rangeCount > 0) {
 	var range = selection.getRangeAt(0);
 	var br = withDocument(window.document, BR);
-	range.insertNode(br);
+        // On Opera, insertNode is completely broken when the range is
+        // in the middle of a text node.
+        if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {
+          var start = range.startContainer, text = start.nodeValue;
+          start.parentNode.insertBefore(window.document.createTextNode(text.substr(0, range.startOffset)), start);
+          start.nodeValue = text.substr(range.startOffset);
+          start.parentNode.insertBefore(br, start);
+        }
+        else {
+	  range.insertNode(br);
+        }
 	range.setEndAfter(br);
 	range.collapse(false);
 	selectRange(range, window);
