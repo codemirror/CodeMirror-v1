@@ -38,10 +38,10 @@ function browserSupported(browser, version) {
     return true;
   else if (browser == "Safari" && version >= 3)
     return true;
+  else if (browser == "Opera" && version >= 9.5)
+    return true;
   else
     return false;
-  // (Once the Opera people get around to fixing one particular
-  // show-stopping bug, that browser will also be supported.)
 }
 
 var keybindings = {
