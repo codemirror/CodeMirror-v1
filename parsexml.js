@@ -194,7 +194,7 @@ var parseXML = function(source) {
   function computeIndentation(baseContext) {
     return function(nextChars) {
       var context = baseContext;
-      if (context.noIndent)
+      if (context && context.noIndent)
         return 0;
       if (context && /^<\//.test(nextChars))
         context = context.prev;
