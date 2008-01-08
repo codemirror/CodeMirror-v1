@@ -540,6 +540,7 @@ var CodeMirror = function(){
     // corresponding DOM nodes.
     forEach(parsed, function(token){
       var part = parts.nextNonEmpty();
+
       if (token.value == "\n"){
 	// The idea of the two streams actually staying synchronized
 	// is such a long shot that we explicitly check.

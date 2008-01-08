@@ -23,14 +23,14 @@ function tokenizeXML(source, startState) {
   function inText() {
     var ch = this.source.next();
     if (ch == "<") {
-      if (this.source.peek() == "!") {
+      if (this.source.equals("!")) {
         this.source.next();
-        if (this.source.peek() == "[") {
+        if (this.source.equals("[")) {
           this.source.next();
           this.state = inBlock("cdata", "]]>");
           return this.state();
         }
-        else if (this.source.peek() == "-") {
+        else if (this.source.equals("-")) {
           this.source.next();
           this.state = inBlock("comment", "-->");
           return this.state();
@@ -40,13 +40,13 @@ function tokenizeXML(source, startState) {
         }
       }
       else {
-        if (/[?\/]/.test(this.source.peek())) this.source.next();
+        if (this.source.applies(matcher(/[?\/]/))) this.source.next();
         this.state = inTag;
         return "punctuation";
       }
     }
     else if (ch == "&") {
-      while (this.source.more() && this.source.peek() != "\n") {
+      while (this.source.notEquals("\n")) {
         if (this.source.next() == ";")
           break;
       }
@@ -67,7 +67,7 @@ function tokenizeXML(source, startState) {
       this.state = inText;
       return "punctuation";
     }
-    else if (/[?\/]/.test(ch) && this.source.peek() == ">") {
+    else if (/[?\/]/.test(ch) && this.source.equals(">")) {
       this.source.next();
       this.state = inText;
       return "punctuation";
@@ -91,7 +91,7 @@ function tokenizeXML(source, startState) {
   function inAttribute(quote) {
     return function() {
       var escaped = false;
-      while (this.source.more() && this.source.peek() != "\n") {
+      while (this.source.notEquals("\n")) {
         var ch = this.source.next();
         escaped = (ch == "\\");
         if (ch == quote && !escaped) {
@@ -105,7 +105,7 @@ function tokenizeXML(source, startState) {
   function inBlock(style, terminator) {
     return function() {
       var rest = terminator;
-      while (this.source.more() && this.source.peek() != "\n") {
+      while (this.source.more() && this.source.notEquals("\n")) {
         var ch = this.source.next();
         if (ch == rest.charAt(0)) {
           rest = rest.slice(1);
@@ -127,7 +127,7 @@ function tokenizeXML(source, startState) {
     source: source,
     
     readWhile: function(test) {
-      while(test(this.source.peek()))
+      while(this.source.applies(test))
         this.source.next();
     },
     newLine: function() {
@@ -136,11 +136,10 @@ function tokenizeXML(source, startState) {
     },
 
     next: function(){
-      var ch = this.source.peek();
-      if (!ch) throw StopIteration;
+      if (!this.source.more()) throw StopIteration;
    
       var token = {
-        style: (ch == "\n" ? this.newLine() : this.state()),
+        style: (this.source.equals("\n") ? this.newLine() : this.state()),
         content: this.source.get()
       };
       if (token.content != "\n") // newlines must stand alone

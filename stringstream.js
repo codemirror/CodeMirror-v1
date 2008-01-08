@@ -5,79 +5,87 @@
  * text that was consumed since the last time get was called.
  */
 
-// Make a stream out of a single string. Not used by the editor, but
-// very useful for testing your parser.
-function singleStringStream(string) {
-  var pos = 0, start = 0;
-  
-  function peek() {
-    if (pos < string.length)
-      return string.charAt(pos);
-    else
-      return null;
-  }
-
-  function more() {
-    return pos < string.length;
-  }
-
-  function next() {
-    if (pos >= string.length)
-      throw StopIteration;
-    return string.charAt(pos++);
-  }
-
-  function get() {
-    var result = string.slice(start, pos);
-    start = pos;
-    return result;
-  }
-
-  return {peek: peek, more: more, next: next, get: get};
-}
-
-// Make a string stream out of an iterator that returns strings. This
-// is applied to the result of traverseDOM (see codemirror.js), and
-// the resulting stream is fed to the parser.
-function multiStringStream(source){
-  source = iter(source);
-  var current = "", pos = 0;
-  var peeked = null, accum = "";
-  var result = {peek: peek, more: more, next: next, get: get};
-
-  function peek(){
-    if (!peeked)
-      peeked = nextOr(result, null);
-    return peeked;
-  }
-  function more(){
-    return this.peek() !== null;
-  }
-  function next(){
-    if (peeked){
-      var temp = peeked;
-      peeked = null;
-      return temp;
+(function(){
+  var base = {
+    more: function() {
+      return this.peek() !== null;
+    },
+    applies: function(test) {
+      var next = this.peek();
+      return (next !== null && test(next));
+    },
+    equals: function(ch) {
+      return ch === this.peek();
+    },
+    notEquals: function(ch) {
+      var next = this.peek();
+      return (next !== null && next != ch);
     }
-    while (pos == current.length){
-      accum += current;
-      current = ""; // In case source.next() throws
-      pos = 0;
-      current = source.next();
-    }
-    return current.charAt(pos++);
-  }
-  function get(){
-    var temp = accum;
-    var realPos = peeked ? pos - 1 : pos;
-    accum = "";
-    if (realPos > 0){
-      temp += current.slice(0, realPos);
-      current = current.slice(realPos);
-      pos = peeked ? 1 : 0;
-    }
-    return temp;
+  };
+
+  // Make a stream out of a single string. Not used by the editor, but
+  // very useful for testing your parser.
+  window.singleStringStream = function(string) {
+    var pos = 0, start = 0;
+    return update(base, {
+      peek: function() {
+        if (pos < string.length)
+          return string.charAt(pos);
+        else
+          return null;
+      },
+      next: function() {
+        if (pos >= string.length)
+          throw StopIteration;
+        return string.charAt(pos++);
+      },
+      get: function() {
+        var result = string.slice(start, pos);
+        start = pos;
+        return result;
+      }
+    });
   }
 
-  return result;
-}
+  // Make a string stream out of an iterator that returns strings. This
+  // is applied to the result of traverseDOM (see codemirror.js), and
+  // the resulting stream is fed to the parser.
+  window.multiStringStream = function(source){
+    source = iter(source);
+    var current = "", pos = 0;
+    var peeked = null, accum = "";
+
+    return update(base, {
+      peek: function(){
+        if (!peeked)
+          peeked = nextOr(this, null);
+        return peeked;
+      },
+      next: function(){
+        if (peeked){
+          var temp = peeked;
+          peeked = null;
+          return temp;
+        }
+        while (pos == current.length){
+          accum += current;
+          current = ""; // In case source.next() throws
+          pos = 0;
+          current = source.next();
+        }
+        return current.charAt(pos++);
+      },
+      get: function(){
+        var temp = accum;
+        var realPos = peeked ? pos - 1 : pos;
+        accum = "";
+        if (realPos > 0){
+          temp += current.slice(0, realPos);
+          current = current.slice(realPos);
+          pos = peeked ? 1 : 0;
+        }
+        return temp;
+      }
+    });
+  }
+})();

@@ -66,7 +66,7 @@ var tokenizeJavaScript = function(){
     // true. (The characters that are 'consumed' like this can later
     // be retrieved by calling source.get()).
     function nextWhile(test){
-      while(test(source.peek()))
+      while(source.applies(test))
         source.next();
     }
     // Advance the stream until the given character (not preceded by a
@@ -74,8 +74,8 @@ var tokenizeJavaScript = function(){
     function nextUntilUnescaped(end){
       var escaped = false;
       var next;
-      while((next = source.peek()) && next != "\n"){
-        source.next();
+      while(source.notEquals("\n")){
+        var next = source.next();
         if (next == end && !escaped)
           break;
         escaped = next == "\\";
@@ -89,13 +89,13 @@ var tokenizeJavaScript = function(){
     }
     function readNumber(){
       nextWhile(isDigit);
-      if (source.peek() == "."){
+      if (source.equals(".")){
         source.next();
         nextWhile(isDigit);
       }
-      if (source.peek() == "e" || source.peek() == "E"){
+      if (source.equals("e") || source.equals("E")){
         source.next();
-        if (source.peek() == "-")
+        if (source.equals("-"))
           source.next();
         nextWhile(isDigit);
       }
@@ -123,10 +123,9 @@ var tokenizeJavaScript = function(){
       this.inComment = true;
       var maybeEnd = (start == "*");
       while(true){
-        var next = source.peek();
-        if (next == "\n")
+        if (source.equals("\n"))
           break;
-        source.next();
+        var next = source.next();
         if (next == "/" && maybeEnd){
           this.inComment = false;
           break;
@@ -154,15 +153,14 @@ var tokenizeJavaScript = function(){
       // with punctuation, the type of the token is the symbol itself
       else if (/[\[\]{}\(\),;\:\.]/.test(ch))
         token = result(ch, "punctuation");
-      else if (ch == "0" && (source.peek() == "x" || source.peek() == "X"))
+      else if (ch == "0" && (source.equals("x") || source.equals("X")))
         token = readHexNumber();
       else if (isDigit(ch))
         token = readNumber();
       else if (ch == "/"){
-        next = source.peek();
-        if (next == "*")
+        if (source.equals("*"))
           token = readMultilineComment.call(this, ch);
-        else if (next == "/")
+        else if (source.equals("/"))
           token = nextUntilUnescaped(null) || result("comment", "comment");
         else if (this.regexp)
           token = readRegexp();
