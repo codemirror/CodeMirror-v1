@@ -37,6 +37,11 @@ var CodeMirror = function(){
   // when converting them to flat text.
   var newlineElements = {"P": true, "DIV": true, "LI": true};
 
+  var twoSpaces = new RegExp("[\\t " + nbsp + "]{2}", "g");
+  function splitSpaces(string) {
+    return string.replace(twoSpaces, nbsp + " ");
+  }
+
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
   function simplifyDOM(root) {
@@ -48,7 +53,7 @@ var CodeMirror = function(){
       leaving = false;
 
       if (node.nodeType == 3) {
-        node.nodeValue = node.nodeValue.replace(/[\n\r]/g, "").replace(/[\t ]/g, nbsp);
+        node.nodeValue = splitSpaces(node.nodeValue.replace(/[\n\r]/g, ""));
         result.push(node);
       }
       else if (node.nodeName == "BR" && node.childNodes.length == 0) {
@@ -216,7 +221,7 @@ var CodeMirror = function(){
     // schedule them to be coloured.
     importCode: function(code) {
       replaceChildNodes(this.container);
-      var lines = code.replace(/[ \t]/g, nbsp).replace(/\r\n?/g, "\n").split("\n");
+      var lines = splitSpaces(code.replace(nbspRegexp, " ")).replace(/\r\n?/g, "\n").split("\n");
       for (var i = 0; i != lines.length; i++) {
         if (i > 0)
           this.container.appendChild(withDocument(this.doc, BR));
@@ -485,7 +490,7 @@ var CodeMirror = function(){
     // parts is a wrapper that makes it possible to 'delay' going to
     // the next DOM node until we are completely done with the one
     // before it. This is necessary because we are constantly poking
-    // around in the DOM tree, and if the next node is fetched to
+    // around in the DOM tree, and if the next node is fetched too
     // early it might get replaced before it is used.
     var parts = {
       current: null,
