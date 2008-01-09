@@ -3,9 +3,16 @@
  * for looking at the current character (next 'consumes' this
  * character, peek does not), and a get method for retrieving all the
  * text that was consumed since the last time get was called.
+ *
+ * An easy mistake to make is to let a StopIteration exception finish
+ * the token stream while there are still characters pending in the
+ * string stream (hitting the end of the buffer while parsing a
+ * token). To make it easier to detect such errors, the strings throw
+ * an exception when this happens.
  */
 
 (function(){
+  // Generic operations that apply to stringstreams.
   var base = {
     more: function() {
       return this.peek() !== null;
@@ -13,6 +20,10 @@
     applies: function(test) {
       var next = this.peek();
       return (next !== null && test(next));
+    },
+    nextWhile: function(test) {
+      while (this.applies(test))
+        this.next();
     },
     equals: function(ch) {
       return ch === this.peek();
@@ -35,8 +46,12 @@
           return null;
       },
       next: function() {
-        if (pos >= string.length)
-          throw StopIteration;
+        if (pos >= string.length) {
+          if (pos < start)
+            throw "End of stringstream reached without emptying buffer.";
+          else 
+            throw StopIteration;
+        }
         return string.charAt(pos++);
       },
       get: function() {
@@ -71,7 +86,13 @@
           accum += current;
           current = ""; // In case source.next() throws
           pos = 0;
-          current = source.next();
+          try {current = source.next();}
+          catch (e) {
+            if (e == StopIteration && accum.length > 0)
+              throw "End of stringstream reached without emptying buffer.";
+            else
+              throw e;
+          }
         }
         return current.charAt(pos++);
       },

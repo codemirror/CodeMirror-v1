@@ -53,11 +53,11 @@ function tokenizeXML(source, startState) {
       return "entity";
     }
     else if (isWhiteSpace(ch)) {
-      this.readWhile(isWhiteSpace);
+      this.source.nextWhile(isWhiteSpace);
       return "whitespace";
     }
     else {
-      this.readWhile(matcher(/[^&<\n]/));
+      this.source.nextWhile(matcher(/[^&<\n]/));
       return "text";
     }
   }
@@ -80,11 +80,11 @@ function tokenizeXML(source, startState) {
       return this.state();
     }
     else if (isWhiteSpace(ch)) {
-      this.readWhile(isWhiteSpace);
+      this.source.nextWhile(isWhiteSpace);
       return "whitespace";
     }
     else {
-      this.readWhile(nameMatch);
+      this.source.nextWhile(nameMatch);
       return "name";
     }
   }
@@ -126,10 +126,6 @@ function tokenizeXML(source, startState) {
     state: startState || inText,
     source: source,
     
-    readWhile: function(test) {
-      while(this.source.applies(test))
-        this.source.next();
-    },
     newLine: function() {
       this.source.next();
       return "whitespace";
@@ -143,7 +139,7 @@ function tokenizeXML(source, startState) {
         content: this.source.get()
       };
       if (token.content != "\n") // newlines must stand alone
-        this.readWhile(isWhiteSpace);
+        this.source.nextWhile(isWhiteSpace);
       token.value = token.content + this.source.get();
       return token;
     }
