@@ -37,9 +37,12 @@ var CodeMirror = function(){
   // when converting them to flat text.
   var newlineElements = {"P": true, "DIV": true, "LI": true};
 
-  var twoSpaces = new RegExp("[\\t " + nbsp + "]{2}", "g");
+  var twoSpaces = new RegExp("[\\t " + nbsp + "]{1,2}", "g");
   function splitSpaces(string) {
-    return string.replace(twoSpaces, nbsp + " ");
+    return string.replace(twoSpaces, function(s) {
+      if (s.length == 2) return nbsp + " ";
+      else return nbsp;
+    });
   }
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
