@@ -13,15 +13,24 @@
 
 <div style="border: 1px solid black; padding: 3px;">
 <textarea id="code" cols="120" rows="30">
-var CodeMirror = "a JavaScript code-editor";
+var CodeMirror = {
+  use: "a JavaScript code-editor",
+  license: "BSD-like",
+  dependencies: [MochiKit],
 
-features(CodeMirror,
-         ["syntax colouring",
-          "different colouring of local variables",
-          "automatic indentation",
-          "incremental parsing"]); // awesome efficiency hack
-license(CodeMirror, "BSD-like");
-dependencies(CodeMirror, [MochiKit]); // http://www.mochikit.com
+  features: [
+    "syntax colouring",
+    "different colouring of local variables",
+    "automatic indentation",
+    "incremental parsing" // awesome efficiency hack
+  ],
+
+  keyBindings: {
+    enter: "newline-and-indent",
+    tab: "reindent-current-line",
+    ctrl_alt_a: "reparse-buffer" // Or use ctrl-tab if your browser
+  }                              // messes with that.
+};
 
 function getCodeMirror(easy) {
   if (easy)
@@ -32,24 +41,11 @@ function getCodeMirror(easy) {
 }
 
 function browserSupported(browser, version) {
-  if (browser == "Firefox" && version >= 1.5)
-    return true;
-  else if (browser == "Internet Explorer" && version >= 6)
-    return true;
-  else if (browser == "Safari" && version >= 3)
-    return true;
-  else if (browser == "Opera" && version >= 9.5)
-    return true;
-  else
-    return false;
+  return (browser == "Firefox" && version >= 1.5) ||
+         (browser == "Internet Explorer" && version >= 6) ||
+         (browser == "Safari" && version >= 3) ||
+         (browser == "Opera" && version >= 9.5);
 }
-
-var keybindings = {
-  enter: "newline-and-indent",
-  tab: "reindent-current-line",
-  ctrl_tab: "reparse-buffer",
-  ctrl_alt_a: "reparse-buffer"
-};
 </textarea>
 </div>
 <div>
@@ -68,11 +64,11 @@ var keybindings = {
   <p>CodeMirror comes with a JavaScript parser and an <a
   href="htmltest.html">XML/HTML</a> parser, allowing it to highlight
   and indent code in those languages, but other parsers can be plugged
-  into it. If you want clever indentation (or local-variable
-  recognition), writing support for a new language is non-trivial.
-  Rules for simple colouring should be easy to add. <em>If</em> anyone
-  ends up writing another good parser for some language, I'd be happy
-  to hear about it and maybe include it in my distribution of the
+  into it. If you want clever indentation (or some kind of static code
+  analysis), writing support for a new language is non-trivial. Rules
+  for simple colouring should be easy to add. <em>If</em> anyone ends
+  up writing another good parser for some language, I'd be happy to
+  hear about it and maybe include it in my distribution of the
   editor.</p>
 
   <p>Due to limitations of browsers (and my taste for weird hacks) the
@@ -81,8 +77,10 @@ var keybindings = {
   about its internals. For simple use, the <a
   href="manual.html">manual</a> should explain everything, and for
   detailed information about the code, you can try looking at the
-  comments. Any remarks, bug reports, and fan/hate mail can be sent to
-  marijnh@gmail.com.</p>
+  comments and the <a
+  href="http://marijn.haverbeke.nl/darcsweb.cgi?r=CodeMirror">change
+  log</a>. Any remarks, bug reports, and fan/hate mail can be sent to
+  <a href="mailto:marijnh@gmail.com">marijnh@gmail.com</a>.</p>
 
   </div>
 </div>
