@@ -18,8 +18,8 @@ setdefault(MirrorOptions,
            {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
                              "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
             reindentKeys: keySet("TAB"),
-            reparseBufferKeys: keySet("ctrl alt A", "ctrl TAB"),
-            indentSelectionKeys: keySet("ctrl ENTER"),
+            reparseBufferKeys: keySet("ctrl ENTER"),
+            indentSelectionKeys: keySet("ctrl alt A", "ctrl TAB"),
             // This is unfortunately US-keyboard-specific, but there
             // is no reliable cross-browser method for determining the
             // character from a keyUp event.
@@ -474,7 +474,8 @@ var CodeMirror = function(){
       else
         current = startOfLine(current.previousSibling);
       while (current != end) {
-        var next = this.highlight(current, 1).node;
+        var result = this.highlight(current, 1);
+        var next = result ? result.node : null;
 
         while (current != next && current != end)
           current = current ? current.nextSibling : this.container.firstChild;
