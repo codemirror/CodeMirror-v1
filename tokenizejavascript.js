@@ -81,7 +81,7 @@ var tokenizeJavaScript = function(){
       return result("number", "atom");
     }
     function readNumber(){
-      nextWhile(isDigit);
+      source.nextWhile(isDigit);
       if (source.equals(".")){
         source.next();
         source.nextWhile(isDigit);
