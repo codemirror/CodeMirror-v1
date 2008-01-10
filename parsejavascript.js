@@ -112,12 +112,12 @@ var parseJavaScript = function() {
       column += token.value.length;
       if (token.type == "newline"){
         indented = column = 0;
-	// If the lexical scope's align property is still undefined at
-	// the end of the line, it is an un-aligned scope.
+        // If the lexical scope's align property is still undefined at
+        // the end of the line, it is an un-aligned scope.
         if (!("align" in lexical))
           lexical.align = false;
-	// Newline tokens get a lexical context associated with them,
-	// which is used for indentation.
+        // Newline tokens get a lexical context associated with them,
+        // which is used for indentation.
         token.indentation = indentJS(lexical);
       }
       // No more processing for meaningless tokens.
@@ -132,13 +132,13 @@ var parseJavaScript = function() {
       // return it. Marked is used to 
       while(true){
         consume = marked = false;
-	// Take and execute the topmost action.
+        // Take and execute the topmost action.
         cc.pop()(token.type, token.name);
         if (consume){
-	  // Marked is used to change the style of the current token.
+          // Marked is used to change the style of the current token.
           if (marked)
             token.style = marked;
-	  // Here we differentiate between local and global variables.
+          // Here we differentiate between local and global variables.
           else if (token.type == "variable" && inScope(token.name))
             token.style = "localvariable";
           return token;
