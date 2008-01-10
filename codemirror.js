@@ -360,9 +360,6 @@ var CodeMirror = function(){
         cursor.focus();
     },
 
-    // highlight is a huge function defined below.
-    highlight: highlight,
-
     // Find the node that the cursor is in, mark it as dirty, and make
     // sure a highlight pass is scheduled.
     markCursorDirty: function() {
@@ -436,182 +433,182 @@ var CodeMirror = function(){
       select.selectMarked(sel);
       if (start)
         this.scheduleHighlight();
-    }
-  }
+    },
 
-  // The function that does the actual highlighting/colouring (with
-  // help from the parser and the DOM normalizer). Its interface is
-  // rather overcomplicated, because it is used in different
-  // situations: ensuring that a certain line is highlighted, or
-  // highlighting up to X lines starting from a certain point. The
-  // 'from' argument gives the node at which it should start. If this
-  // is null, it will start at the beginning of the frame. When a
-  // number of lines is given with the 'lines' argument, it will colour
-  // no more than that amount. If at any time it comes across a
-  // 'clean' line (no dirty nodes), it will stop.
-  function highlight(from, lines){
-    var container = this.container;
-    var document = this.doc;
+    // The function that does the actual highlighting/colouring (with
+    // help from the parser and the DOM normalizer). Its interface is
+    // rather overcomplicated, because it is used in different
+    // situations: ensuring that a certain line is highlighted, or
+    // highlighting up to X lines starting from a certain point. The
+    // 'from' argument gives the node at which it should start. If
+    // this is null, it will start at the beginning of the frame. When
+    // a number of lines is given with the 'lines' argument, it will
+    // colour no more than that amount. If at any time it comes across
+    // a 'clean' line (no dirty nodes), it will stop.
+    highlight: function(from, lines){
+      var container = this.container;
+      var document = this.doc;
 
-    if (!container.firstChild)
-      return;
-    // Backtrack to the first node before from that has a partial
-    // parse stored.
-    while (from && !from.parserFromHere)
-      from = from.previousSibling;
-    // If we are at the end of the document, do nothing.
-    if (from && !from.nextSibling)
-      return;
+      if (!container.firstChild)
+        return;
+      // Backtrack to the first node before from that has a partial
+      // parse stored.
+      while (from && !from.parserFromHere)
+        from = from.previousSibling;
+      // If we are at the end of the document, do nothing.
+      if (from && !from.nextSibling)
+        return;
 
-    // Check whether a part (<span> node) and the corresponding token
-    // match.
-    function correctPart(token, part){
-      return !part.reduced && part.currentText == token.value && hasClass(part, token.style);
-    }
-    // Shorten the text associated with a part by chopping off
-    // characters from the front. Note that only the currentText
-    // property gets changed. For efficiency reasons, we leave the
-    // nodeValue alone -- we set the reduced flag to indicate that
-    // this part must be replaced.
-    function shortenPart(part, minus){
-      part.currentText = part.currentText.substring(minus);
-      part.reduced = true;
-    }
-    // Create a part corresponding to a given token.
-    function tokenPart(token){
-      var part = withDocument(document, partial(SPAN, {"class": "part " + token.style}, token.value));
-      part.currentText = token.value;
-      return part;
-    }
-
-    // Get the token stream. If from is null, we start with a new
-    // parser from the start of the frame, otherwise a partial parse
-    // is resumed.
-    var parsed = from ? from.parserFromHere(multiStringStream(traverseDOM(from.nextSibling)))
-      : this.options.parser(multiStringStream(traverseDOM(container.firstChild)));
-
-    // parts is a wrapper that makes it possible to 'delay' going to
-    // the next DOM node until we are completely done with the one
-    // before it. This is necessary because we are constantly poking
-    // around in the DOM tree, and if the next node is fetched too
-    // early it might get replaced before it is used.
-    var parts = {
-      current: null,
-      forward: false,
-      // Get the current part.
-      get: function(){
-        if (!this.current)
-          this.current = from ? from.nextSibling : container.firstChild;
-        else if (this.forward)
-          this.current = this.current.nextSibling;
-        this.forward = false;
-        return this.current;
-      },
-      // Advance to the next part (do not fetch it yet).
-      next: function(){
-        if (this.forward)
-          this.get();
-        this.forward = true;
-      },
-      // Remove the current part from the DOM tree, and move to the
-      // next.
-      remove: function(){
-        this.current = this.get().previousSibling;
-        container.removeChild(this.current ? this.current.nextSibling : container.firstChild);
-        this.forward = true;
-      },
-      // Advance to the next part that is not empty, discarding empty
-      // parts.
-      nextNonEmpty: function(){
-        var part = this.get();
-        while (part.nodeName == "SPAN" && part.currentText == ""){
-          var old = part;
-          this.remove();
-          part = this.get();
-	  // Adjust selection information, if any. See select.js for
-	  // details.
-          select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
-        }
+      // Check whether a part (<span> node) and the corresponding token
+      // match.
+      function correctPart(token, part){
+        return !part.reduced && part.currentText == token.value && hasClass(part, token.style);
+      }
+      // Shorten the text associated with a part by chopping off
+      // characters from the front. Note that only the currentText
+      // property gets changed. For efficiency reasons, we leave the
+      // nodeValue alone -- we set the reduced flag to indicate that
+      // this part must be replaced.
+      function shortenPart(part, minus){
+        part.currentText = part.currentText.substring(minus);
+        part.reduced = true;
+      }
+      // Create a part corresponding to a given token.
+      function tokenPart(token){
+        var part = withDocument(document, partial(SPAN, {"class": "part " + token.style}, token.value));
+        part.currentText = token.value;
         return part;
       }
-    };
 
-    var lineDirty = false;
+      // Get the token stream. If from is null, we start with a new
+      // parser from the start of the frame, otherwise a partial parse
+      // is resumed.
+      var parsed = from ? from.parserFromHere(multiStringStream(traverseDOM(from.nextSibling)))
+        : this.options.parser(multiStringStream(traverseDOM(container.firstChild)));
 
-    // This forEach loops over the tokens from the parsed stream, and
-    // at the same time uses the parts object to proceed through the
-    // corresponding DOM nodes.
-    forEach(parsed, function(token){
-      var part = parts.nextNonEmpty();
+      // parts is a wrapper that makes it possible to 'delay' going to
+      // the next DOM node until we are completely done with the one
+      // before it. This is necessary because we are constantly poking
+      // around in the DOM tree, and if the next node is fetched too
+      // early it might get replaced before it is used.
+      var parts = {
+        current: null,
+        forward: false,
+        // Get the current part.
+        get: function(){
+          if (!this.current)
+            this.current = from ? from.nextSibling : container.firstChild;
+          else if (this.forward)
+            this.current = this.current.nextSibling;
+          this.forward = false;
+          return this.current;
+        },
+        // Advance to the next part (do not fetch it yet).
+        next: function(){
+          if (this.forward)
+            this.get();
+          this.forward = true;
+        },
+        // Remove the current part from the DOM tree, and move to the
+        // next.
+        remove: function(){
+          this.current = this.get().previousSibling;
+          container.removeChild(this.current ? this.current.nextSibling : container.firstChild);
+          this.forward = true;
+        },
+        // Advance to the next part that is not empty, discarding empty
+        // parts.
+        nextNonEmpty: function(){
+          var part = this.get();
+          while (part.nodeName == "SPAN" && part.currentText == ""){
+            var old = part;
+            this.remove();
+            part = this.get();
+	    // Adjust selection information, if any. See select.js for
+	    // details.
+            select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
+          }
+          return part;
+        }
+      };
 
-      if (token.value == "\n"){
-	// The idea of the two streams actually staying synchronized
-	// is such a long shot that we explicitly check.
-        if (part.nodeName != "BR")
-          throw "Parser out of sync. Expected BR.";
-        if (part.dirty || !part.indentation)
-          lineDirty = true;
-	// Every <br> gets a copy of the parser state and a lexical
-	// context assigned to it. The first is used to be able to
-	// later resume parsing from this point, the second is used
-	// for indentation.
-        part.parserFromHere = parsed.copy();
-        part.indentation = token.indentation;
-        part.dirty = false;
-	// A clean line means we are done. Throwing a StopIteration is
-	// the way to break out of a MochiKit forEach loop.
-        if ((lines !== undefined && --lines <= 0) || !lineDirty)
-          throw StopIteration;
-        lineDirty = false;
-        parts.next();
-      }
-      else {
-        if (part.nodeName != "SPAN")
-          throw "Parser out of sync. Expected SPAN.";
-        if (part.dirty)
-          lineDirty = true;
+      var lineDirty = false;
 
-	// If the part matches the token, we can leave it alone.
-        if (correctPart(token, part)){
+      // This forEach loops over the tokens from the parsed stream, and
+      // at the same time uses the parts object to proceed through the
+      // corresponding DOM nodes.
+      forEach(parsed, function(token){
+        var part = parts.nextNonEmpty();
+
+        if (token.value == "\n"){
+	  // The idea of the two streams actually staying synchronized
+	  // is such a long shot that we explicitly check.
+          if (part.nodeName != "BR")
+            throw "Parser out of sync. Expected BR.";
+          if (part.dirty || !part.indentation)
+            lineDirty = true;
+	  // Every <br> gets a copy of the parser state and a lexical
+	  // context assigned to it. The first is used to be able to
+	  // later resume parsing from this point, the second is used
+	  // for indentation.
+          part.parserFromHere = parsed.copy();
+          part.indentation = token.indentation;
           part.dirty = false;
+	  // A clean line means we are done. Throwing a StopIteration is
+	  // the way to break out of a MochiKit forEach loop.
+          if ((lines !== undefined && --lines <= 0) || !lineDirty)
+            throw StopIteration;
+          lineDirty = false;
           parts.next();
         }
-	// Otherwise, we have to fix it.
         else {
-          lineDirty = true;
-	  // Insert the correct part.
-          var newPart = tokenPart(token);
-          container.insertBefore(newPart, part);
-          var tokensize = token.value.length;
-          var offset = 0;
-	  // Eat up parts until the text for this token has been
-	  // removed, adjusting the stored selection info (see
-	  // select.js) in the process.
-          while (tokensize > 0) {
-            part = parts.get();
-            var partsize = part.currentText.length;
-            select.replaceSelection(part.firstChild, newPart.firstChild, tokensize, offset);
-            if (partsize > tokensize){
-              shortenPart(part, tokensize);
-              tokensize = 0;
-            }
-            else {
-              tokensize -= partsize;
-              offset += partsize;
-              parts.remove();
+          if (part.nodeName != "SPAN")
+            throw "Parser out of sync. Expected SPAN.";
+          if (part.dirty)
+            lineDirty = true;
+
+	  // If the part matches the token, we can leave it alone.
+          if (correctPart(token, part)){
+            part.dirty = false;
+            parts.next();
+          }
+	  // Otherwise, we have to fix it.
+          else {
+            lineDirty = true;
+	    // Insert the correct part.
+            var newPart = tokenPart(token);
+            container.insertBefore(newPart, part);
+            var tokensize = token.value.length;
+            var offset = 0;
+	    // Eat up parts until the text for this token has been
+	    // removed, adjusting the stored selection info (see
+	    // select.js) in the process.
+            while (tokensize > 0) {
+              part = parts.get();
+              var partsize = part.currentText.length;
+              select.replaceSelection(part.firstChild, newPart.firstChild, tokensize, offset);
+              if (partsize > tokensize){
+                shortenPart(part, tokensize);
+                tokensize = 0;
+              }
+              else {
+                tokensize -= partsize;
+                offset += partsize;
+                parts.remove();
+              }
             }
           }
         }
-      }
-    });
+      });
 
-    // The function returns some status information that is used by
-    // hightlightDirty to determine whether and where it has to
-    // continue.
-    return {left: lines,
-            node: parts.get(),
-            dirty: lineDirty};
-  }
+      // The function returns some status information that is used by
+      // hightlightDirty to determine whether and where it has to
+      // continue.
+      return {left: lines,
+              node: parts.get(),
+              dirty: lineDirty};
+    }
+  };
 
   return CodeMirror;
 }();
