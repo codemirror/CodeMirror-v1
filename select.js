@@ -60,6 +60,28 @@ var select = {};
       range1.select();
     };
 
+    // Get the top-level node that one end of the cursor is inside or
+    // after. Note that this returns false for 'no cursor', and null
+    // for 'start of document'.
+    select.selectionTopNode = function(container, start) {
+      var selection = this.container.ownerDocument.selection;
+      if (!selection) return false;
+
+      var range = selection.createRange();
+      range.collapse(start);
+      var around = range.parentElement();
+      if (around && isAncestor(container, around)) {
+        return topLevelNodeAt(around, container);
+      }
+      else {
+        range.pasteHTML("<span id='// temp //'></span>");
+        var temp = container.ownerDocument.getElementById("// temp //");
+        var result = topLevelNodeBefore(temp, container);
+        removeElement(temp);
+        return result;
+      }
+    };
+
     // Not needed in IE model -- see W3C model.
     select.replaceSelection = function(){};
 
@@ -70,22 +92,8 @@ var select = {};
     select.Cursor = function(container) {
       this.container = container;
       this.doc = container.ownerDocument;
-      var selection = this.doc.selection;
-      this.valid = !!selection;
-      if (this.valid) {
-	var range = selection.createRange();
-	range.collapse(false);
-	var around = range.parentElement();
-	if (around && isAncestor(container, around)) {
-          this.start = topLevelNodeAt(around, container);
-	}
-	else {
-          range.pasteHTML("<span id='// temp //'></span>");
-          var temp = this.doc.getElementById("// temp //");
-          this.start = topLevelNodeBefore(temp, container);
-          removeElement(temp);
-	}
-      }
+      this.start = select.selectionTopNode(container, false);
+      this.valid = (this.start !== false);
     };
 
     // Place the cursor after this.start. This is only useful when
@@ -169,6 +177,51 @@ var select = {};
       selection.addRange(range);
     };
 
+    // Finding the top-level node at the cursor in the W3C is, as you
+    // can see, quite an involved process.
+    select.selectionTopNode = function(container, start) {
+      var selection = container.ownerDocument.defaultView.getSelection();
+      if (!selection || selection.rangeCount == 0)
+        return false;
+
+      var range = selection.getRangeAt(0);
+      var node = start ? range.startContainer : range.endContainer;
+      var offset = start ? range.startOffset : range.endOffset;
+
+      // For text nodes, we look at the node itself if the cursor is
+      // inside, or at the node before it if the cursor is at the
+      // start.
+      if (node.nodeType == 3){
+        if (offset > 0)
+          return topLevelNodeAt(node, container);
+        else
+          return topLevelNodeBefore(node, container);
+      }
+      // Occasionally, browsers will return the HTML node as
+      // selection. If the offset is 0, we take the start of the frame
+      // ('after null'), otherwise, we take the last node.
+      else if (node.nodeName == "HTML") {
+        return (offset == 1 ? null : container.lastChild);
+      }
+      // If the given node is our 'container', we just look up the
+      // correct node by using the offset.
+      else if (node == container) {
+        return (offset == 0) ? null : node.childNodes[offset - 1];
+      }
+      // In any other case, we have a regular node. If the cursor is
+      // at the end of the node, we use the node itself, if it is at
+      // the start, we use the node before it, and in any other
+      // case, we look up the child before the cursor and use that.
+      else {
+        if (offset == node.childNodes.length)
+          return topLevelNodeAt(node, container);
+        else if (offset == 0)
+          return topLevelNodeBefore(node, container);
+        else
+          return topLevelNodeAt(node.childNodes[offset - 1], container);
+      }
+    };
+
     select.selectMarked = function (sel) {
       if (!sel)
 	return;
@@ -231,56 +284,11 @@ var select = {};
       replace("End");
     };
 
-    // Finding the top-level node at the cursor in the W3C is, as you
-    // can see, quite an involved process. [Some of this can probably
-    // be simplified, but I'm afraid to touch it now that it finally
-    // works.]
     select.Cursor = function(container) {
       this.container = container;
       this.win = container.ownerDocument.defaultView;
-      var selection = this.win.getSelection();
-      this.valid = selection && selection.rangeCount > 0;
-      if (this.valid) {
-	var range = selection.getRangeAt(0);
-	var end = range.endContainer;
-	// For text nodes, we look at the node itself if the cursor is
-	// inside, or at the node before it if the cursor is at the
-	// start.
-	if (end.nodeType == 3){
-          if (range.endOffset > 0)
-            this.start = topLevelNodeAt(end, this.container);
-          else
-            this.start = topLevelNodeBefore(end, this.container);
-	}
-	// Occasionally, browsers will return the HTML node as
-	// selection (Opera does this all the time, which is the
-	// reason this editor does not work on that browser). If the
-	// offset is 0, we take the start of the frame ('after null'),
-	// otherwise, we take the last node.
-	else if (end.nodeName == "HTML") {
-          this.start = (range.endOffset == 1 ? null : container.lastChild);
-	}
-	// If the given node is our 'container', we just look up the
-	// correct node by using the offset.
-	else if (end == container) {
-          if (range.endOffset == 0)
-            this.start = null;
-          else
-            this.start = end.childNodes[range.endOffset - 1];
-	}
-	// In any other case, we have a regular node. If the cursor is
-	// at the end of the node, we use the node itself, if it is at
-	// the start, we use the node before it, and in any other
-	// case, we look up the child before the cursor and use that.
-	else {
-          if (range.endOffset == end.childNodes.length)
-            this.start = topLevelNodeAt(end, this.container);
-          else if (range.endOffset == 0)
-            this.start = topLevelNodeBefore(end, this.container);
-          else
-            this.start = topLevelNodeAt(end.childNodes[range.endOffset - 1], this.container);
-	}
-      }
+      this.start = select.selectionTopNode(container, false);
+      this.valid = (this.start !== false);
     };
 
     select.Cursor.prototype.focus = function() {
