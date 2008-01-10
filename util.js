@@ -26,12 +26,6 @@ function hasClass(element, className){
   return classes && new RegExp("(^| )" + className + "($| )").test(classes);
 }
 
-function repeatString(str, times) {
-  var result = [];
-  while(times--) result.push(str);
-  return result.join("");
-}
-
 // Insert a DOM node after another node.
 function insertAfter(newNode, oldNode) {
   var parent = oldNode.parentNode;

@@ -38,12 +38,18 @@ var CodeMirror = function(){
   // when converting them to flat text.
   var newlineElements = {"P": true, "DIV": true, "LI": true};
 
-  var twoSpaces = new RegExp("[\\t " + nbsp + "]{1,2}", "g");
+  function safeWhiteSpace(n) {
+    var buffer = [], nb = true;
+    for (; n > 0; n--) {
+      buffer.push(nb ? nbsp : " ");
+      nb = !nb;
+    }
+    return buffer.join("");
+  }
+
+  var multiWhiteSpace = new RegExp("[\\t " + nbsp + "]{2,}|[\\t ]{2,}", "g");
   function splitSpaces(string) {
-    return string.replace(twoSpaces, function(s) {
-      if (s.length == 2) return nbsp + " ";
-      else return nbsp;
-    });
+    return string.replace(multiWhiteSpace, function(s) {return safeWhiteSpace(s.length);});
   }
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
@@ -337,19 +343,19 @@ var CodeMirror = function(){
 
       // If there is too much, this is just a matter of shrinking a span.
       if (indentDiff < 0) {
-        whiteSpace.currentText = repeatString(nbsp, indent);
+        whiteSpace.currentText = safeWhiteSpace(indent);
         whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
       }
       // Not enough...
       else if (indentDiff > 0) {
         // If there is whitespace, we grow it.
         if (whiteSpace) {
-          whiteSpace.currentText += repeatString(nbsp, indentDiff);
+          whiteSpace.currentText = safeWhiteSpace(indent);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
         // Otherwise, we have to add a new whitespace node.
         else {
-          whiteSpace = withDocument(this.doc, function(){return SPAN({"class": "part whitespace"}, repeatString(nbsp, indentDiff))});
+          whiteSpace = withDocument(this.doc, function(){return SPAN({"class": "part whitespace"}, safeWhiteSpace(indent))});
           if (start)
             insertAfter(whiteSpace, start);
           else
