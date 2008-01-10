@@ -52,7 +52,7 @@ var select = {};
     // Restore a stored selection.
     select.selectMarked = function(sel) {
       if (!sel)
-	return;
+        return;
       var range1 = sel.window.document.body.createTextRange(), range2 = range1.duplicate();
       range1.moveToPoint(sel.start.x, sel.start.y);
       range2.moveToPoint(sel.end.x, sel.end.y);
@@ -64,22 +64,25 @@ var select = {};
     // after. Note that this returns false for 'no cursor', and null
     // for 'start of document'.
     select.selectionTopNode = function(container, start) {
-      var selection = this.container.ownerDocument.selection;
+      var selection = container.ownerDocument.selection;
       if (!selection) return false;
 
       var range = selection.createRange();
       range.collapse(start);
       var around = range.parentElement();
       if (around && isAncestor(container, around)) {
-        return topLevelNodeAt(around, container);
+        // Only use this node if the selection is not at its start.
+        var range2 = range.duplicate();
+        range2.moveToElementText(around);
+        if (range.compareEndPoints("StartToStart", range2) == -1)
+          return topLevelNodeAt(around, container);
       }
-      else {
-        range.pasteHTML("<span id='// temp //'></span>");
-        var temp = container.ownerDocument.getElementById("// temp //");
-        var result = topLevelNodeBefore(temp, container);
-        removeElement(temp);
-        return result;
-      }
+
+      range.pasteHTML("<span id='// temp //'></span>");
+      var temp = container.ownerDocument.getElementById("// temp //");
+      var result = topLevelNodeBefore(temp, container);
+      removeElement(temp);
+      return result;
     };
 
     // Not needed in IE model -- see W3C model.
@@ -111,10 +114,10 @@ var select = {};
     select.insertNewlineAtCursor = function(window) {
       var selection = window.document.selection;
       if (selection) {
-	var range = selection.createRange();
-	range.pasteHTML("<br/>");
-	range.collapse(false);
-	range.select();
+        var range = selection.createRange();
+        range.pasteHTML("<br/>");
+        range.collapse(false);
+        range.select();
       }
     };
   }
@@ -132,7 +135,7 @@ var select = {};
     select.markSelection = function (win) {
       var selection = win.getSelection();
       if (!selection || selection.rangeCount == 0)
-	return null;
+        return null;
       var range = selection.getRangeAt(0);
 
       var result = {start: {node: range.startContainer, offset: range.startOffset},
@@ -145,7 +148,7 @@ var select = {};
       // ancestors with a suitable offset. This goes down the DOM tree
       // until a 'leaf' is reached (or is it *up* the DOM tree?).
       function normalize(point){
-	while (point.node.nodeType != 3 && point.node.nodeName != "BR") {
+        while (point.node.nodeType != 3 && point.node.nodeName != "BR") {
           var newNode = point.node.childNodes[point.offset] || point.node.nextSibling;
           point.offset = 0;
           while (!newNode && point.node.parentNode) {
@@ -155,7 +158,7 @@ var select = {};
           point.node = newNode;
           if (!newNode)
             break;
-	}
+        }
       }
 
       normalize(result.start);
@@ -163,9 +166,9 @@ var select = {};
       // Make the links back to the selection object (see
       // replaceSelection).
       if (result.start.node)
-	result.start.node.selectStart = result.start;
+        result.start.node.selectStart = result.start;
       if (result.end.node)
-	result.end.node.selectEnd = result.end;
+        result.end.node.selectEnd = result.end;
 
       return result;
     };
@@ -224,30 +227,30 @@ var select = {};
 
     select.selectMarked = function (sel) {
       if (!sel)
-	return;
+        return;
       var win = sel.window;
       var range = win.document.createRange();
 
       function setPoint(point, which) {
-	if (point.node) {
-	  // Remove the link back to the selection.
+        if (point.node) {
+          // Remove the link back to the selection.
           delete point.node["select" + which];
-	  // Some magic to generalize the setting of the start and end
-	  // of a range.
+          // Some magic to generalize the setting of the start and end
+          // of a range.
           if (point.offset == 0)
             range["set" + which + "Before"](point.node);
           else
             range["set" + which](point.node, point.offset);
-	}
-	else {
+        }
+        else {
           range.setStartAfter(win.document.body.lastChild || win.document.body);
-	}
+        }
       }
 
       // Have to restore the scroll position of the frame in Opera.
       if (opera_scroll){
-	sel.window.document.body.scrollLeft = sel.scrollX;
-	sel.window.document.body.scrollTop = sel.scrollY;
+        sel.window.document.body.scrollLeft = sel.scrollX;
+        sel.window.document.body.scrollTop = sel.scrollY;
       }
       setPoint(sel.start, "Start");
       setPoint(sel.end, "End");
@@ -267,8 +270,8 @@ var select = {};
     // another node).
     select.replaceSelection = function(oldNode, newNode, length, offset) {
       function replace(which) {
-	var selObj = oldNode["select" + which];
-	if (selObj) {
+        var selObj = oldNode["select" + which];
+        if (selObj) {
           if (selObj.offset > length) {
             selObj.offset -= length;
           }
@@ -278,7 +281,7 @@ var select = {};
             selObj.node = newNode;
             selObj.offset += (offset || 0);
           }
-	}
+        }
       }
       replace("Start");
       replace("End");
@@ -303,7 +306,7 @@ var select = {};
       else if (this.start)
         range.setEnd(this.start, this.start.childNodes.length);
       else
-	range.setEndBefore(this.container.firstChild || this.container);
+        range.setEndBefore(this.container.firstChild || this.container);
       range.collapse(false);
       selectRange(range, this.win);
     };
@@ -311,8 +314,8 @@ var select = {};
     select.insertNewlineAtCursor = function(window) {
       var selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
-	var range = selection.getRangeAt(0);
-	var br = withDocument(window.document, BR);
+        var range = selection.getRangeAt(0);
+        var br = withDocument(window.document, BR);
         // On Opera, insertNode is completely broken when the range is
         // in the middle of a text node.
         if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {
@@ -322,21 +325,12 @@ var select = {};
           start.parentNode.insertBefore(br, start);
         }
         else {
-	  range.insertNode(br);
+          range.insertNode(br);
         }
-	range.setEndAfter(br);
-	range.collapse(false);
-	selectRange(range, window);
+        range.setEndAfter(br);
+        range.collapse(false);
+        selectRange(range, window);
       }
     };
   }
-
-  // Search backwards through the top-level nodes until the next BR or
-  // the start of the frame.
-  select.Cursor.prototype.startOfLine = function() {
-    var start = this.start || this.container.firstChild;
-    while (start && start.nodeName != "BR")
-      start = start.previousSibling;
-    return start;
-  };
 }());

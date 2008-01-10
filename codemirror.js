@@ -19,6 +19,7 @@ setdefault(MirrorOptions,
                              "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
 	    reindentKeys: keySet("TAB"),
             reparseBufferKeys: keySet("ctrl alt A", "ctrl TAB"),
+            indentSelectionKeys: keySet("ctrl ENTER"),
             // This is unfortunately US-keyboard-specific, but there
             // is no reliable cross-browser method for determining the
             // character from a keyUp event.
@@ -168,6 +169,15 @@ var CodeMirror = function(){
 
   var nbspRegexp = new RegExp(nbsp, "g");
 
+  // Search backwards through the top-level nodes until the next BR or
+  // the start of the frame.
+  function startOfLine(node) {
+    while (node && node.nodeName != "BR")
+      node = node.previousSibling;
+    return node;
+  };
+
+
   // The first argument is either a DOM node that the editor should be
   // appended to, or a function that the <iframe> node will be fed to,
   // and which should should place it somewhere in the document.
@@ -251,9 +261,8 @@ var CodeMirror = function(){
     // Intercept enter and any keys that are specified to re-indent
     // the current line.
     keyDown: function(event) {
-      if (event.key().string == "KEY_ENTER") {
-        select.insertNewlineAtCursor(this.win);
-        this.indentAtCursor();
+      if (this.options.indentSelectionKeys(event)) {
+        this.indentSelection();
         event.stop();
       }
       else if (this.options.reparseBufferKeys(event)) {
@@ -261,6 +270,11 @@ var CodeMirror = function(){
         event.stop();
       }
       else if (this.options.reindentKeys(event)) {
+        this.indentAtCursor();
+        event.stop();
+      }
+      else if (event.key().string == "KEY_ENTER") {
+        select.insertNewlineAtCursor(this.win);
         this.indentAtCursor();
         event.stop();
       }
@@ -300,30 +314,20 @@ var CodeMirror = function(){
       return cursor;
     },
 
-    // Adjust the amount of whitespace at the start of the line that
-    // the cursor is on so that it is indented properly.
-    indentAtCursor: function() {
-      var cursor = new select.Cursor(this.container);
-      // The line has to have up-to-date lexical information, so we
-      // highlight it first.
-      cursor = this.highlightAtCursor(cursor);
-      // If we couldn't determine the place of the cursor, there's
-      // nothing to indent.
-      if (!cursor.valid)
-        return;
-
-      // start is the <br> before the current line, or null if this is
-      // the first line.
-      var start = cursor.startOfLine();
+    // Indent the line following a given <br>, or null for the first
+    // line. If given a <br> element, this must have been highlighted
+    // so that it has an indentation method. Returns the whitespace
+    // element that has been modified or created (if any).
+    indentLineAfter: function(start) {
       // whiteSpace is the whitespace span at the start of the line,
       // or null if there is no such node.
-      var whiteSpace = start ? start.nextSibling : this.container.lastChild;
+      var whiteSpace = start ? start.nextSibling : this.container.firstChild;
       if (whiteSpace && !hasClass(whiteSpace, "whitespace"))
         whiteSpace = null;
 
-      // Sometimes the first character on a line can influence the
-      // correct indentation, so we retrieve it.
-      var firstText = whiteSpace ? whiteSpace.nextSibling : start ? start.nextSibling : this.container.firstChild;
+      // Sometimes the start of the line can influence the correct
+      // indentation, so we retrieve it.
+      var firstText = whiteSpace ? whiteSpace.nextSibling : (start ? start.nextSibling : this.container.firstChild);
       var nextChars = (start && firstText && firstText.currentText) ? firstText.currentText : "";
 
       // Ask the lexical context for the correct indentation, and
@@ -351,11 +355,27 @@ var CodeMirror = function(){
           else
             insertAtStart(whiteSpace, this.containter);
         }
-	// If the cursor is at the start of the line, move it to after
-	// the whitespace.
-        if (cursor.start == start)
-          cursor.start = whiteSpace;
       }
+      return whiteSpace;
+    },
+
+    // Adjust the amount of whitespace at the start of the line that
+    // the cursor is on so that it is indented properly.
+    indentAtCursor: function() {
+      var cursor = new select.Cursor(this.container);
+      // The line has to have up-to-date lexical information, so we
+      // highlight it first.
+      cursor = this.highlightAtCursor(cursor);
+      // If we couldn't determine the place of the cursor, there's
+      // nothing to indent.
+      if (!cursor.valid)
+        return;
+
+      var lineStart = startOfLine(cursor.start);
+      var whiteSpace = this.indentLineAfter(lineStart);
+      if (cursor.start == lineStart && whiteSpace)
+          cursor.start = whiteSpace;
+      // This means the indentation has probably messed up the cursor.
       if (cursor.start == whiteSpace)
         cursor.focus();
     },
@@ -433,6 +453,29 @@ var CodeMirror = function(){
       select.selectMarked(sel);
       if (start)
         this.scheduleHighlight();
+    },
+
+    // Indent all lines whose start falls inside of the current
+    // selection.
+    indentSelection: function() {
+      var current = select.selectionTopNode(this.container, true),
+          end = select.selectionTopNode(this.container, false);
+      if (current === false || end === false) return;
+
+      var sel = select.markSelection(this.win);
+      if (!current)
+        this.indentLineAfter(current);
+      else
+        current = startOfLine(current.previousSibling);
+      while (current != end) {
+        var next = this.highlight(current, 1).node;
+
+        while (current != next && current != end)
+          current = current ? current.nextSibling : this.container.firstChild;
+        if (current != end)
+          if (next) this.indentLineAfter(next);
+      }
+      select.selectMarked(sel);
     },
 
     // The function that does the actual highlighting/colouring (with
