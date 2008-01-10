@@ -17,19 +17,19 @@ var MirrorOptions = window.MirrorOptions || {};
 setdefault(MirrorOptions,
            {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
                              "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
-	    reindentKeys: keySet("TAB"),
+            reindentKeys: keySet("TAB"),
             reparseBufferKeys: keySet("ctrl alt A", "ctrl TAB"),
             indentSelectionKeys: keySet("ctrl ENTER"),
             // This is unfortunately US-keyboard-specific, but there
             // is no reliable cross-browser method for determining the
             // character from a keyUp event.
-	    reindentAfterKeys: keySet("RIGHT_SQUARE_BRACKET", "LEFT_SQUARE_BRACKET"),
+            reindentAfterKeys: keySet("RIGHT_SQUARE_BRACKET", "LEFT_SQUARE_BRACKET"),
             stylesheet: "jscolors.css",
             parser: window.parseJavaScript,
-	    linesPerPass: 10,
-	    passDelay: 300,
-	    width: "100%",
-	    height: "300px"});
+            linesPerPass: 10,
+            passDelay: 300,
+            width: "100%",
+            height: "300px"});
 // These default options can be overridden by passing a set of options
 // to a specific CodeMirror constructor.
 
@@ -189,7 +189,7 @@ var CodeMirror = function(){
     // display: block occasionally suppresses some Firefox bugs, so we
     // always add it, redundant as it sounds.
     this.frame = createDOM("IFRAME", {style: "border: 0; display: block; width: " + options.width +
-				      "; " + "height: " + options.height + ";"});
+                                      "; " + "height: " + options.height + ";"});
     if (place.appendChild)
       place.appendChild(this.frame);
     else
@@ -297,17 +297,17 @@ var CodeMirror = function(){
       if (cursor.valid) {
         var node = cursor.start || this.container.firstChild;
         if (node) {
-	  // If the node is a text node, it will be recognized as
-	  // dirty anyway, and some browsers do not allow us to add
-	  // properties to text nodes.
+          // If the node is a text node, it will be recognized as
+          // dirty anyway, and some browsers do not allow us to add
+          // properties to text nodes.
           if (node.nodeType != 3)
             node.dirty = true;
-	  // Store selection, highlight, restore selection.
+          // Store selection, highlight, restore selection.
           var sel = select.markSelection(this.win);
           this.highlight(node);
           select.selectMarked(sel);
-	  // Cursor information is probably no longer valid after
-	  // highlighting.
+          // Cursor information is probably no longer valid after
+          // highlighting.
           cursor = new select.Cursor(this.container);
         }
       }
@@ -342,12 +342,12 @@ var CodeMirror = function(){
       }
       // Not enough...
       else if (indentDiff > 0) {
-	// If there is whitespace, we grow it.
+        // If there is whitespace, we grow it.
         if (whiteSpace) {
           whiteSpace.currentText += repeatString(nbsp, indentDiff);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
-	// Otherwise, we have to add a new whitespace node.
+        // Otherwise, we have to add a new whitespace node.
         else {
           whiteSpace = withDocument(this.doc, function(){return SPAN({"class": "part whitespace"}, repeatString(nbsp, indentDiff))});
           if (start)
@@ -403,7 +403,7 @@ var CodeMirror = function(){
     // there.
     addDirtyNode: function(node) {
       for (var i = 0; i < this.dirty.length; i++)
-	if (this.dirty[i] == node) return;
+        if (this.dirty[i] == node) return;
 
       if (node.nodeType != 3)
         node.dirty = true;
@@ -423,8 +423,8 @@ var CodeMirror = function(){
     getDirtyNode: function() {
       while (this.dirty.length > 0) {
         var found = this.dirty.pop();
-	// If the node has been coloured in the meantime, or is no
-	// longer in the document, it should not be returned.
+        // If the node has been coloured in the meantime, or is no
+        // longer in the document, it should not be returned.
         if ((found.dirty || found.nodeType == 3) && found.parentNode)
           return found;
       }
@@ -567,8 +567,8 @@ var CodeMirror = function(){
             var old = part;
             this.remove();
             part = this.get();
-	    // Adjust selection information, if any. See select.js for
-	    // details.
+            // Adjust selection information, if any. See select.js for
+            // details.
             select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
           }
           return part;
@@ -584,21 +584,21 @@ var CodeMirror = function(){
         var part = parts.nextNonEmpty();
 
         if (token.value == "\n"){
-	  // The idea of the two streams actually staying synchronized
-	  // is such a long shot that we explicitly check.
+          // The idea of the two streams actually staying synchronized
+          // is such a long shot that we explicitly check.
           if (part.nodeName != "BR")
             throw "Parser out of sync. Expected BR.";
           if (part.dirty || !part.indentation)
             lineDirty = true;
-	  // Every <br> gets a copy of the parser state and a lexical
-	  // context assigned to it. The first is used to be able to
-	  // later resume parsing from this point, the second is used
-	  // for indentation.
+          // Every <br> gets a copy of the parser state and a lexical
+          // context assigned to it. The first is used to be able to
+          // later resume parsing from this point, the second is used
+          // for indentation.
           part.parserFromHere = parsed.copy();
           part.indentation = token.indentation;
           part.dirty = false;
-	  // A clean line means we are done. Throwing a StopIteration is
-	  // the way to break out of a MochiKit forEach loop.
+          // A clean line means we are done. Throwing a StopIteration is
+          // the way to break out of a MochiKit forEach loop.
           if ((lines !== undefined && --lines <= 0) || !lineDirty)
             throw StopIteration;
           lineDirty = false;
@@ -610,22 +610,22 @@ var CodeMirror = function(){
           if (part.dirty)
             lineDirty = true;
 
-	  // If the part matches the token, we can leave it alone.
+          // If the part matches the token, we can leave it alone.
           if (correctPart(token, part)){
             part.dirty = false;
             parts.next();
           }
-	  // Otherwise, we have to fix it.
+          // Otherwise, we have to fix it.
           else {
             lineDirty = true;
-	    // Insert the correct part.
+            // Insert the correct part.
             var newPart = tokenPart(token);
             container.insertBefore(newPart, part);
             var tokensize = token.value.length;
             var offset = 0;
-	    // Eat up parts until the text for this token has been
-	    // removed, adjusting the stored selection info (see
-	    // select.js) in the process.
+            // Eat up parts until the text for this token has been
+            // removed, adjusting the stored selection info (see
+            // select.js) in the process.
             while (tokensize > 0) {
               part = parts.get();
               var partsize = part.currentText.length;
