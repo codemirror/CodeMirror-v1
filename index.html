@@ -1,92 +1,91 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <script src="Mochi.js" type="text/javascript"></script>
-    <script src="util.js" type="text/javascript"></script>
-    <script src="tokenizejavascript.js" type="text/javascript"></script>
-    <script src="parsejavascript.js" type="text/javascript"></script>
-    <script src="stringstream.js" type="text/javascript"></script>
-    <script src="select.js" type="text/javascript"></script>
-    <script src="codemirror.js" type="text/javascript"></script>
     <title>CodeMirror: In-browser code editing</title>
+
+    <link rel="stylesheet" type="text/css" href="docs.css"/>
+    <style type="text/css">
+      div.top {text-align: center;}
+      div.top h1 {margin-bottom: 0;}
+      div.top h2 {margin-top: 0; margin-bottom: 1.5em;}
+    </style>
   </head>
-  <body style="padding: 20px;">
+  <body>
 
-<div style="border: 1px solid black; padding: 3px;">
-<textarea id="code" cols="120" rows="30">
-var CodeMirror = {
-  use: "a JavaScript code-editor",
-  license: "BSD-like",
-  dependencies: [MochiKit],
-
-  features: [
-    "syntax colouring",
-    "different colouring of local variables",
-    "automatic indentation",
-    "incremental parsing" // awesome efficiency hack
-  ],
-
-  keyBindings: {
-    enter: "newline-and-indent",
-    tab: "reindent-current-line",
-    ctrl_alt_a: "reparse-buffer" // Or use ctrl-tab if your browser
-  }                              // messes with that.
-};
-
-function getCodeMirror(easy) {
-  if (easy)
-    download("http://marijn.haverbeke.nl/codemirror/codemirror.zip");
-  else
-    shell.run("darcs get http://marijn.haverbeke.nl/codemirror/");
-  // Darcs (a code versioning system) can be found at http://darcs.net
-}
-
-function browserSupported(browser, version) {
-  return (browser == "Firefox" && version >= 1.5) ||
-         (browser == "Internet Explorer" && version >= 6) ||
-         (browser == "Safari" && version >= 3) ||
-         (browser == "Opera" && version >= 9.5);
-}
-</textarea>
-</div>
-<div>
-  <div style="float: left; padding-right: 10px;"><img src="people.jpg" alt=""/></div>
-  <div style="font-family: tahoma, arial, sans-serif; padding-left: 190px;">
-
-  <p>The above block of code introduces and demonstrates CodeMirror,
-  my attempt to write a practical in-browser code editor. It works
-  rather well, though there are probably some combinations of
-  browsers, platforms, and situations that cause it to break
-  completely. The editor is currently being used in an <a
-  href="http://eloquentjavascript.net">interactive book</a> on
-  JavaScript, and a fork of it is being used in the <a
-  href="http://typo3.org">TYPO3</a> project.</p>
-
-  <p>CodeMirror comes with a JavaScript parser and an <a
-  href="htmltest.html">XML/HTML</a> parser, allowing it to highlight
-  and indent code in those languages, but other parsers can be plugged
-  into it. If you want clever indentation (or some kind of static code
-  analysis), writing support for a new language is non-trivial. Rules
-  for simple colouring should be easy to add. <em>If</em> anyone ends
-  up writing another good parser for some language, I'd be happy to
-  hear about it and maybe include it in my distribution of the
-  editor.</p>
-
-  <p>Due to limitations of browsers (and my taste for weird hacks) the
-  implementation of CodeMirror is rather complicated. <a
-  href="story.html">Here</a> is a rather long document with some notes
-  about its internals. For simple use, the <a
-  href="manual.html">manual</a> should explain everything, and for
-  detailed information about the code, you can try looking at the
-  comments and the <a
-  href="http://marijn.haverbeke.nl/darcsweb.cgi?r=CodeMirror">change
-  log</a>. Any remarks, bug reports, and fan/hate mail can be sent to
-  <a href="mailto:marijnh@gmail.com">marijnh@gmail.com</a>.</p>
-
-  </div>
+<div style="float: right; padding-left: 10px;"><img src="people.jpg" alt=""/></div>
+<div class="top">
+  <h1>CodeMirror</h1>
+  <h2>In-browser code editing made slightly less painful</h2>
 </div>
 
-<script type="text/javascript">
-  var editor = new CodeMirror(partial(swapDOM, $('code')), {height: "350px", content: $('code').value});
-</script>
+<p>CodeMirror is a JavaScript program that can be used to create a
+relatively pleasant editor interface for code-like content -- computer
+programs, HTML markup, and similar. If a parser has been written for
+the language you are editing (we currently have <a
+href="jstest.html">JavaScript</a> and <a href="htmltest.html">XML</a>
+covered), the code will be prettily coloured, and indentation will be
+taken care of for you, meaning the cursor will be placed at the right
+position when you press enter, and it is possible to re-indent blocks
+of code automatically.</p>
+
+<p>The program is relatively young, the most visible use of it is my
+<a href="http://eloquentjavascript.net">interactive book</a> on
+JavaScript. Though I can not guarantee that it works in all situations
+on all <a href="#supported">supported</a> browsers, it has proven
+itself quite stable and usable.</p>
+
+<p>To get a look at CodeMirror, see the demonstration pages for the <a
+href="jstest.html">JavaScript</a> and <a
+href="htmltest.html">XML/HTML</a> parsers.</p>
+
+<h2>Supported browsers</h2>
+
+<p>At this time, the following browsers are supported:</p>
+
+<ul>
+  <li>Firefox 1.5 or higher</li>
+  <li>Internet Explorer 6 or higher</li>
+  <li>Safari 3 or higher</li>
+  <li>Opera 9.5 or higher (a bit slow and glitchy, though)</li>
+</ul>
+
+<p>Making it use on other browsers that have decent support for the
+W3C DOM model should not be too hard, but I am not actively testing
+against those.</p>
+
+<h2>Getting the code</h2>
+
+<p>All of CodeMirror is released under a <a
+href="LICENSE">BSD-style</a> license. To get it, you can either
+download the latest version in a <a
+href="http://marijn.haverbeke.nl/codemirror.zip">zip file</a>, or use
+the <a href="http://www.darcs.net/">darcs</a> version control system
+to get the repository:</p>
+
+<pre>darcs get http://marijn.haverbeke.nl/codemirror/</pre>
+
+<p>This second method is recommended if you are planning to hack on
+CodeMirror -- it makes it easy to record your patches and share them
+with me. To see the repository online, visit the <a
+href="http://marijn.haverbeke.nl/darcsweb.cgi?r=CodeMirror">CodeMirror
+darcsweb</a></p>
+
+<h2>Support</h2>
+
+<p>There is a <a
+href="http://groups.google.nl/group/codemirror">Google group</a> (a
+sort of mailing list/newsgroup thingy) for discussion and news related
+to CodeMirror. You can also e-mail me directly: <a
+href="mailto:marijnh@gmail.com">Marijn Haverbeke</a>.</p>
+
+<h2>Documentation</h2>
+
+<p>Due to limitations of browsers (and my taste for weird hacks) the
+implementation of CodeMirror is rather complicated. There is a big <a
+href="story.html">document</a> that informally describes its
+internals, and a <a href="manual.html">manual</a> that explains simple
+use. For detailed information, you can try looking at the comments in
+the <a
+href="http://marijn.haverbeke.nl/darcsweb.cgi?r=CodeMirror;a=tree">code</a>.</p>
+
   </body>
 </html>
