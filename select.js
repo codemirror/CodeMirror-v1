@@ -252,8 +252,8 @@ var select = {};
         sel.window.document.body.scrollLeft = sel.scrollX;
         sel.window.document.body.scrollTop = sel.scrollY;
       }
-      setPoint(sel.start, "Start");
       setPoint(sel.end, "End");
+      setPoint(sel.start, "Start");
       selectRange(range, win);
     };
 
