@@ -1,18 +1,5 @@
 /* A few useful utility functions. */
 
-// Retrieve the next value from an iterator, or return an alternative
-// value if the iterator is at its end.
-function nextOr(iter, alternative){
-  try {
-    return iter.next();
-  }
-  catch (e) {
-    if (e != StopIteration)
-      throw e;
-    else return alternative;
-  }
-}
-
 // Create a predicate function that tests a string againsts a given
 // regular expression.
 function matcher(regexp){

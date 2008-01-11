@@ -72,11 +72,16 @@
 
     return update(base, {
       peek: function(){
-        if (!peeked)
-          peeked = nextOr(this, null);
+        if (!peeked) {
+          try {peeked = this.step();}
+          catch (e) {
+            if (e != StopIteration) throw e;
+            else peeked = null;
+          }
+        }
         return peeked;
       },
-      next: function(){
+      step: function(){
         if (peeked){
           var temp = peeked;
           peeked = null;
@@ -86,15 +91,19 @@
           accum += current;
           current = ""; // In case source.next() throws
           pos = 0;
-          try {current = source.next();}
-          catch (e) {
-            if (e == StopIteration && accum.length > 0)
-              throw "End of stringstream reached without emptying buffer.";
-            else
-              throw e;
-          }
+          current = source.next();
         }
         return current.charAt(pos++);
+
+      },
+      next: function(){
+        try {return this.step();}
+        catch (e) {
+          if (e == StopIteration && accum.length > 0)
+            throw "End of stringstream reached without emptying buffer ('" + accum + "').";
+          else
+            throw e;
+        }
       },
       get: function(){
         var temp = accum;
