@@ -36,6 +36,7 @@ var select = {};
     select.markSelection = function (win) {
       var selection = win.document.selection;
       var start = selection.createRange(), end = start.duplicate();
+      var bookmark = start.getBookmark();
       start.collapse(true);
       end.collapse(false);
 
@@ -46,7 +47,8 @@ var select = {};
                       y: start.boundingTop + body.scrollTop},
               end: {x: end.boundingLeft + body.scrollLeft - 1,
                     y: end.boundingTop + body.scrollTop},
-              window: win};
+              window: win,
+              bookmark: bookmark};
     };
 
     // Restore a stored selection.
@@ -54,9 +56,14 @@ var select = {};
       if (!sel)
         return;
       var range1 = sel.window.document.body.createTextRange(), range2 = range1.duplicate();
-      range1.moveToPoint(sel.start.x, sel.start.y);
-      range2.moveToPoint(sel.end.x, sel.end.y);
-      range1.setEndPoint("EndToStart", range2);
+      if (sel.start.y < 0 || sel.end.y > sel.window.document.body.clientHeight) {
+        range1.moveToBookmark(sel.bookmark);
+      }
+      else {
+        range1.moveToPoint(sel.start.x, sel.start.y);
+        range2.moveToPoint(sel.end.x, sel.end.y);
+        range1.setEndPoint("EndToStart", range2);
+      }
       range1.select();
     };
 

@@ -510,6 +510,12 @@
     the selection makes it possible to restore that same selection, never
     mind what happened to the underlying DOM structure.</p>
 
+    <p>[Later addition: Note that this, due to the very random design
+    of the <a
+    href="http://msdn2.microsoft.com/en-us/library/ms535872(VS.85).aspx#">TextRange
+    interface</a>, only really works when the whole selection falls
+    within the visible part of the document.]</p>
+
     <p>Doing the same with the W3C selection model is a lot harder. What I
     ended up with was this:</p>
 
