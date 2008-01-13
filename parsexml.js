@@ -215,7 +215,7 @@ var parseXML = function(source) {
   }
   function tagname(style, content) {
     if (style == "name") {
-      currentTag = content;
+      currentTag = content.toLowerCase();
       mark("tagname");
       cont();
     }
@@ -225,7 +225,7 @@ var parseXML = function(source) {
     }
   }
   function closetagname(style, content) {
-    if (style == "name" && context && content == context.name) {
+    if (style == "name" && context && content.toLowerCase() == context.name) {
       popContext();
       mark("tagname");
     }
