@@ -1,12 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <script src="Mochi.js" type="text/javascript"></script>
-    <script src="util.js" type="text/javascript"></script>
-    <script src="stringstream.js" type="text/javascript"></script>
-    <script src="select.js" type="text/javascript"></script>
     <script src="codemirror.js" type="text/javascript"></script>
-    <script src="parsexml.js" type="text/javascript"></script>
-
     <title>CodeMirror: HTML/XML demonstration</title>
     <link rel="stylesheet" type="text/css" href="docs.css"/>
   </head>
@@ -31,10 +25,13 @@ for CodeMirror. The <a href="parsexml.js">javascript</a> file
 contains some comments with more information.</p>
 
 <script type="text/javascript">
-  MirrorOptions.parser = XMLParser;
-  MirrorOptions.stylesheet = "xmlcolors.css";
-
-  var editor = new CodeMirror(partial(swapDOM, $('code')), {height: "350px", content: $('code').value});
+  var textarea = document.getElementById('code');
+  var editor = new CodeMirror(CodeMirror.replace(textarea), {
+    height: "350px",
+    content: textarea.value,
+    parserfile: "parsexml.js",
+    stylesheet: "xmlcolors.css"
+  });
 </script>
   </body>
 </html>

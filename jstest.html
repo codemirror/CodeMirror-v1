@@ -1,13 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <script src="Mochi.js" type="text/javascript"></script>
-    <script src="util.js" type="text/javascript"></script>
-    <script src="tokenizejavascript.js" type="text/javascript"></script>
-    <script src="parsejavascript.js" type="text/javascript"></script>
-    <script src="stringstream.js" type="text/javascript"></script>
-    <script src="select.js" type="text/javascript"></script>
     <script src="codemirror.js" type="text/javascript"></script>
-
     <title>CodeMirror: JavaScript demonstration</title>
     <link rel="stylesheet" type="text/css" href="docs.css"/>
   </head>
@@ -38,7 +31,13 @@ function example(x) {
 </div>
 
 <script type="text/javascript">
-  var editor = new CodeMirror(partial(swapDOM, $('code')), {height: "350px", content: $('code').value});
+  var textarea = document.getElementById('code');
+  var editor = new CodeMirror(CodeMirror.replace(textarea), {
+    height: "350px",
+    content: textarea.value,
+    parserfile: ["tokenizejavascript.js", "parsejavascript.js"],
+    stylesheet: "jscolors.css"
+  });
 </script>
 
   </body>

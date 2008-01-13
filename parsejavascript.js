@@ -30,7 +30,9 @@
  * The parser object also, optionally, has an 'electricChars'
  * property, containing a string of characters which, when typed,
  * should cause the indentation of the current line to be recomputed
- * (for example "{}" for c-like languages).
+ * (for example "{}" for c-like languages). It must be found under the
+ * name 'Parser' -- since it is loaded in the editable iframe itself,
+ * there can be only one active parser per frame.
  */
 
 // Parse function for JavaScript. Makes use of the tokenizer from
@@ -38,7 +40,7 @@
 // this complicated -- if you don't want to recognize local variables,
 // in many languages it is enough to just look for braces, semicolons,
 // parentheses, etc, and know when you are inside a string or comment.
-var JavaScriptParser = (function() {
+var Parser = (function() {
   // Token types that can be considered to be atoms.
   var atomicTypes = {"atom": true, "number": true, "variable": true, "string": true, "regexp": true};
   // Constructor for the lexical context objects.

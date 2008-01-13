@@ -6,134 +6,174 @@
   <body>
     <h1>CodeMirror user manual</h1>
 
-    <p style="font-size: 80%">
-      <b>Author</b>: <a href="mailto:marijnh@gmail.com">Marijn Haverbeke</a><br/>
-      <b>Last updated</b>: October 14th 2007<br/>
-    </p>
-
-    <h2>Getting and installing</h2>
-
-    <p>CodeMirror itself consists of a bunch of JavaScript files. For
-    getting started it can be useful to also have an example HTML
-    document and stylesheet. All this, plus this documentation, can be
-    downloaded from <a
-    href="http://marijn.haverbeke.nl/codemirror/codemirror.zip">here</a>.</p>
-
-    <p>Those planning to do development on CodeMirror, or wanting to
-    keep up with the very latest changes can get the <a
-    href="http://darcs.net">darcs</a> repository like this:</p>
-
-    <pre class="code">darcs get http://marijn.haverbeke.nl/codemirror</pre>
-
-    <p>When using CodeMirror in a production system, you will probably
-    want to run it through a JavaScript-compressor of some kind to get
-    rid of all the comments, and concatenate all the files together
-    into a single .js file. These are the files that make up the
-    system, in the recommended inclusion order:</p>
-
-    <dl>
-    <dt><code>Mochi.js</code></dt><dd>This file contains a compressed
-    version of the Base, DOM, Style, Signal, and Iter modules of <a
-    href="http://www.mochikit.com">MochiKit</a>. The rest of the
-    library depends on these.</dd>
-    <dt><a href="util.js"><code>util.js</code></a></dt><dd>A few
-    generic utility functions.</dd>
-    <dt><a
-    href="tokenizejavascript.js"><code>tokenizejavascript.js</code></a></dt><dd>A
-    tokenizer for JavaScript code. If you do not use the JavaScript
-    parser, but your own custom parser, this file is not needed.</dd>
-    <dt><a
-    href="parsejavascript.js"><code>parsejavascript.js</code></a></dt><dd>The
-    JavaScript parser. Again, only needed if you want to highlight
-    JavaScript code.</dd>
-    <dt><a href="parsexml.js"><code>parsexml.js</code></a></dt><dd>A
-    parser for XML, with some optional kludges that make it work
-    rather well for HTML. Details are in the file iteself.</dd>
-    <dt><a
-    href="stringstream.js"><code>stringstream.js</code></a></dt><dd>Objects
-    for wrapping the textual input to the parser.</dd> <dt><a
-    href="select.js"><code>select.js</code></a></dt><dd>Some helper
-    utilities for working with selected text.</dd> <dt><a
-    href="codemirror.js"><code>codemirror.js</code></a></dt><dd>Defines
-    the <code>CodeMirror</code> object, the interface to the
-    editor.</dd>
-    </dl>
-
     <h2>Usage</h2>
-
-    <p>An editor can be added to a document in a very simple way:</p>
-
-    <pre class="code">var editor = new CodeMirror(document.body);</pre>
-
-    <p>This will append the new editor to the end of the document
-    body. When you need more control over the placement of the editor
-    frame, you can also pass a function instead of a DOM node. The
-    function will be called with the frame node as argument.</p>
-
-    <pre class="code">var editor = new CodeMirror(partial(swapDOM, $("textarea")));</pre>
-
-    <p>(Where <code>partial</code>, <code>swapDOM</code>, and
-    <code>$</code> are MochiKit functions.) The frame must be inserted
-    into the document right away, or it won't initialize properly on
-    some browsers, and strange things will happen.</p>
 
     <p>Inside the editor, the tab key is used to re-indent the current
     selection (or the current line when nothing is selected), and
-    pressing enter will automatically indent the new line. Pressing
-    control-enter will cause the whole buffer to be re-coloured, which
-    can be helpful when a part of it has become out-of-date through
-    some non-local change (such as removing some tags at the top of an
-    XML document).</p>
+    pressing enter will, apart from inserting a line break,
+    automatically indent the new line. Pressing control-enter will
+    cause the whole buffer to be re-coloured, which can be helpful
+    when some colouring has become out-of-date without the editor
+    noticing it.</p>
 
-    <p>To get more control over the behaviour of editors,
-    configuration objects can be used. There are three ways to do
-    this:</p>
+    <p>To use CodeMirror in a document, you should add a script tag to
+    load <a href="codemirror.js"><code>codemirror.js</code></a>. This
+    adds two objects to your environment, <code>CodeMirror</code> and
+    <code>CodeMirrorConfig</code>. The first is the interface to the
+    editor, the second can be used to configure it. (Note that this is
+    the only name-space pollution you can expect from CodeMirror --
+    all other cruft is kept inside the IFRAMEs that it creates when
+    you open an editor.)</p>
+
+    <p>To add an editor to a document, you must choose a place, a
+    parser, and a style-sheet for it. For example, to append an
+    XML editor to the body of the document, you do:</p>
+
+    <pre class="code">var editor = new CodeMirror(document.body, {
+  parserfile: "parsexml.js",
+  stylesheet: "xmlcolors.css"
+});</pre>
+
+    <p>The first argument to the <code>CodeMirror</code> constructor
+    can be a DOM node, in which case the editor gets appended to that
+    node, or a function, which will be called with the IFRAME node as
+    argument, and which is expected to place that node somewhere in
+    the document.</p>
+
+    <p>The second (optional) argument is an object that specifies
+    options. A set of default options (see below) is present in the
+    <code>CodeMirrorConfig</code> object, but each instance of the
+    editor can be given a set of specific options to override these
+    defaults. In this case, we specified that the parser should be
+    loaded from the <a
+    href="parsexml.js"><code>"parsexml.js"</code></a> file, and that
+    <code>"xmlcolors.css"</code> should be used to specify the colours
+    of the code.</p>
+
+    <p>Another example:</p>
+
+    <pre class="code">var editor = new CodeMirror(CodeMirror.replace("inputfield"), {
+  parserfile: ["tokenizejavascript.js", "parsejavascript.js"],
+  path: "lib/codemirror/",
+  stylesheet: "lib/codemirror/jscolors.css"
+});</pre>
+
+    <p>Here we use the utility function
+    <code>CodeMirror.replace</code> to create a function that will
+    replace a node in the current document (given either directly or
+    by ID) with the editor. We also select the JavaScript parser this
+    time, and give a <code>path</code> option to tell the editor that
+    its files are not located in the same directory as the current
+    HTML page, but in <code>"lib/codemirror/"</code>.</p>
+
+    <p>The reason the path has to be specified is that CodeMirror will
+    load in a bunch of script files when an editor is created (the
+    parser, among others). To be able to do this, it has to know where
+    to find them. These are all the JavaScript files that are part of
+    CodeMirror:</p>
+
+    <dl>
+      <dt><a href="codemirror.js"><code>codemirror.js</code></a></dt>
+      <dd>Main interface, takes care of default configuration and the
+      definition of editor frames. Include this in your HTML
+      document.</dd>
+      <dt><code>Mochi.js</code></dt> <dd>This file contains a
+      compressed version of the Base, DOM, Style, Signal, and Iter
+      modules of <a href="http://www.mochikit.com">MochiKit</a>, which
+      are used by the files below.</dd>
+      <dt><a href="editor.js"><code>editor.js</code></a></dt> <dd>The
+      code that takes care of reacting to user input, colouring text,
+      and indenting lines.</dd>
+      <dt><a href="util.js"><code>util.js</code></a></dt> <dd>A few
+      generic utility functions.</dd>
+      <dt><a
+      href="stringstream.js"><code>stringstream.js</code></a></dt>
+      <dd>Objects for wrapping the textual input to the parser.</dd>
+      <dt><a href="select.js"><code>select.js</code></a></dt> <dd>Some
+      helper utilities for working with selected text and cursor
+      positions.</dd>
+      <dt><a
+      href="tokenizejavascript.js"><code>tokenizejavascript.js</code></a></dt>
+      <dd>A JavaScript tokeniser. Only included when selected as part
+      of the <code>parserfile</code> option.</dd>
+      <dt><a
+      href="parsejavascript.js"><code>parsejavascript.js</code></a></dt>
+      <dd>The JavaScript parser.</dd>
+      <dt><a href="parsexml.js"><code>parsexml.js</code></a></dt>
+      <dd>A parser for XML, with some optional kludges that make it
+      work rather well for HTML. Some details are in the file
+      itself.</dd>
+    </dl>
+
+    <p>Most of these are rather full of comments, which can be useful
+    when you are trying to figure out how they work, but wastes a lot
+    of bandwidth in a production system. Take a look at the
+    description of the <code>basefiles</code> option below if you want
+    to concatenate and minimise the library.</p>
+
+    <h2>Configuration</h2>
+
+    <p>There are three ways to configure CodeMirror:</p>
 
     <ul>
-    <li>If you define a global <code>MirrorOptions</code> object
-    before loading <code>codemirror.js</code>, the configuration
-    options in that object will override the defaults.</li>
-    <li>By assigning to the properties of the
-    <code>MirrorOptions</code> object, configuration defaults can be
-    overridden after loading <code>codemirror.js</code>.</li>
-    <li>The <code>CodeMirror</code> constructor can be given a second
-    argument, an object, which will override some options for just
-    that editor. Options not mentioned in this object will default to
-    the values in the <code>MirrorOptions</code> object.</li>
+      <li>If you define a global <code>CodeMirrorConfig</code> object
+      before loading <a
+      href="codemirror.js"><code>codemirror.js</code></a>, the
+      configuration options in that object will override the
+      defaults.</li>
+      <li>By assigning to the properties of the
+      <code>CodeMirrorConfig</code> object, configuration defaults can
+      be overridden after loading <a
+      href="codemirror.js"><code>codemirror.js</code></a>.</li>
+      <li>The <code>CodeMirror</code> constructor can be given a second
+      argument, an object, which will override some options for just
+      that editor. Options not mentioned in this object will default to
+      the values in the <code>CodeMirrorConfig</code> object.</li>
     </ul>
 
-    <p>The options that can be specified are these (they all have
-    sensible defaults specified at the top of <a
+    <p>The options that can be specified are these (most have sensible
+    defaults specified in <a
     href="codemirror.js"><code>codemirror.js</code></a>):</p>
 
     <dl>
 
-    <dt><code>stylesheet</code></dt><dd>The filename of the stylesheet
-    that should be used to colour the code in the editor frame. See <a
-    href="jscolors.css"><code>jscolors.css</code></a> for an
-    example.</dd>
+      <dt><code>stylesheet</code></dt><dd>The file name of the style-sheet
+      that should be used to colour the code in the editor frame. See <a
+      href="jscolors.css"><code>jscolors.css</code></a> for an
+      example.</dd>
 
-    <dt><code>parser</code></dt><dd>This should refer to a parser
-    object. For more about such objects, see below. The default is
-    <code>JavaScriptParser</code>, if you are using the XML parser you
-    can set this to <code>XMLParser</code>.</dd>
+      <dt><code>path</code></dt><dd>The path that is prefixed to
+      script file names when they are loaded into an IFRAME. (Note that
+      this is not applied to the style-sheet file name.)</dd>
 
-    <dt><code>linesPerPass</code></dt><dd>Specifies the maximum amount
-    of lines that the highlighter tries to colour in one shot. Setting
-    this too high will cause the code to 'freeze' the browser for
-    noticeable intervals.</dd>
+      <dt><code>parserfile</code></dt><dd>A file name string, or an
+      array of strings that name the files containing the parser. See
+      below for the interface that such a parser should
+      implement.</dd>
 
-    <dt><code>passDelay</code></dt><dd>Gives the amount of
-    milliseconds between colouring passes.</dd>
+      <dt><code>basefiles</code></dt><dd>An array of strings naming
+      the files containing the base CodeMirror functionality. Defaults
+      to <code>["Mochi.js", "util.js", "stringstream.js", "select.js",
+      "editor.js"]</code>, but if you put them all into a single file
+      to reduce latency, or add some functionality, you might have to
+      adjust that.</dd>
+      
+      <dt><code>linesPerPass</code></dt><dd>Specifies the maximum
+      amount of lines that the highlighter tries to colour in one
+      shot. Setting this too high will cause the code to 'freeze' the
+      browser for noticeable intervals.</dd>
 
-    <dt><code>width</code>, <code>height</code></dt><dd>The size of
-    the editor frame, given as a style-sheet quantities (for example
-    <code>"600px"</code> or <code>"100%"</code>).</dd>
+      <dt><code>passDelay</code></dt><dd>Gives the amount of
+      milliseconds between colouring passes.</dd>
 
-    <dt><code>content</code></dt><dd>The starting content of the
-    editor. You'll probably not want to provide a global default for
-    this, but add it to the <code>options</code> object passed to
-    inividual editors as they are created.</dd>
+      <dt><code>width</code>, <code>height</code></dt><dd>The size of
+      the editor frame, given as a style-sheet quantities (for example
+      <code>"600px"</code> or <code>"100%"</code>).</dd>
+
+      <dt><code>content</code></dt><dd>The starting content of the
+      editor. You'll probably not want to provide a global default for
+      this, but add it to the <code>options</code> object passed to
+      individual editors as they are created.</dd>
 
     </dl>
 

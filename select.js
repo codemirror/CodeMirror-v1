@@ -33,21 +33,20 @@ var select = {};
     // Store the current selection in such a way that it can be
     // restored after we manipulated the DOM tree. For IE, we store
     // pixel coordinates.
-    select.markSelection = function (win) {
-      var selection = win.document.selection;
+    select.markSelection = function () {
+      var selection = document.selection;
       var start = selection.createRange(), end = start.duplicate();
       var bookmark = start.getBookmark();
       start.collapse(true);
       end.collapse(false);
 
-      var body = win.document.body;
+      var body = document.body;
       // And we better hope no fool gave this window a padding or a
       // margin, or all these computations will be in vain.
       return {start: {x: start.boundingLeft + body.scrollLeft - 1,
                       y: start.boundingTop + body.scrollTop},
               end: {x: end.boundingLeft + body.scrollLeft - 1,
                     y: end.boundingTop + body.scrollTop},
-              window: win,
               bookmark: bookmark};
     };
 
@@ -55,8 +54,8 @@ var select = {};
     select.selectMarked = function(sel) {
       if (!sel)
         return;
-      var range1 = sel.window.document.body.createTextRange(), range2 = range1.duplicate();
-      if (sel.start.y < 0 || sel.end.y > sel.window.document.body.clientHeight) {
+      var range1 = document.body.createTextRange(), range2 = range1.duplicate();
+      if (sel.start.y < 0 || sel.end.y > document.body.clientHeight) {
         range1.moveToBookmark(sel.bookmark);
       }
       else {
@@ -71,7 +70,7 @@ var select = {};
     // after. Note that this returns false for 'no cursor', and null
     // for 'start of document'.
     select.selectionTopNode = function(container, start) {
-      var selection = container.ownerDocument.selection;
+      var selection = document.selection;
       if (!selection) return false;
 
       var range = selection.createRange();
@@ -86,7 +85,7 @@ var select = {};
       }
 
       range.pasteHTML("<span id='// temp //'></span>");
-      var temp = container.ownerDocument.getElementById("// temp //");
+      var temp = document.getElementById("// temp //");
       var result = topLevelNodeBefore(temp, container);
       removeElement(temp);
       return result;
@@ -99,7 +98,7 @@ var select = {};
     // manually moving the cursor instead of restoring it to its old
     // position.
     select.focusAfterNode = function(node, container) {
-      var range = container.ownerDocument.body.createTextRange();
+      var range = document.body.createTextRange();
       range.moveToElementText(node || container);
       range.collapse(!node);
       range.select();
@@ -107,8 +106,8 @@ var select = {};
 
     // Used to normalize the effect of the enter key, since browsers
     // do widely different things when pressing enter in designMode.
-    select.insertNewlineAtCursor = function(window) {
-      var selection = window.document.selection;
+    select.insertNewlineAtCursor = function() {
+      var selection = document.selection;
       if (selection) {
         var range = selection.createRange();
         range.pasteHTML("<br/>");
@@ -128,17 +127,16 @@ var select = {};
     // back to the selection object from those nodes, so that this
     // object can be updated when the nodes are replaced before the
     // selection is restored.
-    select.markSelection = function (win) {
-      var selection = win.getSelection();
+    select.markSelection = function () {
+      var selection = window.getSelection();
       if (!selection || selection.rangeCount == 0)
         return null;
       var range = selection.getRangeAt(0);
 
       var result = {start: {node: range.startContainer, offset: range.startOffset},
                     end: {node: range.endContainer, offset: range.endOffset},
-                    window: win,
-                    scrollX: opera_scroll && win.document.body.scrollLeft,
-                    scrollY: opera_scroll && win.document.body.scrollTop};
+                    scrollX: opera_scroll && document.body.scrollLeft,
+                    scrollY: opera_scroll && document.body.scrollTop};
 
       // We want the nodes right at the cursor, not one of their
       // ancestors with a suitable offset. This goes down the DOM tree
@@ -170,7 +168,7 @@ var select = {};
     };
 
     // Helper for selecting a range object.
-    function selectRange(range, window) {
+    function selectRange(range) {
       var selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
@@ -179,7 +177,7 @@ var select = {};
     // Finding the top-level node at the cursor in the W3C is, as you
     // can see, quite an involved process.
     select.selectionTopNode = function(container, start) {
-      var selection = container.ownerDocument.defaultView.getSelection();
+      var selection = window.getSelection();
       if (!selection || selection.rangeCount == 0)
         return false;
 
@@ -224,8 +222,7 @@ var select = {};
     select.selectMarked = function (sel) {
       if (!sel)
         return;
-      var win = sel.window;
-      var range = win.document.createRange();
+      var range = document.createRange();
 
       function setPoint(point, which) {
         if (point.node) {
@@ -239,18 +236,18 @@ var select = {};
             range["set" + which](point.node, point.offset);
         }
         else {
-          range.setStartAfter(win.document.body.lastChild || win.document.body);
+          range.setStartAfter(document.body.lastChild || document.body);
         }
       }
 
       // Have to restore the scroll position of the frame in Opera.
       if (opera_scroll){
-        sel.window.document.body.scrollLeft = sel.scrollX;
-        sel.window.document.body.scrollTop = sel.scrollY;
+        document.body.scrollLeft = sel.scrollX;
+        document.body.scrollTop = sel.scrollY;
       }
       setPoint(sel.end, "End");
       setPoint(sel.start, "Start");
-      selectRange(range, win);
+      selectRange(range);
     };
 
     // This is called by the code in codemirror.js whenever it is
@@ -284,8 +281,7 @@ var select = {};
     };
 
     select.focusAfterNode = function(node, container) {
-      var win = container.ownerDocument.defaultView,
-          range = win.document.createRange();
+      var range = document.createRange();
       range.setStartBefore(container.firstChild || container);
       // In Opera, setting the end of a range at the end of a line
       // (before a BR) will cause the cursor to appear on the next
@@ -298,19 +294,19 @@ var select = {};
       else
         range.setEndBefore(container.firstChild || container);
       range.collapse(false);
-      selectRange(range, win);
+      selectRange(range);
     };
 
-    select.insertNewlineAtCursor = function(window) {
+    select.insertNewlineAtCursor = function() {
       var selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         var range = selection.getRangeAt(0);
-        var br = withDocument(window.document, BR);
+        var br = BR();
         // On Opera, insertNode is completely broken when the range is
         // in the middle of a text node.
         if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {
           var start = range.startContainer, text = start.nodeValue;
-          start.parentNode.insertBefore(window.document.createTextNode(text.substr(0, range.startOffset)), start);
+          start.parentNode.insertBefore(document.createTextNode(text.substr(0, range.startOffset)), start);
           start.nodeValue = text.substr(range.startOffset);
           start.parentNode.insertBefore(br, start);
         }
@@ -320,7 +316,7 @@ var select = {};
 
         range.setEndAfter(br);
         range.collapse(false);
-        selectRange(range, window);
+        selectRange(range);
       }
     };
   }

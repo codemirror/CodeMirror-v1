@@ -5,7 +5,7 @@
  * indentation should happen.
  */
 
-var XMLParser = (function() {
+var Parser = (function() {
   var XMLKludges = {
     autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true, "meta": true},
     doNotIndent: {"pre": true}
