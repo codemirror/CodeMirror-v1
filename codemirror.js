@@ -78,6 +78,9 @@ var CodeMirror = (function(){
     },
     getCode: function() {
       return this.editor.getCode();
+    },
+    setCode: function(code) {
+      this.editor.importCode(code);
     }
   };
 
