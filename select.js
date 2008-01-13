@@ -95,24 +95,13 @@ var select = {};
     // Not needed in IE model -- see W3C model.
     select.replaceSelection = function(){};
 
-    // A Cursor object represents a top-level node that the cursor is
-    // currently in or after. It is not possible to reliably get more
-    // detailed information, but just this node is enough for most
-    // purposes.
-    select.Cursor = function(container) {
-      this.container = container;
-      this.doc = container.ownerDocument;
-      this.start = select.selectionTopNode(container, false);
-      this.valid = (this.start !== false);
-    };
-
     // Place the cursor after this.start. This is only useful when
     // manually moving the cursor instead of restoring it to its old
     // position.
-    select.Cursor.prototype.focus = function () {
-      var range = this.doc.body.createTextRange();
-      range.moveToElementText(this.start || this.container);
-      range.collapse(!this.start);
+    select.focusAfterNode = function(node, container) {
+      var range = container.ownerDocument.body.createTextRange();
+      range.moveToElementText(node || container);
+      range.collapse(!node);
       range.select();
     };
 
@@ -294,28 +283,22 @@ var select = {};
       replace("End");
     };
 
-    select.Cursor = function(container) {
-      this.container = container;
-      this.win = container.ownerDocument.defaultView;
-      this.start = select.selectionTopNode(container, false);
-      this.valid = (this.start !== false);
-    };
-
-    select.Cursor.prototype.focus = function() {
-      var range = this.win.document.createRange();
-      range.setStartBefore(this.container.firstChild || this.container);
+    select.focusAfterNode = function(node, container) {
+      var win = container.ownerDocument.defaultView,
+          range = win.document.createRange();
+      range.setStartBefore(container.firstChild || container);
       // In Opera, setting the end of a range at the end of a line
       // (before a BR) will cause the cursor to appear on the next
       // line, so we set the end inside of the start node when
       // possible.
-      if (this.start && !this.start.firstChild)
-        range.setEndAfter(this.start);
-      else if (this.start)
-        range.setEnd(this.start, this.start.childNodes.length);
+      if (node && !node.firstChild)
+        range.setEndAfter(node);
+      else if (node)
+        range.setEnd(node, node.childNodes.length);
       else
-        range.setEndBefore(this.container.firstChild || this.container);
+        range.setEndBefore(container.firstChild || container);
       range.collapse(false);
-      selectRange(range, this.win);
+      selectRange(range, win);
     };
 
     select.insertNewlineAtCursor = function(window) {
@@ -334,6 +317,7 @@ var select = {};
         else {
           range.insertNode(br);
         }
+
         range.setEndAfter(br);
         range.collapse(false);
         selectRange(range, window);

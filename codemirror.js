@@ -300,24 +300,19 @@ var CodeMirror = function(){
     // and coloured properly, so that the correct indentation can be
     // computed.
     highlightAtCursor: function(cursor) {
-      if (cursor.valid) {
-        var node = cursor.start || this.container.firstChild;
-        if (node) {
-          // If the node is a text node, it will be recognized as
-          // dirty anyway, and some browsers do not allow us to add
-          // properties to text nodes.
-          if (node.nodeType != 3)
-            node.dirty = true;
-          // Store selection, highlight, restore selection.
-          var sel = select.markSelection(this.win);
-          this.highlight(node);
-          select.selectMarked(sel);
-          // Cursor information is probably no longer valid after
-          // highlighting.
-          cursor = new select.Cursor(this.container);
-        }
-      }
-      return cursor;
+      var cursor = select.selectionTopNode(this.container, false);
+      if (cursor === false || !this.container.firstChild) return;
+
+      cursor = cursor || this.container.firstChild;
+      // If the node is a text node, it will be recognized as
+      // dirty anyway, and some browsers do not allow us to add
+      // properties to text nodes.
+      if (cursor.nodeType != 3)
+        cursor.dirty = true;
+      // Store selection, highlight, restore selection.
+      var sel = select.markSelection(this.win);
+      this.highlight(cursor);
+      select.selectMarked(sel);
     },
 
     // Indent the line following a given <br>, or null for the first
@@ -374,34 +369,31 @@ var CodeMirror = function(){
     // Adjust the amount of whitespace at the start of the line that
     // the cursor is on so that it is indented properly.
     indentAtCursor: function() {
-      var cursor = new select.Cursor(this.container);
       // The line has to have up-to-date lexical information, so we
       // highlight it first.
-      cursor = this.highlightAtCursor(cursor);
+      this.highlightAtCursor();
+      var cursor = select.selectionTopNode(this.container, false);
+
       // If we couldn't determine the place of the cursor, there's
       // nothing to indent.
-      if (!cursor.valid)
+      if (cursor === false)
         return;
-
-      var lineStart = startOfLine(cursor.start);
+      var lineStart = startOfLine(cursor);
       var whiteSpace = this.indentLineAfter(lineStart);
-      if (cursor.start == lineStart && whiteSpace)
-          cursor.start = whiteSpace;
+      if (cursor == lineStart && whiteSpace)
+          cursor = whiteSpace;
       // This means the indentation has probably messed up the cursor.
-      if (cursor.start == whiteSpace)
-        cursor.focus();
+      if (cursor == whiteSpace)
+        select.focusAfterNode(cursor, this.container);
     },
 
     // Find the node that the cursor is in, mark it as dirty, and make
     // sure a highlight pass is scheduled.
     markCursorDirty: function() {
-      var cursor = new select.Cursor(this.container);
-      if (cursor.valid) {
-        var node = cursor.start || this.container.firstChild;
-        if (node) {
-          this.scheduleHighlight();
-          this.addDirtyNode(node);
-        }
+      var cursor = select.selectionTopNode(this.container, false);
+      if (cursor !== false && this.container.firstChild) {
+        this.scheduleHighlight();
+        this.addDirtyNode(cursor || this.container.firstChild);
       }
     },
 
