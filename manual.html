@@ -100,20 +100,6 @@
 
     <dl>
 
-    <dt><code>reindentKeys</code></dt><dd>Gives the keys that should
-    cause the editor to re-indent the current line. Use the
-    <code>keySet</code> function to create the set. It takes any
-    amount of arguments, each of which must be a MochiKit key ID (use
-    <a
-    href="http://mochikit.com/examples/key_events/index.html">this</a>
-    page to find the IDs for a key) without its <code>"KEY_"</code>
-    prefix. It can be optionally prefixed by modifiers
-    (<code>"ctrl"</code>, <code>"alt"</code>, and <code>"shift"</code>
-    -- though alt seems to behave inconsistently across platforms and
-    browsers) separated by spaces. Thus <code>"A"</code> refers to the
-    A key, and <code>"ctrl SPACEBAR"</code> refers to the space bar
-    with control held down. Defaults to just tab.</dd>
-
     <dt><code>reindentAfterKeys</code></dt><dd>Like reindentKeys, but
     in this case the key's normal effect is first allowed to take
     place. Use this for keys that might change the indentation level
@@ -128,11 +114,6 @@
     when a modification in the buffer causes code at some distance
     from the modification to change meaning (fixing a tag mismatch in
     XML mode, for example). Defaults to ctrl-enter.</dd>
-
-    <dt><code>indentSelectionKeys</code></dt><dd>Keys that cause all
-    lines within the current selection to be re-indented. Defaults to
-    ctrl-tab and (because some browsers do not allow that to be
-    overridden) ctrl-alt-a.</dd>
 
     <dt><code>safeKeys</code></dt><dd>Specifies the set of keys that
     will probably not modify the content of the editor, and thus do

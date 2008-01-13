@@ -17,9 +17,7 @@ var MirrorOptions = window.MirrorOptions || {};
 setdefault(MirrorOptions,
            {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
                              "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
-            reindentKeys: keySet("TAB"),
             reparseBufferKeys: keySet("ctrl ENTER"),
-            indentSelectionKeys: keySet("ctrl alt A", "ctrl TAB"),
             // This is unfortunately US-keyboard-specific, but there
             // is no reliable cross-browser method for determining the
             // character from a keyUp event.
@@ -267,16 +265,12 @@ var CodeMirror = function(){
     // Intercept enter and any keys that are specified to re-indent
     // the current line.
     keyDown: function(event) {
-      if (this.options.indentSelectionKeys(event)) {
-        this.indentSelection();
-        event.stop();
-      }
-      else if (this.options.reparseBufferKeys(event)) {
+      if (this.options.reparseBufferKeys(event)) {
         this.reparseBuffer();
         event.stop();
       }
-      else if (this.options.reindentKeys(event)) {
-        this.indentAtCursor();
+      else if (event.key().string == "KEY_TAB") {
+        this.handleTab();
         event.stop();
       }
       else if (event.key().string == "KEY_ENTER") {
@@ -294,25 +288,6 @@ var CodeMirror = function(){
         this.indentAtCursor();
       else if (!this.options.safeKeys(event))
         this.markCursorDirty();
-    },
-
-    // Ensure that the start of the line the cursor is on is parsed
-    // and coloured properly, so that the correct indentation can be
-    // computed.
-    highlightAtCursor: function(cursor) {
-      var cursor = select.selectionTopNode(this.container, false);
-      if (cursor === false || !this.container.firstChild) return;
-
-      cursor = cursor || this.container.firstChild;
-      // If the node is a text node, it will be recognized as
-      // dirty anyway, and some browsers do not allow us to add
-      // properties to text nodes.
-      if (cursor.nodeType != 3)
-        cursor.dirty = true;
-      // Store selection, highlight, restore selection.
-      var sel = select.markSelection(this.win);
-      this.highlight(cursor);
-      select.selectMarked(sel);
     },
 
     // Indent the line following a given <br>, or null for the first
@@ -366,16 +341,44 @@ var CodeMirror = function(){
       return whiteSpace;
     },
 
+    // When tab is pressed with text selected, the whole selection is
+    // re-indented, when nothing is selected, the line with the cursor
+    // is re-indented.
+    handleTab: function() {
+      var start = select.selectionTopNode(this.container, true),
+          end = select.selectionTopNode(this.container, false);
+      if (start === false || end === false) return;
+
+      if (start == end)
+        this.indentAtCursor();
+      else
+        this.indentSelection(start, end);
+    },
+
     // Adjust the amount of whitespace at the start of the line that
     // the cursor is on so that it is indented properly.
     indentAtCursor: function() {
+      if (!this.container.firstChild) return;
+      var cursor = select.selectionTopNode(this.container, false);
       // The line has to have up-to-date lexical information, so we
       // highlight it first.
-      this.highlightAtCursor();
-      var cursor = select.selectionTopNode(this.container, false);
+      if (cursor) {
+        // If the node is a text node, it will be recognized as
+        // dirty anyway, and some browsers do not allow us to add
+        // properties to text nodes.
+        if (cursor.nodeType != 3)
+          cursor.dirty = true;
+        // Store selection, highlight, restore selection.
+        var sel = select.markSelection(this.win);
+        this.highlight(cursor);
+        select.selectMarked(sel);
+        // Highlighting might have messed up cursor info, so re-fetch
+        // it.
+        cursor = select.selectionTopNode(this.container, false);
+      }
 
-      // If we couldn't determine the place of the cursor, there's
-      // nothing to indent.
+      // If we couldn't determine the place of the cursor,
+      // there's nothing to indent.
       if (cursor === false)
         return;
       var lineStart = startOfLine(cursor);
@@ -385,6 +388,27 @@ var CodeMirror = function(){
       // This means the indentation has probably messed up the cursor.
       if (cursor == whiteSpace)
         select.focusAfterNode(cursor, this.container);
+    },
+
+    // Indent all lines whose start falls inside of the current
+    // selection.
+    indentSelection: function(current, end) {
+      var sel = select.markSelection(this.win);
+      if (!current)
+        this.indentLineAfter(current);
+      else
+        current = startOfLine(current.previousSibling);
+
+      while (current != end) {
+        var result = this.highlight(current, 1);
+        var next = result ? result.node : null;
+
+        while (current != next && current != end)
+          current = current ? current.nextSibling : this.container.firstChild;
+        if (current != end)
+          if (next) this.indentLineAfter(next);
+      }
+      select.selectMarked(sel);
     },
 
     // Find the node that the cursor is in, mark it as dirty, and make
@@ -457,30 +481,6 @@ var CodeMirror = function(){
       select.selectMarked(sel);
       if (start)
         this.scheduleHighlight();
-    },
-
-    // Indent all lines whose start falls inside of the current
-    // selection.
-    indentSelection: function() {
-      var current = select.selectionTopNode(this.container, true),
-          end = select.selectionTopNode(this.container, false);
-      if (current === false || end === false) return;
-
-      var sel = select.markSelection(this.win);
-      if (!current)
-        this.indentLineAfter(current);
-      else
-        current = startOfLine(current.previousSibling);
-      while (current != end) {
-        var result = this.highlight(current, 1);
-        var next = result ? result.node : null;
-
-        while (current != next && current != end)
-          current = current ? current.nextSibling : this.container.firstChild;
-        if (current != end)
-          if (next) this.indentLineAfter(next);
-      }
-      select.selectMarked(sel);
     },
 
     // The function that does the actual highlighting/colouring (with
