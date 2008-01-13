@@ -343,8 +343,14 @@ var CodeMirror = function(){
 
       // If there is too much, this is just a matter of shrinking a span.
       if (indentDiff < 0) {
-        whiteSpace.currentText = safeWhiteSpace(indent);
-        whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
+        if (indent == 0) {
+          removeElement(whiteSpace);
+          whiteSpace = null;
+        }
+        else {
+          whiteSpace.currentText = safeWhiteSpace(indent);
+          whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
+        }
       }
       // Not enough...
       else if (indentDiff > 0) {
