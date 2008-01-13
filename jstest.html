@@ -18,13 +18,13 @@
 // Here you see some JavaScript code. Mess around with it to get
 // acquainted with CodeMirror's features.
 
-// Press enter inside the object and your new line will be indented.
+// Press enter inside the object and your new line will be suitably
+// indented.
 var keyBindings = {
   enter: "newline-and-indent",
-  tab: "reindent-current-line",
-  ctrl_tab: "reindent-selection",
-  ctrl_enter: "reparse-buffer" // Or use ctrl-alt-a if your browser
-};                             // messes with ctrl-tab
+  tab: "reindent-selection",
+  ctrl_enter: "reparse-buffer",
+};
 
 // Press tab on the next line and the wrong indentation will be fixed.
       var regex = /foo|bar/i;

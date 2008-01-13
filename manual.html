@@ -77,6 +77,14 @@
     into the document right away, or it won't initialize properly on
     some browsers, and strange things will happen.</p>
 
+    <p>Inside the editor, the tab key is used to re-indent the current
+    selection (or the current line when nothing is selected), and
+    pressing enter will automatically indent the new line. Pressing
+    control-enter will cause the whole buffer to be re-coloured, which
+    can be helpful when a part of it has become out-of-date through
+    some non-local change (such as removing some tags at the top of an
+    XML document).</p>
+
     <p>To get more control over the behaviour of editors,
     configuration objects can be used. There are three ways to do
     this:</p>
@@ -100,38 +108,15 @@
 
     <dl>
 
-    <dt><code>reindentAfterKeys</code></dt><dd>Like reindentKeys, but
-    in this case the key's normal effect is first allowed to take
-    place. Use this for keys that might change the indentation level
-    of the current line, such as a closing brace in C-like languages.
-    Note that this set of keys is compared to the keyup event, which
-    means that on some browsers modifiers will not be recognized.
-    Defaults to the square-bracket keys (which, on US keyboards, hold
-    the curly braces).</dd>
-
-    <dt><code>reparseBufferKeys</code></dt><dd>This set of keys causes
-    the whole buffer to be parsed/coloured again, which can be useful
-    when a modification in the buffer causes code at some distance
-    from the modification to change meaning (fixing a tag mismatch in
-    XML mode, for example). Defaults to ctrl-enter.</dd>
-
-    <dt><code>safeKeys</code></dt><dd>Specifies the set of keys that
-    will probably not modify the content of the editor, and thus do
-    not have to be responded to. You usually won't have to change
-    this. Again, use <code>keySet</code>.</dd>
-
     <dt><code>stylesheet</code></dt><dd>The filename of the stylesheet
     that should be used to colour the code in the editor frame. See <a
     href="jscolors.css"><code>jscolors.css</code></a> for an
     example.</dd>
 
-    <dt><code>parser</code></dt><dd>This should refer to a function
-    that, when given a string stream (see <a
-    href="stringstream.js"><code>stringstream.js</code></a>), produces
-    an object that acts as a stream of tokens plus some other
-    functionality. See <a
-    href="parsejavascript.js"><code>parsejavascript.js</code></a> for
-    an example and a more detailed description of the interface.</dd>
+    <dt><code>parser</code></dt><dd>This should refer to a parser
+    object. For more about such objects, see below. The default is
+    <code>JavaScriptParser</code>, if you are using the XML parser you
+    can set this to <code>XMLParser</code>.</dd>
 
     <dt><code>linesPerPass</code></dt><dd>Specifies the maximum amount
     of lines that the highlighter tries to colour in one shot. Setting
@@ -151,6 +136,12 @@
     inividual editors as they are created.</dd>
 
     </dl>
+
+    <h2>Writing a parser</h2>
+
+    <p>[To be added, see the top of <a
+    href="parsejavascript.js"><code>parsejavascript.js</code></a> for
+    basic info.]</p>
 
   </body>
 </html>

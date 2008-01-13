@@ -31,8 +31,7 @@ for CodeMirror. The <a href="parsexml.js">javascript</a> file
 contains some comments with more information.</p>
 
 <script type="text/javascript">
-  MirrorOptions.reindentAfterKeys = keySet("SOLIDUS");
-  MirrorOptions.parser = parseXML;
+  MirrorOptions.parser = XMLParser;
   MirrorOptions.stylesheet = "xmlcolors.css";
 
   var editor = new CodeMirror(partial(swapDOM, $('code')), {height: "350px", content: $('code').value});

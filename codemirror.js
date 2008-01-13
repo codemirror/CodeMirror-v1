@@ -15,15 +15,8 @@ var MirrorOptions = window.MirrorOptions || {};
 
 // See manual.html for the meaning of these options.
 setdefault(MirrorOptions,
-           {safeKeys: keySet("ARROW_UP", "ARROW_DOWN", "ARROW_LEFT", "ARROW_RIGHT", "END", "HOME",
-                             "PAGE_UP", "PAGE_DOWN", "SHIFT", "CTRL", "ALT", "SELECT"),
-            reparseBufferKeys: keySet("ctrl ENTER"),
-            // This is unfortunately US-keyboard-specific, but there
-            // is no reliable cross-browser method for determining the
-            // character from a keyUp event.
-            reindentAfterKeys: keySet("RIGHT_SQUARE_BRACKET", "LEFT_SQUARE_BRACKET"),
-            stylesheet: "jscolors.css",
-            parser: window.parseJavaScript,
+           {stylesheet: "jscolors.css",
+            parser: window.JavaScriptParser,
             linesPerPass: 10,
             passDelay: 300,
             width: "100%",
@@ -218,6 +211,10 @@ var CodeMirror = function(){
       connect(this.frame, "onload", bind(function(){disconnectAll(this.frame, "onload"); this.init(options.content);}, this));
   }
 
+  var safeKeys = {"KEY_ARROW_UP": true, "KEY_ARROW_DOWN": true, "KEY_ARROW_LEFT": true, "KEY_ARROW_RIGHT": true,
+                  "KEY_END": true, "KEY_HOME": true, "KEY_PAGE_UP": true, "KEY_PAGE_DOWN": true,
+                  "KEY_SHIFT": true, "KEY_CTRL": true, "KEY_ALT": true, "KEY_SELECT": true};
+
   CodeMirror.prototype = {
     // Called after we are sure that our frame has a body
     init: function (code) {
@@ -225,13 +222,8 @@ var CodeMirror = function(){
       if (code)
         this.importCode(code);
       connect(this.doc, "onkeydown", method(this, "keyDown"));
+      connect(this.doc, "onkeypress", method(this, "keyPress"));
       connect(this.doc, "onkeyup", method(this, "keyUp"));
-
-      // Hack for Opera, in which stopping a keydown event does not
-      // prevent the associated keypress event from happening, so we
-      // have to explicitly cancel enter and tab there.
-      if (window.opera)
-        connect(this.doc, "onkeypress", function(event) {if (event.key().code == 13 || event.key().code == 9) event.stop();});
     },
 
     // Split a chunk of code into lines, put them in the frame, and
@@ -262,31 +254,43 @@ var CodeMirror = function(){
       return accum.join("").replace(nbspRegexp, " ");
     },
 
-    // Intercept enter and any keys that are specified to re-indent
-    // the current line.
+    // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
-      if (this.options.reparseBufferKeys(event)) {
-        this.reparseBuffer();
+      var key = event.key().string;
+      if (key == "KEY_ENTER") {
+        if (event.modifier().ctrl) {
+          this.reparseBuffer();
+        }
+        else {
+          select.insertNewlineAtCursor(this.win);
+          this.indentAtCursor();
+        }
         event.stop();
       }
-      else if (event.key().string == "KEY_TAB") {
+      else if (key == "KEY_TAB") {
         this.handleTab();
-        event.stop();
-      }
-      else if (event.key().string == "KEY_ENTER") {
-        select.insertNewlineAtCursor(this.win);
-        this.indentAtCursor();
         event.stop();
       }
     },
 
-    // Re-indent when a key in options.reindentAfterKeys is released,
-    // mark the node at the cursor dirty when a non-safe key is
+    // Check for characters that should re-indent the current line,
+    // and prevent Opera from handling enter and tab anyway.
+    keyPress: function(event) {
+      var code = event.key().code, ch = event.key().string;
+      var electric = this.options.parser.electricChars;
+      // Hack for Opera, in which stopping a keydown event does not
+      // prevent the associated keypress event from happening, so we
+      // have to cancel enter and tab again here.
+      if (window.opera && (code == 13 || code == 9))
+        event.stop();
+      else if (electric && ch.length == 1 && electric.indexOf(ch) != -1)
+        setTimeout(method(this, "indentAtCursor"), 0);
+    },
+
+    // Mark the node at the cursor dirty when a non-safe key is
     // released.
     keyUp: function(event) {
-      if (this.options.reindentAfterKeys(event))
-        this.indentAtCursor();
-      else if (!this.options.safeKeys(event))
+      if (!safeKeys.hasOwnProperty(event.key().string))
         this.markCursorDirty();
     },
 
@@ -532,7 +536,7 @@ var CodeMirror = function(){
       // parser from the start of the frame, otherwise a partial parse
       // is resumed.
       var parsed = from ? from.parserFromHere(multiStringStream(traverseDOM(from.nextSibling)))
-        : this.options.parser(multiStringStream(traverseDOM(container.firstChild)));
+        : this.options.parser.make(multiStringStream(traverseDOM(container.firstChild)));
 
       // parts is a wrapper that makes it possible to 'delay' going to
       // the next DOM node until we are completely done with the one

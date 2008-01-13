@@ -47,28 +47,3 @@ var nbsp = String.fromCharCode(160);
 // Unfortunately, IE's regexp matcher thinks non-breaking spaces
 // aren't whitespace.
 var realWhiteSpace = new RegExp("^[\\s" + nbsp + "]*$");
-
-// Produces a function that checks a MochiKit key event and returns a
-// boolean indicating whether the relevant key is part of the given
-// set. Arguments should be strings corresponding to MochiKit key
-// strings, without the "KEY_" prefix, and can optionally be prefixed
-// by modifiers ("ctrl", "alt", "shift") separated by spaces. Thus
-// "ctrl TAB" refers control-tab.
-function keySet() {
-  var check = function() {return false;};
-  var set = {};
-  forEach(arguments, function(keydesc) {
-    var next = check;
-    var parts = keydesc.split(" ");
-    var _name = "KEY_" + parts[parts.length - 1];
-    var _mods = parts.slice(0, parts.length - 1);
-    set[_name] = true;
-    check = function(name, mods) {
-      return (name == _name && every(_mods, function(m){return mods[m];})) || next(name, mods);
-    };
-  });
-  return function(event) {
-    var name = event.key().string;
-    return set.hasOwnProperty(name) && check(name, event.modifier());
-  };
-}
