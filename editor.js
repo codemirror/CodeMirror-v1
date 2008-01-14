@@ -235,12 +235,13 @@ var Editor = (function(){
     // Check for characters that should re-indent the current line,
     // and prevent Opera from handling enter and tab anyway.
     keyPress: function(event) {
-      var code = event.key().code, ch = event.key().string;
+      var code = event.event().keyCode, ch = event.key().string;
       var electric = Parser.electricChars;
-      // Hack for Opera, in which stopping a keydown event does not
-      // prevent the associated keypress event from happening, so we
-      // have to cancel enter and tab again here.
-      if (window.opera && (code == 13 || code == 9))
+      // Hack for Opera, and Firefox on OS X, in which stopping a
+      // keydown event does not prevent the associated keypress event
+      // from happening, so we have to cancel enter and tab again
+      // here.
+      if (code == 13 || code == 9)
         event.stop();
       else if (electric && ch.length == 1 && electric.indexOf(ch) != -1)
         this.parent.setTimeout(method(this, "indentAtCursor"), 0);
