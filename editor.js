@@ -14,7 +14,7 @@ var Editor = (function(){
   function safeWhiteSpace(n) {
     var buffer = [], nb = true;
     for (; n > 0; n--) {
-      buffer.push(nb ? nbsp : " ");
+      buffer.push((nb || n == 1) ? nbsp : " ");
       nb = !nb;
     }
     return buffer.join("");
