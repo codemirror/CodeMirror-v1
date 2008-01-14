@@ -169,8 +169,10 @@ var Editor = (function(){
       this.importCode(options.content);
 
     // In IE, designMode frames can not run any scripts, so we use
-    // contentEditable instead.
-    if (document.all)
+    // contentEditable instead. Random ActiveX check is there because
+    // Opera apparently also supports some kind of perverted form of
+    // contentEditable.
+    if (document.body.contentEditable != undefined && window.ActiveXObject)
       document.body.contentEditable = "true";
     else
       document.designMode = "on";
