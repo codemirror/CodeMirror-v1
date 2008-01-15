@@ -157,7 +157,7 @@ var Editor = (function(){
 
 
   // The Editor object is the main inside-the-iframe interface.
-  function Editor(parent, options) {
+  function Editor(options) {
     this.options = options;
     this.parent = parent;
     this.container = document.body;
@@ -628,3 +628,8 @@ var Editor = (function(){
 
   return Editor;
 })();
+
+connect(window, "onload", function() {
+  var CodeMirror = window.frameElement.CodeMirror;
+  CodeMirror.editor = new Editor(CodeMirror.options);
+});

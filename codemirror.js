@@ -54,9 +54,10 @@ var CodeMirror = (function(){
     else
       place(frame);
 
+    // Link back to this object, so that the editor can fetch options
+    // and add a reference to itself.
+    frame.CodeMirror = this;
     this.win = frame.contentWindow;
-    var self = this;
-    frame.onload = function(){self.load();};
 
     if (typeof options.parserfile == "string")
       options.parserfile = [options.parserfile];
@@ -73,9 +74,6 @@ var CodeMirror = (function(){
   }
 
   CodeMirror.prototype = {
-    load: function() {
-      this.editor = new this.win.Editor(window, this.options);
-    },
     getCode: function() {
       return this.editor.getCode();
     },
