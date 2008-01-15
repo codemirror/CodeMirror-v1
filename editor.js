@@ -20,7 +20,7 @@ var Editor = (function(){
     return buffer.join("");
   }
 
-  var multiWhiteSpace = new RegExp("[\\t " + nbsp + "]{2,}|[\\t ]{2,}", "g");
+  var multiWhiteSpace = new RegExp("[\\t " + nbsp + "]{2,}", "g");
   function splitSpaces(string) {
     return string.replace(multiWhiteSpace, function(s) {return safeWhiteSpace(s.length);});
   }
