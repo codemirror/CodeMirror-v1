@@ -180,14 +180,15 @@ var Editor = (function(){
     else
       document.designMode = "on";
 
-    connect(document, "onkeydown", method(this, "keyDown"));
-    connect(document, "onkeypress", method(this, "keyPress"));
-    connect(document, "onkeyup", method(this, "keyUp"));
+    addEventHandler(document, "keydown", method(this, "keyDown"));
+    addEventHandler(document, "keypress", method(this, "keyPress"));
+    addEventHandler(document, "keyup", method(this, "keyUp"));
   }
 
-  var safeKeys = {"KEY_ARROW_UP": true, "KEY_ARROW_DOWN": true, "KEY_ARROW_LEFT": true, "KEY_ARROW_RIGHT": true,
-                  "KEY_END": true, "KEY_HOME": true, "KEY_PAGE_UP": true, "KEY_PAGE_DOWN": true,
-                  "KEY_SHIFT": true, "KEY_CTRL": true, "KEY_ALT": true, "KEY_SELECT": true};
+  function isSafeKey(code) {
+    return (code >= 16 && code <= 18) || // shift, control, alt
+           (code >= 33 && code <= 40); // arrows, home, end
+  }
 
   Editor.prototype = {
     // Split a chunk of code into lines, put them in the frame, and
@@ -220,9 +221,8 @@ var Editor = (function(){
 
     // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
-      var key = event.key().string;
-      if (key == "KEY_ENTER") {
-        if (event.modifier().ctrl) {
+      if (event.keyCode == 13) { // enter
+        if (event.ctrlKey) {
           this.reparseBuffer();
         }
         else {
@@ -231,7 +231,7 @@ var Editor = (function(){
         }
         event.stop();
       }
-      else if (key == "KEY_TAB") {
+      else if (event.keyCode == 9) { // tab
         this.handleTab();
         event.stop();
       }
@@ -240,22 +240,21 @@ var Editor = (function(){
     // Check for characters that should re-indent the current line,
     // and prevent Opera from handling enter and tab anyway.
     keyPress: function(event) {
-      var code = event.event().keyCode, ch = event.key().string;
       var electric = Parser.electricChars;
       // Hack for Opera, and Firefox on OS X, in which stopping a
       // keydown event does not prevent the associated keypress event
       // from happening, so we have to cancel enter and tab again
       // here.
-      if (code == 13 || code == 9)
+      if (event.code == 13 || event.code == 9)
         event.stop();
-      else if (electric && ch.length == 1 && electric.indexOf(ch) != -1)
+      else if (electric && electric.indexOf(event.character) != -1)
         this.parent.setTimeout(method(this, "indentAtCursor"), 0);
     },
 
     // Mark the node at the cursor dirty when a non-safe key is
     // released.
     keyUp: function(event) {
-      if (!safeKeys.hasOwnProperty(event.key().string))
+      if (!isSafeKey(event.keyCode))
         this.markCursorDirty();
     },
 
@@ -632,7 +631,7 @@ var Editor = (function(){
   return Editor;
 })();
 
-connect(window, "onload", function() {
+addEventHandler(window, "load", function() {
   var CodeMirror = window.frameElement.CodeMirror;
   CodeMirror.editor = new Editor(CodeMirror.options);
 });

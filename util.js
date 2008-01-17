@@ -47,3 +47,37 @@ var nbsp = String.fromCharCode(160);
 // Unfortunately, IE's regexp matcher thinks non-breaking spaces
 // aren't whitespace.
 var realWhiteSpace = new RegExp("^[\\s" + nbsp + "]*$");
+
+// Standardize a few unportable event properties.
+function normalizeEvent(event) {
+  if (!event.stopPropagation) {
+    event.stopPropagation = function() {this.cancelBubble = true;};
+    event.preventDefault = function() {this.returnValue = false;};
+  }
+  if (!event.stop) {
+    event.stop = function() {
+      this.stopPropagation();
+      this.preventDefault();
+    };
+  }
+
+  if (event.type == "keypress") {
+    if (event.charCode === 0 || event.charCode == undefined)
+      event.code = event.keyCode;
+    else
+      event.code = event.charCode;
+    event.character = String.fromCharCode(event.code);
+  }
+  return event;
+}
+
+// Portably register event handlers.
+function addEventHandler(node, type, handler) {
+  function wrapHandler(event) {
+    handler(normalizeEvent(event || window.event));
+  }
+  if (typeof node.addEventListener == "function")
+    node.addEventListener(type, wrapHandler, false);
+  else
+    node.attachEvent("on" + type, wrapHandler);
+}
