@@ -46,7 +46,7 @@ var Editor = (function(){
         forEach(node.childNodes, simplifyNode);
         if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
-          result.push(BR());
+          result.push(withDocument(doc, BR));
         }
       }
     }
@@ -67,6 +67,7 @@ var Editor = (function(){
     function push(fun, arg, c){return function(){return fun(arg, c);};}
     function stop(){cc = stop; throw StopIteration;};
     var cc = push(scanNode, start, stop);
+    var owner = start.ownerDocument;
 
     // Create a function that can be used to insert nodes after the
     // one given as argument.
@@ -90,7 +91,7 @@ var Editor = (function(){
       var text = "\n";
       if (part.nodeType == 3) {
         text = part.nodeValue;
-        part = SPAN({"class": "part"}, part);
+        part = withDocument(owner, partial(SPAN, {"class": "part"}, part));
         part.currentText = text;
       }
       part.dirty = true;
@@ -160,7 +161,9 @@ var Editor = (function(){
   function Editor(options) {
     this.options = options;
     this.parent = parent;
-    this.container = document.body;
+    this.doc = document;
+    this.container = this.doc.body;
+    this.win = window;
 
     if (!window.Parser)
       throw "No parser loaded.";
@@ -194,7 +197,7 @@ var Editor = (function(){
       var lines = splitSpaces(code.replace(nbspRegexp, " ")).replace(/\r\n?/g, "\n").split("\n");
       for (var i = 0; i != lines.length; i++) {
         if (i > 0)
-          this.container.appendChild(BR());
+          this.container.appendChild(withDocument(this.doc, BR));
         var line = lines[i];
         if (line.length > 0)
           this.container.appendChild(document.createTextNode(line));
@@ -223,7 +226,7 @@ var Editor = (function(){
           this.reparseBuffer();
         }
         else {
-          select.insertNewlineAtCursor();
+          select.insertNewlineAtCursor(this.win);
           this.indentAtCursor();
         }
         event.stop();
@@ -297,7 +300,7 @@ var Editor = (function(){
         }
         // Otherwise, we have to add a new whitespace node.
         else {
-          whiteSpace = SPAN({"class": "part whitespace"}, safeWhiteSpace(indent));
+          whiteSpace = withDocument(this.doc, partial(SPAN, {"class": "part whitespace"}, safeWhiteSpace(indent)));
           if (start)
             insertAfter(whiteSpace, start);
           else
@@ -335,7 +338,7 @@ var Editor = (function(){
         if (cursor.nodeType != 3)
           cursor.dirty = true;
         // Store selection, highlight, restore selection.
-        var sel = select.markSelection();
+        var sel = select.markSelection(this.win);
         this.highlight(cursor);
         select.selectMarked(sel);
         // Highlighting might have messed up cursor info, so re-fetch
@@ -359,7 +362,7 @@ var Editor = (function(){
     // Indent all lines whose start falls inside of the current
     // selection.
     indentSelection: function(current, end) {
-      var sel = select.markSelection();
+      var sel = select.markSelection(this.win);
       if (!current)
         this.indentLineAfter(current);
       else
@@ -436,7 +439,7 @@ var Editor = (function(){
     // its lines, it shedules another highlight to finish the job.
     highlightDirty: function() {
       var lines = this.options.linesPerPass;
-      var sel = select.markSelection();
+      var sel = select.markSelection(this.win);
       var start;
       while (lines > 0 && (start = this.getDirtyNode())){
         var result = this.highlight(start, lines);
@@ -463,7 +466,7 @@ var Editor = (function(){
     // a 'clean' line (no dirty nodes), it will stop.
     highlight: function(from, lines){
       var container = this.container;
-      var document = document;
+      var doc = this.doc;
 
       if (!container.firstChild)
         return;
@@ -491,7 +494,7 @@ var Editor = (function(){
       }
       // Create a part corresponding to a given token.
       function tokenPart(token){
-        var part = SPAN({"class": "part " + token.style}, token.value);
+        var part = withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
         part.currentText = token.value;
         return part;
       }
