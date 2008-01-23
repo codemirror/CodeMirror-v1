@@ -164,12 +164,15 @@ var Editor = (function(){
     this.doc = document;
     this.container = this.doc.body;
     this.win = window;
+    this.history = new History(this.container, this.options.undoDepth, this.options.undoDelay, this.parent);
 
     if (!window.Parser)
       throw "No parser loaded.";
     this.dirty = [];
-    if (options.content)
+    if (options.content) {
       this.importCode(options.content);
+      this.history.initializing = true;
+    }
 
     // In IE, designMode frames can not run any scripts, so we use
     // contentEditable instead. Random ActiveX check is there because
@@ -233,6 +236,14 @@ var Editor = (function(){
       }
       else if (event.keyCode == 9) { // tab
         this.handleTab();
+        event.stop();
+      }
+      else if (event.ctrlKey && (event.keyCode == 90 || event.keyCode == 8)) { // ctrl-Z, ctrl-backspace
+        this.undo();
+        event.stop();
+      }
+      else if (event.ctrlKey && event.keyCode == 89) { // ctrl-Y
+        this.redo();
         event.stop();
       }
     },
@@ -309,6 +320,31 @@ var Editor = (function(){
       return whiteSpace;
     },
 
+    undo: function() {
+      this.highlightAtCursor();
+      forEach(this.history.undo(), method(this, "addDirtyNode"));
+      this.scheduleHighlight();
+    },
+
+    redo: function() {
+      this.highlightAtCursor();
+      forEach(this.history.redo(), method(this, "addDirtyNode"));
+      this.scheduleHighlight();
+    },
+
+    highlightAtCursor: function() {
+      var cursor = select.selectionTopNode(this.container, false);
+      if (cursor) {
+        // Make sure the cursor will be recognized as dirty.
+        if (cursor.nodeType != 3)
+          cursor.dirty = true;
+        // Store selection, highlight, restore selection.
+        var sel = select.markSelection(this.win);
+        this.highlight(cursor);
+        select.selectMarked(sel);
+      }
+    },
+
     // When tab is pressed with text selected, the whole selection is
     // re-indented, when nothing is selected, the line with the cursor
     // is re-indented.
@@ -327,24 +363,10 @@ var Editor = (function(){
     // the cursor is on so that it is indented properly.
     indentAtCursor: function() {
       if (!this.container.firstChild) return;
-      var cursor = select.selectionTopNode(this.container, false);
       // The line has to have up-to-date lexical information, so we
       // highlight it first.
-      if (cursor) {
-        // If the node is a text node, it will be recognized as
-        // dirty anyway, and some browsers do not allow us to add
-        // properties to text nodes.
-        if (cursor.nodeType != 3)
-          cursor.dirty = true;
-        // Store selection, highlight, restore selection.
-        var sel = select.markSelection(this.win);
-        this.highlight(cursor);
-        select.selectMarked(sel);
-        // Highlighting might have messed up cursor info, so re-fetch
-        // it.
-        cursor = select.selectionTopNode(this.container, false);
-      }
-
+      this.highlightAtCursor();
+      var cursor = select.selectionTopNode(this.container, false);
       // If we couldn't determine the place of the cursor,
       // there's nothing to indent.
       if (cursor === false)
@@ -398,6 +420,9 @@ var Editor = (function(){
     // Add a node to the set of dirty nodes, if it isn't already in
     // there.
     addDirtyNode: function(node) {
+      if (!node) node = this.container.firstChild;
+      if (!node) return;
+
       for (var i = 0; i < this.dirty.length; i++)
         if (this.dirty[i] == node) return;
 
@@ -414,7 +439,7 @@ var Editor = (function(){
       // Timeouts are routed through the parent window, because on
       // some browsers designMode windows do not fire timeouts.
       this.parent.clearTimeout(this.highlightTimeout);
-      this.highlightTimeout = this.parent.setTimeout(bind(this.highlightDirty, this), this.options.passDelay);
+      this.highlightTimeout = this.parent.setTimeout(method(this, "highlightDirty"), this.options.passDelay);
     },
 
     // Fetch one dirty node, and remove it from the dirty set.
@@ -464,8 +489,7 @@ var Editor = (function(){
     // colour no more than that amount. If at any time it comes across
     // a 'clean' line (no dirty nodes), it will stop.
     highlight: function(from, lines){
-      var container = this.container;
-      var doc = this.doc;
+      var container = this.container, self = this;
 
       if (!container.firstChild)
         return;
@@ -493,7 +517,7 @@ var Editor = (function(){
       }
       // Create a part corresponding to a given token.
       function tokenPart(token){
-        var part = withDocument(doc, partial(SPAN, {"class": "part " + token.style}, token.value));
+        var part = withDocument(self.doc, partial(SPAN, {"class": "part " + token.style}, token.value));
         part.currentText = token.value;
         return part;
       }
@@ -550,7 +574,8 @@ var Editor = (function(){
         }
       };
 
-      var lineDirty = false;
+      var lineDirty = false, lineHasNodes = false;;
+      this.history.touch(from);
 
       // This forEach loops over the tokens from the parsed stream, and
       // at the same time uses the parts object to proceed through the
@@ -563,8 +588,11 @@ var Editor = (function(){
           // is such a long shot that we explicitly check.
           if (part.nodeName != "BR")
             throw "Parser out of sync. Expected BR.";
+
           if (part.dirty || !part.indentation)
             lineDirty = true;
+          self.history.touch(part);
+
           // Every <br> gets a copy of the parser state and a lexical
           // context assigned to it. The first is used to be able to
           // later resume parsing from this point, the second is used
@@ -574,9 +602,9 @@ var Editor = (function(){
           part.dirty = false;
           // A clean line means we are done. Throwing a StopIteration is
           // the way to break out of a MochiKit forEach loop.
-          if ((lines !== undefined && --lines <= 0) || !lineDirty)
+          if ((lines !== undefined && --lines <= 0) || (!lineDirty && lineHasNodes))
             throw StopIteration;
-          lineDirty = false;
+          lineDirty = false; lineHasNodes = false;
           parts.next();
         }
         else {
@@ -584,6 +612,7 @@ var Editor = (function(){
             throw "Parser out of sync. Expected SPAN.";
           if (part.dirty)
             lineDirty = true;
+          lineHasNodes = true;
 
           // If the part matches the token, we can leave it alone.
           if (correctPart(token, part)){

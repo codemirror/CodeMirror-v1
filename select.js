@@ -116,12 +116,57 @@ var select = {};
         range.select();
       }
     };
+
+    // Get the BR node at the start of the line on which the cursor
+    // currently is, and the offset into the line. Returns null as
+    // node if cursor is on first line.
+    select.cursorLine = function(container) {
+      var selection = container.ownerDocument.selection;
+      if (!selection) return null;
+
+      var topNode = select.selectionTopNode(container, false);
+      while (topNode && topNode.nodeName != "BR")
+        topNode = topNode.previousSibling;
+
+      var range = selection.createRange(), range2 = range.duplicate();
+      if (topNode) {
+        range2.moveToElementText(topNode);
+        range2.collapse(false);
+      }
+      else {
+        range2.moveToElementText(container);
+        range2.collapse(true);
+      }
+      range.setEndPoint("StartToStart", range2);
+
+      return {start: topNode, offset: range.text.length};
+    };
+
+    // Set the cursor inside a given textnode. The implementation for
+    // IE is hopelessly crummy because it does not allow one to pass a
+    // text node to moveToElementText. Only call it when you are sure
+    // the text node is not preceded by another text node.
+    select.focusInText = function(textNode, offset) {
+      var range = textNode.ownerDocument.body.createTextRange();
+      if (!textNode.previousSibling) {
+        range.moveToElementText(textNode.parentNode);
+        range.collapse(true);
+      }
+      else if (textNode.previousSibling.nodeType == 3) {
+        throw "This is a very bad hack, but I had hoped this could not happen.";
+      }
+      else {
+        range.moveToElementText(textNode.previousSibling);
+        range.collapse(false);
+      }
+      range.move("character", offset);
+      range.select();
+    };
   }
   // W3C model
   else {
-    // Well, Opera isn't even supported at the moment, but it almost
-    // is, and this is used to fix an issue with getting the scroll
-    // position.
+    // This is used to fix an issue with getting the scroll position
+    // in Opera.
     var opera_scroll = !window.scrollX && !window.scrollY;
 
     // Store start and end nodes, and offsets within these, and refer
@@ -322,6 +367,31 @@ var select = {};
         range.collapse(false);
         selectRange(range, window);
       }
+    };
+
+    select.cursorLine = function(container) {
+      var selection = window.getSelection();
+      if (!(selection && selection.rangeCount > 0))
+        return null;
+
+      var topNode = select.selectionTopNode(container, false);
+      while (topNode && topNode.nodeName != "BR")
+        topNode = topNode.previousSibling;
+
+      var range = selection.getRangeAt(0).cloneRange();
+      if (topNode)
+        range.setStartAfter(topNode);
+      else
+        range.setStartBefore(container);
+      return {start: topNode, offset: range.toString().length};
+    };
+
+    select.focusInText = function(textNode, offset) {
+      var win = textNode.ownerDocument.defaultView,
+          range = win.document.createRange();
+      range.setEnd(textNode, offset);
+      range.collapse(false);
+      selectRange(range, win);
     };
   }
 }());
