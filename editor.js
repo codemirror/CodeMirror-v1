@@ -46,7 +46,7 @@ var Editor = (function(){
         forEach(node.childNodes, simplifyNode);
         if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
-          result.push(withDocument(doc, BR));
+          result.push(doc.createElement("BR"));
         }
       }
     }
@@ -91,7 +91,10 @@ var Editor = (function(){
       var text = "\n";
       if (part.nodeType == 3) {
         text = part.nodeValue;
-        part = withDocument(owner, partial(SPAN, {"class": "part"}, part));
+        var span = owner.createElement("SPAN");
+        span.className = "part";
+        span.appendChild(part);
+        part = span;
         part.currentText = text;
       }
       part.dirty = true;
@@ -198,7 +201,7 @@ var Editor = (function(){
     // Split a chunk of code into lines, put them in the frame, and
     // schedule them to be coloured.
     importCode: function(code) {
-      replaceChildNodes(this.container);
+      clearElement(this.container);
       this.insertLines(code, null);
       this.history.reset();
       if (this.container.firstChild){
@@ -285,11 +288,13 @@ var Editor = (function(){
       // the selection (if applicable).
       if (start.node && start.node.nodeName != "BR") {
         start.node.currentText = start.node.currentText.slice(0, start.offset);
-        replaceChildNodes(start.node, start.node.currentText);
+        clearElement(start.node);
+        start.node.appendChild(this.doc.createTextNode(start.node.currentText));
       }
       if (end.node && !end.replaced && end.node.nodeName != "BR") {
         end.node.currentText = end.node.currentText.slice(end.offset);
-        replaceChildNodes(end.node, end.node.currentText);
+        clearElement(end.node);
+        end.node.appendChild(this.doc.createTextNode(end.node.currentText));
       }
 
       // Remove all nodes between them.
@@ -398,7 +403,9 @@ var Editor = (function(){
         }
         // Otherwise, we have to add a new whitespace node.
         else {
-          whiteSpace = withDocument(this.doc, partial(SPAN, {"class": "part whitespace"}, safeWhiteSpace(indent)));
+          whiteSpace = this.doc.createElement("SPAN");
+          whiteSpace.className = "part whitespace";
+          whiteSpace.appendChild(this.doc.createTextNode(safeWhiteSpace(indent)));
           if (start)
             insertAfter(whiteSpace, start);
           else
@@ -538,7 +545,7 @@ var Editor = (function(){
       for (var i = 0; i != lines.length; i++) {
         var line = lines[i];
         if (i > 0)
-          insert(withDocument(this.doc, BR));
+          insert(this.doc.createElement("BR"));
         if (line.length > 0)
           insert(this.doc.createTextNode(line));
       }
@@ -650,7 +657,9 @@ var Editor = (function(){
       }
       // Create a part corresponding to a given token.
       function tokenPart(token){
-        var part = withDocument(self.doc, partial(SPAN, {"class": "part " + token.style}, token.value));
+        var part = self.doc.createElement("SPAN");
+        part.className = "part " + token.style;
+        part.appendChild(self.doc.createTextNode(token.value));
         part.currentText = token.value;
         return part;
       }

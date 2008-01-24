@@ -389,7 +389,7 @@ var select = {};
       var selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         var range = selection.getRangeAt(0);
-        var br = withDocument(window.document, BR);
+        var br = window.document.createElement("BR");
         // On Opera, insertNode is completely broken when the range is
         // in the middle of a text node.
         if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {

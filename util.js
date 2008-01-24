@@ -33,6 +33,16 @@ function insertAtStart(node, container) {
   return node;
 }
 
+function removeElement(node) {
+  if (node.parentNode)
+    node.parentNode.removeChild(node);
+}
+
+function clearElement(node) {
+  while (node.firstChild)
+    node.removeChild(node.firstChild);
+}
+
 // Check whether a node is contained in another one.
 function isAncestor(node, child) {
   while (child = child.parentNode) {
