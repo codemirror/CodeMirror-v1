@@ -334,7 +334,7 @@ History.prototype = {
       // adjusting for changed line length) if it was.
       if (cursor && cursor.start == line.from) {
         var prev = this.after(line.from);
-        var cursordiff = (prev && i < chain.length - 1) ? line.text.length - prev.text.length : 0;
+        var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
         select.focusInText(textNode, Math.max(0, Math.min(cursor.offset + cursordiff, line.text.length)));
       }
     }
