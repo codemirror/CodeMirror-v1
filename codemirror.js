@@ -32,7 +32,7 @@ var CodeMirror = (function(){
     basefiles: ["Mochi.js", "util.js", "stringstream.js", "select.js", "undo.js", "editor.js"],
     linesPerPass: 15,
     passDelay: 200,
-    undoDepth: 10,
+    undoDepth: 20,
     undoDelay: 800,
     width: "100%",
     height: "300px"

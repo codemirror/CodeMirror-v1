@@ -16,6 +16,11 @@
     when some colouring has become out-of-date without the editor
     noticing it.</p>
 
+    <p>The editor sports an (as of yet) experimental undo/redo system,
+    accessible with control-z (undo) and control-y (redo). Safari will
+    not allow client scripts to capture control-z presses, but you can
+    use control-backspace instead on that browser.</p>
+
     <p>To use CodeMirror in a document, you should add a script tag to
     load <a href="codemirror.js"><code>codemirror.js</code></a>. This
     adds two objects to your environment, <code>CodeMirror</code> and
@@ -154,17 +159,27 @@
       <dt><code>basefiles</code></dt><dd>An array of strings naming
       the files containing the base CodeMirror functionality. Defaults
       to <code>["Mochi.js", "util.js", "stringstream.js", "select.js",
-      "editor.js"]</code>, but if you put them all into a single file
-      to reduce latency, or add some functionality, you might have to
-      adjust that.</dd>
+      "undo.js", "editor.js"]</code>, but if you put them all into a
+      single file to reduce latency, or add some functionality, you
+      might have to adjust that.</dd>
       
       <dt><code>linesPerPass</code></dt><dd>Specifies the maximum
       amount of lines that the highlighter tries to colour in one
       shot. Setting this too high will cause the code to 'freeze' the
-      browser for noticeable intervals.</dd>
+      browser for noticeable intervals. Defaults to 15.</dd>
 
       <dt><code>passDelay</code></dt><dd>Gives the amount of
-      milliseconds between colouring passes.</dd>
+      milliseconds between colouring passes. Defaults to 200.</dd>
+
+      <dt><code>undoDepth</code></dt><dd>Maximum length of the undo
+      history. Default is 20.</dd>
+
+      <dt><code>undoDelay</code></dt><dd>When nothing is done in the
+      editor for this amount of milliseconds, pending changes get
+      added to the undo history. Setting this lower will give the undo
+      functionality a finer granularity. Should always be higher than
+      the <code>passDelay</code> above, or strange things might
+      happen. Defaults to 800.</dd>
 
       <dt><code>width</code>, <code>height</code></dt><dd>The size of
       the editor frame, given as a style-sheet quantities (for example
