@@ -224,6 +224,21 @@ var Editor = (function(){
       return accum.join("").replace(nbspRegexp, " ");
     },
 
+    jumpToLine: function(line) {
+      if (line <= 1 || !this.container.firstChild) {
+        select.focusAfterNode(null, this.container);
+      }
+      else {
+        var pos = this.container.firstChild;
+        while (true) {
+          if (pos.nodeName == "BR") line--;
+          if (line <= 1 || !pos.nextSibling) break;
+          pos = pos.nextSibling;
+        }
+        select.focusAfterNode(pos, this.container);
+      }
+    },
+
     // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
       if (event.keyCode == 13) { // enter

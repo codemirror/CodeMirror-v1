@@ -82,6 +82,10 @@ var CodeMirror = (function(){
     },
     setCode: function(code) {
       this.editor.importCode(code);
+    },
+    jumpToLine: function(line) {
+      this.editor.jumpToLine(line);
+      this.win.focus();
     }
   };
 
