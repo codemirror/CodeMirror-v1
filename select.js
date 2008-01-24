@@ -144,19 +144,22 @@ var select = {};
 
     // Set the cursor inside a given textnode. The implementation for
     // IE is hopelessly crummy because it does not allow one to pass a
-    // text node to moveToElementText. Only call it when you are sure
-    // the text node is not preceded by another text node.
+    // text node to moveToElementText. This won't work precisely if
+    // there are newlines in the text node or text nodes immediately
+    // in front of it.
     select.focusInText = function(textNode, offset) {
       var range = textNode.ownerDocument.body.createTextRange();
-      if (!textNode.previousSibling) {
+      var focusable = textNode.previousSibling;
+      while (focusable && focusable.nodeType == 3) {
+        offset += focusable.nodeValue.length;
+        focusable = focusable.previousSibling;
+      }
+      if (!focusable) {
         range.moveToElementText(textNode.parentNode);
         range.collapse(true);
       }
-      else if (textNode.previousSibling.nodeType == 3) {
-        throw "This is a very bad hack, but I had hoped this could not happen.";
-      }
       else {
-        range.moveToElementText(textNode.previousSibling);
+        range.moveToElementText(focusable);
         range.collapse(false);
       }
       range.move("character", offset);
