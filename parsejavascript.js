@@ -1,46 +1,13 @@
-/* JavaScript parser
+/* Parse function for JavaScript. Makes use of the tokenizer from
+ * tokenizejavascript.js. Note that your parsers do not have to be
+ * this complicated -- if you don't want to recognize local variables,
+ * in many languages it is enough to just look for braces, semicolons,
+ * parentheses, etc, and know when you are inside a string or comment.
  *
- * A parser object that can be plugged into the CodeMirror system has
- * to implement the following interface: It has a 'make' method, which
- * is a function that, when called with a string stream
- * (stringstream.js) as an argument, returns a MochiKit-style iterator
- * (object with a 'next' method). This iterator, when called, consumes
- * some input from the string stream, and returns a token object.
- * Token objects must have a 'value' property (the text they
- * represent), and a 'style' property (the CSS style that should be
- * used to colour them -- can be anything, except that any whitespace
- * at the start of a line should always have class "whitespace"). Each
- * newline character *must* have its own separate token, which also
- * has an 'indentation' property, a function that can be used to
- * determine the proper indentation level for the next line.This
- * function optionally takes the text in the first token of the next
- * line as an argument, which it can use to adjust the indentation
- * level.
- *
- * So far this should be easy. The hard part is that the iterator
- * produced by the parse function must also have a 'copy' method. This
- * method, called without arguments, returns a function representing
- * the current state of the parser. When this function is later called
- * with a string stream as its argument, it returns a parser iterator
- * object that resumes parsing using the old state and the new input
- * stream. It may assume that only one parser is active at a time, and
- * clobber the state of the old parser (the implementation below
- * certainly does).
- *
- * The parser object also, optionally, has an 'electricChars'
- * property, containing a string of characters which, when typed,
- * should cause the indentation of the current line to be recomputed
- * (for example "{}" for c-like languages). It must be found under the
- * name 'Parser' -- since it is loaded in the editable iframe itself,
- * there can be only one active parser per frame.
+ * See manual.html for more info about the parser interface.
  */
 
-// Parse function for JavaScript. Makes use of the tokenizer from
-// tokenizejavascript.js. Note that your parsers do not have to be
-// this complicated -- if you don't want to recognize local variables,
-// in many languages it is enough to just look for braces, semicolons,
-// parentheses, etc, and know when you are inside a string or comment.
-var Parser = (function() {
+Editor.Parser = (function() {
   // Token types that can be considered to be atoms.
   var atomicTypes = {"atom": true, "number": true, "variable": true, "string": true, "regexp": true};
   // Constructor for the lexical context objects.

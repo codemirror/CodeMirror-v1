@@ -1,12 +1,13 @@
 /* This file defines an XML parser, with a few kludges to make it
- * useable for HTML: XMLKludges.autoSelfClosers defines a set of
- * tag names that are expected to not have a closing tag, and
- * XMLKludges.doNotIndent specifies the tags inside of which no
- * indentation should happen.
+ * useable for HTML. autoSelfClosers defines a set of tag names that
+ * are expected to not have a closing tag, and doNotIndent specifies
+ * the tags inside of which no indentation should happen (see Config
+ * object). These can be disabled by passing the editor an object like
+ * {autoSelfClosers: {}, doNotIndent: {}} as parserConfig option.
  */
 
-var Parser = (function() {
-  var XMLKludges = {
+Editor.Parser = (function() {
+  var Config = {
     autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true, "meta": true},
     doNotIndent: {"pre": true}
   };
@@ -181,7 +182,7 @@ var Parser = (function() {
     }
 
     function pushContext(tagname, startOfLine) {
-      var noIndent = XMLKludges.doNotIndent.hasOwnProperty(tagname) || (context && context.noIndent);
+      var noIndent = Config.doNotIndent.hasOwnProperty(tagname) || (context && context.noIndent);
       context = {prev: context, name: tagname, indent: indented, startOfLine: startOfLine, noIndent: noIndent};
     }
     function popContext() {
@@ -237,7 +238,7 @@ var Parser = (function() {
     }
     function endtag(startOfLine) {
       return function(style, content) {
-        if (content == "/>" || (content == ">" && XMLKludges.autoSelfClosers.hasOwnProperty(currentTag))) cont();
+        if (content == "/>" || (content == ">" && Config.autoSelfClosers.hasOwnProperty(currentTag))) cont();
         else if (content == ">") pushContext(currentTag, startOfLine) || cont();
         else mark("error") || cont(arguments.callee);
       };
@@ -297,5 +298,11 @@ var Parser = (function() {
     };
   }
 
-  return {make: parseXML, electricChars: "/"};
+  return {
+    make: parseXML,
+    electricChars: "/",
+    configure: function(opions) {
+      setdefault(Config, options);
+    }
+  };
 })();

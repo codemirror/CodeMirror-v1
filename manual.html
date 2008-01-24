@@ -196,6 +196,10 @@
       the editor frame, given as a style-sheet quantities (for example
       <code>"600px"</code> or <code>"100%"</code>).</dd>
 
+      <dt><code>parserConfig</code></dt><dd>A value that is passed
+      along to the parser to configure it. What this value may look
+      like depends on the parser used.</dd>
+
       <dt><code>content</code></dt><dd>The starting content of the
       editor. You'll probably not want to provide a global default for
       this, but add it to the <code>options</code> object passed to
@@ -205,9 +209,67 @@
 
     <h2>Writing a parser</h2>
 
-    <p>[To be added, see the top of <a
-    href="parsejavascript.js"><code>parsejavascript.js</code></a> for
-    basic info.]</p>
+    <p>A parser is implemented by one or more files (see
+    <code>parserfile</code> above) which, when loaded, add a
+    <code>Parser</code> object to the <code>Editor</code> object
+    defined by <a href="editor.js"><code>editor.js</code></a>. This
+    object must support the following interface:</p>
+
+    <dl>
+
+      <dt><code>make</code></dt><dd>A function that, given a string
+      stream (see <a
+      href="stringstream.js"><code>stringstream.js</code></a>),
+      creates a parser. The behaviour of this parser is described
+      below.</dd>
+
+      <dt><code>electricChars</code></dt><dd>An optional string
+      containing the characters that, when typed, should cause the
+      indentation of the current line to be recomputed (for example
+      <code>"{}"</code> for c-like languages).</dd>
+
+      <dt><code>configure</code></dt><dd>An optional function that can
+      be used to configure the parser. If it exists, and an editor is
+      given a <code>parserConfig</code> option, it will be called with
+      the value of that option.</dd>
+
+    </dl>
+
+    <p>When the <code>make</code> method is called with a string
+    stream, it should return a MochiKit-style iterator: an object with
+    a <code>next</code> method, which will raise
+    <code>StopIteration</code> when it is at its end (see <a
+    href="http://bob.pythonmac.org/archives/2005/07/06/iteration-in-javascript/">this</a>
+    for details). This iterator, when called, will consume input from
+    the string stream, and produce a token object.</p>
+
+    <p>Token objects represent a single significant piece of the text
+    that is being edited. It must have a <code>value</code> property
+    holding the text it stands for, and a <code>style</code> property
+    with the CSS style that should be used to colour this element.
+    This style can be anything, except that any whitespace at the
+    start of a line should <em>always</em> have class
+    <code>"whitespace"</code>: The editor must be able to recognize
+    these when it indents lines. Furthermore, each newline character
+    <em>must</em> have its own separate token, which has an
+    <code>indentation</code> property holding a function that can be
+    used to determine the proper indentation level for the next line.
+    This function optionally takes the text in the first token of the
+    next line as an argument, which it can use to adjust the
+    indentation level.</p>
+
+    <p>So far this should be pretty easy. The hard part is that this
+    iterator must also have a <code>copy</code> method. This method,
+    called without arguments, returns a function representing the
+    current state of the parser. When this state function is later
+    called with a string stream as its argument, it returns a parser
+    object that resumes parsing using the old state and the new input
+    stream. It may assume that only one parser is active at a time,
+    and can clobber the state of the old parser if it wants.</p>
+
+    <p>For examples, see <a
+    href="parsejavascript.js"><code>parsejavascript.js</code></a> and
+    <a href="parsexml.js"><code>parsexml.js</code></a>.</p>
 
   </body>
 </html>

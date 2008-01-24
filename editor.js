@@ -169,8 +169,11 @@ var Editor = (function(){
     this.win = window;
     this.history = new History(this.container, this.options.undoDepth, this.options.undoDelay, this.parent);
 
-    if (!window.Parser)
+    if (!Editor.Parser)
       throw "No parser loaded.";
+    if (options.parserConfig && Editor.Parser.configure)
+      Editor.Parser.configure(options.parserConfig);
+
     this.dirty = [];
     if (options.content)
       this.importCode(options.content);
@@ -344,7 +347,7 @@ var Editor = (function(){
     // Check for characters that should re-indent the current line,
     // and prevent Opera from handling enter and tab anyway.
     keyPress: function(event) {
-      var electric = Parser.electricChars;
+      var electric = Editor.Parser.electricChars;
       // Hack for Opera, and Firefox on OS X, in which stopping a
       // keydown event does not prevent the associated keypress event
       // from happening, so we have to cancel enter and tab again
@@ -668,7 +671,7 @@ var Editor = (function(){
       // parser from the start of the frame, otherwise a partial parse
       // is resumed.
       var parsed = from ? from.parserFromHere(multiStringStream(traverseDOM(from.nextSibling)))
-        : Parser.make(multiStringStream(traverseDOM(container.firstChild)));
+        : Editor.Parser.make(multiStringStream(traverseDOM(container.firstChild)));
 
       // parts is a wrapper that makes it possible to 'delay' going to
       // the next DOM node until we are completely done with the one

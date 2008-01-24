@@ -36,7 +36,8 @@ var CodeMirror = (function(){
     undoDepth: 20,
     undoDelay: 800,
     width: "100%",
-    height: "300px"
+    height: "300px",
+    parserConfig: null
   });
 
   function CodeMirror(place, options) {
