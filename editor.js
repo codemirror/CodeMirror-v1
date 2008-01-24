@@ -172,6 +172,9 @@ var Editor = (function(){
     if (options.content)
       this.importCode(options.content);
 
+    if (options.continuousScanning !== false)
+      this.scanDocument(options.continousScanning, options.linesPerPass);
+
     // In IE, designMode frames can not run any scripts, so we use
     // contentEditable instead. Random ActiveX check is there because
     // Opera apparently also supports some kind of perverted form of
@@ -477,6 +480,25 @@ var Editor = (function(){
         this.scheduleHighlight();
     },
 
+    // Starts a continuous scanning process for this document -- will
+    // gradually highlight the entire buffer, all the time, regardless
+    // of whether any keypresses were detected.
+    scanDocument: function(delay, linesPer) {
+      var self = this, pos = null;
+      function scan() {
+        // If the current node is no longer in the document... oh
+        // well, we start over.
+        if (pos && pos.parentNode != self.container)
+          pos = null;
+        var sel = select.markSelection(self.win);
+        var result = self.highlight(pos, linesPer, true);
+        select.selectMarked(sel);
+        pos = result.node;
+        self.parent.setTimeout(scan, delay);
+      }
+      self.parent.setTimeout(scan, delay);
+    },
+
     // The function that does the actual highlighting/colouring (with
     // help from the parser and the DOM normalizer). Its interface is
     // rather overcomplicated, because it is used in different
@@ -486,8 +508,9 @@ var Editor = (function(){
     // this is null, it will start at the beginning of the frame. When
     // a number of lines is given with the 'lines' argument, it will
     // colour no more than that amount. If at any time it comes across
-    // a 'clean' line (no dirty nodes), it will stop.
-    highlight: function(from, lines){
+    // a 'clean' line (no dirty nodes), it will stop, except when
+    // 'cleanLines' is true.
+    highlight: function(from, lines, cleanLines){
       var container = this.container, self = this;
 
       if (!container.firstChild)
@@ -601,7 +624,7 @@ var Editor = (function(){
           part.dirty = false;
           // A clean line means we are done. Throwing a StopIteration is
           // the way to break out of a MochiKit forEach loop.
-          if ((lines !== undefined && --lines <= 0) || (!lineDirty && lineHasNodes))
+          if ((lines !== undefined && --lines <= 0) || (!lineDirty && lineHasNodes && !cleanLines))
             throw StopIteration;
           lineDirty = false; lineHasNodes = false;
           parts.next();
