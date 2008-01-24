@@ -302,7 +302,7 @@ Editor.Parser = (function() {
     make: parseXML,
     electricChars: "/",
     configure: function(opions) {
-      setdefault(Config, options);
+      update(Config, options);
     }
   };
 })();
