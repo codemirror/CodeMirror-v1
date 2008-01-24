@@ -87,8 +87,11 @@ var CodeMirror = (function(){
       this.editor.jumpToLine(line);
       this.win.focus();
     },
-    selectedText: function() {
+    selection: function() {
       return this.editor.selectedText();
+    },
+    replaceSelection: function(text) {
+      return this.editor.replaceSelection(text);
     }
   };
 

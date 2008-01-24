@@ -199,14 +199,7 @@ var Editor = (function(){
     // schedule them to be coloured.
     importCode: function(code) {
       replaceChildNodes(this.container);
-      var lines = splitSpaces(code.replace(nbspRegexp, " ")).replace(/\r\n?/g, "\n").split("\n");
-      for (var i = 0; i != lines.length; i++) {
-        if (i > 0)
-          this.container.appendChild(withDocument(this.doc, BR));
-        var line = lines[i];
-        if (line.length > 0)
-          this.container.appendChild(document.createTextNode(line));
-      }
+      this.insertLines(code, null);
       this.history.reset();
       if (this.container.firstChild){
         this.addDirtyNode(this.container.firstChild);
@@ -257,18 +250,64 @@ var Editor = (function(){
         else
           text.push(start.node.currentText.slice(start.offset));
       }
-      // Go over node until we find the end no
-      var pos = start.node ? start.node.nextSibling : this.container.firstChild;
-      while (pos && pos != end.node) {
-        text.push(pos.nodeName == "BR" ? "\n" : pos.currentText);
-        pos = pos.nextSibling;
+      // Go over node until we find the end node.
+      if (end.node) {
+        var pos = start.node ? start.node.nextSibling : this.container.firstChild;
+        while (pos && pos != end.node) {
+          text.push(pos.nodeName == "BR" ? "\n" : pos.currentText);
+          pos = pos.nextSibling;
+        }
       }
       // The last element. Since selectionPosition returns the node
       // before or around the cursor, a BR at the end should result in
       // a newline.
-      if (pos)
-        text.push(pos.nodeName == "BR" ? "\n" : pos.currentText.slice(0, end.offset));
+      if (end.node)
+        text.push(end.node.nodeName == "BR" ? "\n" : end.node.currentText.slice(0, end.offset));
       return text.join("");
+    },
+
+    // Replace the selection with another piece of text.
+    replaceSelection: function(text) {
+      this.highlightAtCursor();
+      var start = select.selectionPosition(this.container, true);
+      var end = select.selectionPosition(this.container, false);
+      if (!start || !end) return;
+
+      // If the selection exists within a single text node, it has to
+      // be split.
+      if (start.node && start.node == end.node && start.node.nodeName != "BR") {
+        end.node = this.doc.createTextNode(end.node.currentText.slice(end.offset));
+        end.replaced = true;
+        insertAfter(end.node, start.node);
+      }
+
+      // Cut off the parts of start.node and end.node that fall within
+      // the selection (if applicable).
+      if (start.node && start.node.nodeName != "BR") {
+        start.node.currentText = start.node.currentText.slice(0, start.offset);
+        replaceChildNodes(start.node, start.node.currentText);
+      }
+      if (end.node && !end.replaced && end.node.nodeName != "BR") {
+        end.node.currentText = end.node.currentText.slice(end.offset);
+        replaceChildNodes(end.node, end.node.currentText);
+      }
+
+      // Remove all nodes between them.
+      if (end.node != start.node) {
+        var pos = start.node ? start.node.nextSibling : this.container.firstChild;
+        while (pos && pos != end.node) {
+          var temp = pos.nextSibling;
+          removeElement(pos);
+          pos = temp;
+        }
+      }
+
+      // Add the new lines, restore the cursor, mark changed area as
+      // dirty.
+      this.insertLines(text, start.node);
+      select.focusAfterNode(start.node, this.container);
+      this.addDirtyNode(start.node);
+      this.scheduleHighlight();
     },
 
     // Intercept enter and tab, and assign their new functions.
@@ -381,13 +420,14 @@ var Editor = (function(){
       this.scheduleHighlight();
     },
 
+    // Re-highlight the selected part of the document.
     highlightAtCursor: function() {
       var pos = select.selectionTopNode(this.container, true);
       var to = select.selectionTopNode(this.container, false);
-      if (pos === false || to === false) return;
+      if (pos === false || !to) return;
 
       var toIsText = to.nodeType == 3;
-      if (to && !toIsText)
+      if (!toIsText)
         to.dirty = true;
 
       var sel = select.markSelection(this.win);
@@ -483,6 +523,25 @@ var Editor = (function(){
       if (node.nodeType != 3)
         node.dirty = true;
       this.dirty.push(node);
+    },
+
+    // Insert the code from string after the given node (null for
+    // start of document).
+    insertLines: function(string, after) {
+      var container = this.container;
+      var next = after ? after.nextSibling : this.container.firstChild;
+      var insert = next ?
+        function(node) {container.insertBefore(node, next);}
+      : function(node) {container.appendChild(node);};
+
+      var lines = splitSpaces(string.replace(nbspRegexp, " ")).replace(/\r\n?/g, "\n").split("\n");
+      for (var i = 0; i != lines.length; i++) {
+        var line = lines[i];
+        if (i > 0)
+          insert(withDocument(this.doc, BR));
+        if (line.length > 0)
+          insert(this.doc.createTextNode(line));
+      }
     },
 
     // Cause a highlight pass to happen in options.passDelay
