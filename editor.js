@@ -169,10 +169,8 @@ var Editor = (function(){
     if (!window.Parser)
       throw "No parser loaded.";
     this.dirty = [];
-    if (options.content) {
+    if (options.content)
       this.importCode(options.content);
-      this.history.initializing = true;
-    }
 
     // In IE, designMode frames can not run any scripts, so we use
     // contentEditable instead. Random ActiveX check is there because
@@ -206,6 +204,7 @@ var Editor = (function(){
         if (line.length > 0)
           this.container.appendChild(document.createTextNode(line));
       }
+      this.history.reset();
       if (this.container.firstChild){
         this.addDirtyNode(this.container.firstChild);
         this.scheduleHighlight();

@@ -93,6 +93,29 @@ History.prototype = {
     return dirty;
   },
 
+  // Clear the undo history, link the current document (which is
+  // expected to be just text nodes and BRs).
+  reset: function() {
+    this.history = []; this.redoData = null;
+    var chain = [], line = "", start = null;
+    var pos = this.container.firstChild;
+    while (true) {
+      if (!pos || pos.nodeName == "BR") {
+        chain.push({from: start, to: pos, text: line});
+        line = ""; start = pos;
+      }
+      else if (pos.nodeType == 3) {
+        line += pos.nodeValue;
+      }
+      else {
+        throw "Invalid history reset: " + pos.nodeName + " node found.";
+      }
+      if (!pos) break;
+      pos = pos.nextSibling;
+    }
+    this.linkChain(chain);
+  },
+
   // [ end of public interface ]
 
   // Check whether the touched nodes hold any changes, if so, commit
@@ -109,22 +132,8 @@ History.prototype = {
       self.linkChain(chain);
       return shadow;
     };
-    var diffs = map(commitChain, chains);
-
-    // Initializing is a hack used when a document is loaded:
-    // Technically, this loading is a change, but having that in your
-    // undo history is a pain, so after committing the new document,
-    // the history is cleared. (This does mean that changes to a
-    // document made while the thing is still being parsed for the
-    // first time can not be undone.)
-    if (this.initializing) {
-      this.history = [];
-      this.initializing = false;
-    }
-    else {
-      // Store the changes.
-      this.addUndoLevel(diffs);
-    }
+    // Store the changes.
+    this.addUndoLevel(map(commitChain, chains));
     // Any redo data is now out of date, so clear it.
     this.redoData = null;
   },
@@ -321,11 +330,11 @@ History.prototype = {
       // Add the text.
       var textNode = this.container.ownerDocument.createTextNode(line.text);
       insert(textNode);
-      // See if the cursor was on this line. Put it back (adjusting
-      // for changed line length) if it was.
+      // See if the cursor was on this line. Put it back (vaguely
+      // adjusting for changed line length) if it was.
       if (cursor && cursor.start == line.from) {
         var prev = this.after(line.from);
-        var cursordiff = prev ? line.text.length - prev.text.length : 0;
+        var cursordiff = (prev && i < chain.length - 1) ? line.text.length - prev.text.length : 0;
         select.focusInText(textNode, Math.max(0, Math.min(cursor.offset + cursordiff, line.text.length)));
       }
     }
