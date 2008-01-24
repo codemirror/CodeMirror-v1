@@ -83,7 +83,7 @@
       definition of editor frames. Include this in your HTML
       document.</dd>
       <dt><code>Mochi.js</code></dt> <dd>This file contains a
-      compressed version of the Base, DOM, and Iter modules of <a
+      compressed version of the Base and Iter modules of <a
       href="http://www.mochikit.com">MochiKit</a>, which are used by
       the files below.</dd>
       <dt><a href="editor.js"><code>editor.js</code></a></dt> <dd>The
@@ -178,8 +178,8 @@
       above) lines of the document every <code>N</code> milliseconds,
       regardless of whether anything changed. This makes sure
       non-local changes propagate through the document, and will help
-      keep everything consistent, but it does add extra processing
-      cost, even for an idle editor. Default value is
+      keep everything consistent. It does add extra processing cost,
+      even for an idle editor. Default value is
       <code>false</code>.</dd>
 
       <dt><code>undoDepth</code></dt><dd>Maximum length of the undo
