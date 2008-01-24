@@ -86,6 +86,9 @@ var CodeMirror = (function(){
     jumpToLine: function(line) {
       this.editor.jumpToLine(line);
       this.win.focus();
+    },
+    selectedText: function() {
+      return this.editor.selectedText();
     }
   };
 

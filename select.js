@@ -84,12 +84,27 @@ var select = {};
         if (range.compareEndPoints("StartToStart", range2) == -1)
           return topLevelNodeAt(around, container);
       }
-
+      // Fall-back hack
       range.pasteHTML("<span id='// temp //'></span>");
       var temp = container.ownerDocument.getElementById("// temp //");
       var result = topLevelNodeBefore(temp, container);
       removeElement(temp);
       return result;
+    };
+
+    // Like selectionTopNode, but also gives an offset of the cursor
+    // within this node (in characters).
+    select.selectionPosition = function(container, start) {
+      var topNode = select.selectionTopNode(container, start);
+      if (topNode === false) return null;
+      if (topNode && topNode.nodeType == 3) throw "selectionPostion only works on normalized documents.";
+
+      var range = container.ownerDocument.selection.createRange();
+      range.collapse(start);
+      var range2 = range.duplicate();
+      range2.moveToElementText(topNode || container);
+      range2.setEndPoint("EndToStart", range);
+      return {node: topNode, offset: range2.text.length};
     };
 
     // Not needed in IE model -- see W3C model.
@@ -164,6 +179,17 @@ var select = {};
       }
       range.move("character", offset);
       range.select();
+    };
+
+    select.selectedText = function(window) {
+      var selection = window.document.selection;
+      return selection ? selection.createRange().text : "";
+    };
+
+    select.setSelectedText = function(window, text) {
+      var selection = window.document.selection;
+      if (selection)
+        selection.text = text;
     };
   }
   // W3C model
@@ -267,6 +293,16 @@ var select = {};
         else
           return topLevelNodeAt(node.childNodes[offset - 1], container);
       }
+    };
+
+    select.selectionPosition = function(container, start) {
+      var topNode = select.selectionTopNode(container, start);
+      if (topNode === false) return null;
+
+      var range = container.ownerDocument.defaultView.getSelection().getRangeAt(0).cloneRange();
+      range.collapse(start);
+      range.setStartBefore(topNode || container);
+      return {node: topNode, offset: range.toString().length};
     };
 
     select.selectMarked = function (sel) {
@@ -395,6 +431,15 @@ var select = {};
       range.setEnd(textNode, offset);
       range.collapse(false);
       selectRange(range, win);
+    };
+
+    select.selectedText = function(window) {
+      var selection = window.getSelection();
+      return (selection && selection.rangeCount > 0) ? selection.getRangeAt(0).toString() : "";
+    };
+
+    select.setSelectedText = function(window, text) {
+      return;
     };
   }
 }());

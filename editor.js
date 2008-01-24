@@ -224,6 +224,7 @@ var Editor = (function(){
       return accum.join("").replace(nbspRegexp, " ");
     },
 
+    // Move the cursor to the start of a specific line.
     jumpToLine: function(line) {
       if (line <= 1 || !this.container.firstChild) {
         select.focusAfterNode(null, this.container);
@@ -237,6 +238,37 @@ var Editor = (function(){
         }
         select.focusAfterNode(pos, this.container);
       }
+    },
+
+    // Retrieve the selected text.
+    selectedText: function() {
+      this.highlightAtCursor();
+      var start = select.selectionPosition(this.container, true);
+      var end = select.selectionPosition(this.container, false);
+      if (!start || !end) return "";
+
+      var text = [];
+      // First take the text from the start, if it is a text node.
+      if (start.node && start.node.nodeName != "BR") {
+        // Special case for selections that start and end in the same
+        // node.
+        if (start.node == end.node)
+          return start.node.currentText.slice(start.offset, end.offset);
+        else
+          text.push(start.node.currentText.slice(start.offset));
+      }
+      // Go over node until we find the end no
+      var pos = start.node ? start.node.nextSibling : this.container.firstChild;
+      while (pos && pos != end.node) {
+        text.push(pos.nodeName == "BR" ? "\n" : pos.currentText);
+        pos = pos.nextSibling;
+      }
+      // The last element. Since selectionPosition returns the node
+      // before or around the cursor, a BR at the end should result in
+      // a newline.
+      if (pos)
+        text.push(pos.nodeName == "BR" ? "\n" : pos.currentText.slice(0, end.offset));
+      return text.join("");
     },
 
     // Intercept enter and tab, and assign their new functions.
@@ -350,16 +382,21 @@ var Editor = (function(){
     },
 
     highlightAtCursor: function() {
-      var cursor = select.selectionTopNode(this.container, false);
-      if (cursor) {
-        // Make sure the cursor will be recognized as dirty.
-        if (cursor.nodeType != 3)
-          cursor.dirty = true;
-        // Store selection, highlight, restore selection.
-        var sel = select.markSelection(this.win);
-        this.highlight(cursor);
-        select.selectMarked(sel);
+      var pos = select.selectionTopNode(this.container, true);
+      var to = select.selectionTopNode(this.container, false);
+      if (pos === false || to === false) return;
+
+      var toIsText = to.nodeType == 3;
+      if (to && !toIsText)
+        to.dirty = true;
+
+      var sel = select.markSelection(this.win);
+      while (to.parentNode == this.container && (toIsText || to.dirty)) {
+        var result = this.highlight(pos, 1, true);
+        if (result) pos = result.node;
+        else break;
       }
+      select.selectMarked(sel);
     },
 
     // When tab is pressed with text selected, the whole selection is
