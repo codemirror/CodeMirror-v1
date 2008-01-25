@@ -68,6 +68,7 @@ var Editor = (function(){
     function stop(){cc = stop; throw StopIteration;};
     var cc = push(scanNode, start, stop);
     var owner = start.ownerDocument;
+    var nodeQueue = [];
 
     // Create a function that can be used to insert nodes after the
     // one given as argument.
@@ -98,6 +99,7 @@ var Editor = (function(){
         part.currentText = text;
       }
       part.dirty = true;
+      nodeQueue.push(part);
       point(part);
       return text;
     }
@@ -131,9 +133,11 @@ var Editor = (function(){
         c = push(scanNode, node.nextSibling, c);
 
       if (partNode(node)){
+        nodeQueue.push(node);
         return yield(node.currentText, c);
       }
       else if (node.nodeName == "BR") {
+        nodeQueue.push(node);
         return yield("\n", c);
       }
       else {
@@ -146,7 +150,7 @@ var Editor = (function(){
     // MochiKit iterators are objects with a next function that
     // returns the next value or throws StopIteration when there are
     // no more values.
-    return {next: function(){return cc();}};
+    return {next: function(){return cc();}, nodes: nodeQueue};
   }
 
   var nbspRegexp = new RegExp(nbsp, "g");
@@ -670,42 +674,36 @@ var Editor = (function(){
       // Get the token stream. If from is null, we start with a new
       // parser from the start of the frame, otherwise a partial parse
       // is resumed.
-      var parsed = from ? from.parserFromHere(multiStringStream(traverseDOM(from.nextSibling)))
-        : Editor.Parser.make(multiStringStream(traverseDOM(container.firstChild)));
+      var traversal = traverseDOM(from ? from.nextSibling : container.firstChild),
+          stream = multiStringStream(traversal),
+          parsed = from ? from.parserFromHere(stream) : Editor.Parser.make(stream);
 
-      // parts is a wrapper that makes it possible to 'delay' going to
+      // parts is an interface to make it possible to 'delay' fetching
       // the next DOM node until we are completely done with the one
-      // before it. This is necessary because we are constantly poking
-      // around in the DOM tree, and if the next node is fetched too
-      // early it might get replaced before it is used.
+      // before it. This is necessary because often the next node is
+      // not yet available when we want to proceed past the current
+      // one.
       var parts = {
         current: null,
-        forward: false,
-        // Get the current part.
+        // Fetch current node.
         get: function(){
           if (!this.current)
-            this.current = from ? from.nextSibling : container.firstChild;
-          else if (this.forward)
-            this.current = this.current.nextSibling;
-          this.forward = false;
+            this.current = traversal.nodes.shift();
           return this.current;
         },
         // Advance to the next part (do not fetch it yet).
         next: function(){
-          if (this.forward)
-            this.get();
-          this.forward = true;
+          this.current = null;
         },
         // Remove the current part from the DOM tree, and move to the
         // next.
         remove: function(){
-          this.current = this.get().previousSibling;
-          container.removeChild(this.current ? this.current.nextSibling : container.firstChild);
-          this.forward = true;
+          container.removeChild(this.get());
+          this.current = null;
         },
         // Advance to the next part that is not empty, discarding empty
         // parts.
-        nextNonEmpty: function(){
+        getNonEmpty: function(){
           var part = this.get();
           while (part.nodeName == "SPAN" && part.currentText == ""){
             var old = part;
@@ -726,7 +724,7 @@ var Editor = (function(){
       // at the same time uses the parts object to proceed through the
       // corresponding DOM nodes.
       forEach(parsed, function(token){
-        var part = parts.nextNonEmpty();
+        var part = parts.getNonEmpty();
 
         if (token.value == "\n"){
           // The idea of the two streams actually staying synchronized
