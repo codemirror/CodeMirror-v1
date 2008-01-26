@@ -188,6 +188,13 @@ var select = {};
         range.setEndPoint("StartToStart", rangeAt(start.node, start.offset));
       range.select();
     };
+
+    // Make sure the cursor is visible.
+    select.scrollToCursor = function(container) {
+      var selection = container.ownerDocument.selection;
+      if (!selection) return null;
+      selection.createRange().scrollIntoView();
+    };
   }
   // W3C model
   else {
@@ -440,6 +447,25 @@ var select = {};
       setPoint(end, "End");
       setPoint(start, "Start");
       selectRange(range, win);
+    };
+
+    select.scrollToCursor = function(container) {
+      var body = container.ownerDocument.body, win = container.ownerDocument.defaultView;
+      var element = select.selectionTopNode(container, true) || container.firstChild;
+      
+      // In Opera, BR elements *always* have a scrollTop property of zero. Go Opera.
+      while (element && window.opera && element.nodeName == "BR")
+        element = element.previousSibling;
+
+      var y = 0, pos = element;
+      while (pos && pos.offsetParent) {
+        y += pos.offsetTop;
+        pos = pos.offsetParent;
+      }
+
+      var screen_y = y - body.scrollTop;
+      if (screen_y < 0 || screen_y > win.innerHeight - 10)
+        win.scrollTo(0, y);
     };
   }
 }());

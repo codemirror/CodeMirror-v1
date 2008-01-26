@@ -297,6 +297,7 @@ var Editor = (function(){
 
       this.editor.select({node: this.point, offset: this.offset},
                          {node: endNode, offset: endOffset});
+      select.scrollToCursor(this.container);
       return true;
     },
 
@@ -414,6 +415,7 @@ var Editor = (function(){
         }
         select.focusAfterNode(pos, this.container);
       }
+      select.scrollToCursor(this.container);
     },
 
     // Retrieve the selected text.
@@ -529,6 +531,7 @@ var Editor = (function(){
         }
         else {
           select.insertNewlineAtCursor(this.win);
+          select.scrollToCursor(this.container);
           this.indentAtCursor();
         }
         event.stop();
