@@ -35,6 +35,7 @@ var CodeMirror = (function(){
     continuousScanning: false,
     undoDepth: 20,
     undoDelay: 800,
+    disableSpellcheck: true,
     width: "100%",
     height: "300px",
     parserConfig: null
@@ -69,7 +70,8 @@ var CodeMirror = (function(){
     forEach(options.basefiles.concat(options.parserfile), function(file) {
       html.push("<script type=\"text/javascript\" src=\"" + options.path + file + "\"></script>");
     });
-    html.push("</head><body style=\"border-width: 0;\" class=\"editbox\" spellcheck=\"false\"></body></html>");
+    html.push("</head><body style=\"border-width: 0;\" class=\"editbox\" spellcheck=\"" +
+              (options.disableSpellcheck ? "false" : "true") + "\"></body></html>");
 
     var doc = this.win.document;
     doc.open();
