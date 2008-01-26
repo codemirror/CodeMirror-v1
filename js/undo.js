@@ -336,6 +336,10 @@ History.prototype = {
         var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
         select.focusNode(this.container, {node: textNode, offset: Math.max(0, cursor.offset + cursordiff)});
       }
+      // Cursor was in removed line, this is last new line.
+      else if (cursor && (i == chain.length - 1) && cursor.start && cursor.start.parentNode != this.container) {
+        select.focusNode(this.container, {node: textNode, offset: line.text.length});
+      }
     }
 
     // Anchor the chain in the DOM tree.
