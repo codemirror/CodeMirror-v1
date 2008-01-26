@@ -162,34 +162,31 @@ var select = {};
     // text node to moveToElementText. This won't work precisely if
     // there are newlines in the text node or text nodes immediately
     // in front of it.
-    select.focusInText = function(textNode, offset) {
-      var range = textNode.ownerDocument.body.createTextRange();
-      var focusable = textNode.previousSibling;
-      while (focusable && focusable.nodeType == 3) {
-        offset += focusable.nodeValue.length;
-        focusable = focusable.previousSibling;
+    select.focusNode = function(start, end) {
+      function rangeAt(node, offset) {
+        var range = node.ownerDocument.body.createTextRange();
+        var focusable = node.previousSibling;
+        while (focusable && focusable.nodeType == 3) {
+          offset += focusable.nodeValue.length;
+          focusable = focusable.previousSibling;
+        }
+        if (!focusable) {
+          range.moveToElementText(node.parentNode);
+          range.collapse(true);
+        }
+        else {
+          range.moveToElementText(focusable);
+          range.collapse(false);
+        }
+        range.move("character", offset);
+        return range;
       }
-      if (!focusable) {
-        range.moveToElementText(textNode.parentNode);
-        range.collapse(true);
-      }
-      else {
-        range.moveToElementText(focusable);
-        range.collapse(false);
-      }
-      range.move("character", offset);
+
+      end = end || start;
+      var range = rangeAt(end.node, end.offset);
+      if (start.node != end.node || start.offset != end.offset)
+        range.setEndPoint("StartToStart", rangeAt(start.node, start.offset));
       range.select();
-    };
-
-    select.selectedText = function(window) {
-      var selection = window.document.selection;
-      return selection ? selection.createRange().text : "";
-    };
-
-    select.setSelectedText = function(window, text) {
-      var selection = window.document.selection;
-      if (selection)
-        selection.text = text;
     };
   }
   // W3C model
@@ -249,15 +246,20 @@ var select = {};
       selection.removeAllRanges();
       selection.addRange(range);
     };
+    function selectionRange(window) {
+      var selection = window.getSelection();
+      if (!selection || selection.rangeCount == 0)
+        return false;
+      else
+        return selection.getRangeAt(0);
+    }
 
     // Finding the top-level node at the cursor in the W3C is, as you
     // can see, quite an involved process.
     select.selectionTopNode = function(container, start) {
-      var selection = container.ownerDocument.defaultView.getSelection();
-      if (!selection || selection.rangeCount == 0)
-        return false;
+      var range = selectionRange(container.ownerDocument.defaultView);
+      if (!range) return false;
 
-      var range = selection.getRangeAt(0);
       var node = start ? range.startContainer : range.endContainer;
       var offset = start ? range.startOffset : range.endOffset;
 
@@ -299,7 +301,7 @@ var select = {};
       var topNode = select.selectionTopNode(container, start);
       if (topNode === false) return null;
 
-      var range = container.ownerDocument.defaultView.getSelection().getRangeAt(0).cloneRange();
+      var range = selectionRange(container.ownerDocument.defaultView).cloneRange();
       range.collapse(start);
       range.setStartBefore(topNode || container);
       return {node: topNode, offset: range.toString().length};
@@ -386,38 +388,36 @@ var select = {};
     };
 
     select.insertNewlineAtCursor = function(window) {
-      var selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        var range = selection.getRangeAt(0);
-        var br = window.document.createElement("BR");
-        // On Opera, insertNode is completely broken when the range is
-        // in the middle of a text node.
-        if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {
-          var start = range.startContainer, text = start.nodeValue;
-          start.parentNode.insertBefore(window.document.createTextNode(text.substr(0, range.startOffset)), start);
-          start.nodeValue = text.substr(range.startOffset);
-          start.parentNode.insertBefore(br, start);
-        }
-        else {
-          range.insertNode(br);
-        }
+      var range = selectionRange(window);
+      if (!range) return;
 
-        range.setEndAfter(br);
-        range.collapse(false);
-        selectRange(range, window);
+      var br = window.document.createElement("BR");
+      // On Opera, insertNode is completely broken when the range is
+      // in the middle of a text node.
+      if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {
+        var start = range.startContainer, text = start.nodeValue;
+        start.parentNode.insertBefore(window.document.createTextNode(text.substr(0, range.startOffset)), start);
+        start.nodeValue = text.substr(range.startOffset);
+        start.parentNode.insertBefore(br, start);
       }
+      else {
+        range.insertNode(br);
+      }
+
+      range.setEndAfter(br);
+      range.collapse(false);
+      selectRange(range, window);
     };
 
     select.cursorLine = function(container) {
-      var selection = window.getSelection();
-      if (!(selection && selection.rangeCount > 0))
-        return null;
+      var range = selectionRange(window);
+      if (!range) return;
 
       var topNode = select.selectionTopNode(container, false);
       while (topNode && topNode.nodeName != "BR")
         topNode = topNode.previousSibling;
 
-      var range = selection.getRangeAt(0).cloneRange();
+      range = range.cloneRange();
       if (topNode)
         range.setStartAfter(topNode);
       else
@@ -425,21 +425,13 @@ var select = {};
       return {start: topNode, offset: range.toString().length};
     };
 
-    select.focusInText = function(textNode, offset) {
-      var win = textNode.ownerDocument.defaultView,
+    select.focusNode = function(start, end) {
+      end = end || start;
+      var win = end.node.ownerDocument.defaultView,
           range = win.document.createRange();
-      range.setEnd(textNode, offset);
-      range.collapse(false);
+      range.setEnd(end.node, end.offset);
+      range.setStart(start.node, start.offset);
       selectRange(range, win);
-    };
-
-    select.selectedText = function(window) {
-      var selection = window.getSelection();
-      return (selection && selection.rangeCount > 0) ? selection.getRangeAt(0).toString() : "";
-    };
-
-    select.setSelectedText = function(window, text) {
-      return;
     };
   }
 }());

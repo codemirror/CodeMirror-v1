@@ -44,7 +44,7 @@ function History(container, maxDepth, commitDelay, parent) {
   this.firstTouched = false;
   // History is the set of committed changes, touched is the set of
   // nodes touched since the last commit.
-  this.history = []; this.touched = [];
+  this.history = []; this.redoHistory = []; this.touched = [];
 }
 
 History.prototype = {
@@ -70,7 +70,7 @@ History.prototype = {
     var data = this.history.pop();
     // Store the current equivalents of these chains, in case the user
     // wants to redo.
-    this.redoData = map(method(this, "shadowChain"), data);
+    this.redoHistory.push(map(method(this, "shadowChain"), data));
     // The editor wants to know which nodes it should reparse, so
     // revertChain returns those.
     return map(method(this, "revertChain"), data);
@@ -80,23 +80,22 @@ History.prototype = {
   // stored for this).
   redo: function() {
     this.commit();
-    if (!this.redoData)
+    if (!this.redoHistory.length)
       return [];
 
+    var data = this.redoHistory.pop();
     // Store the changes we are about to redo, so they can be undone
     // again.
-    this.addUndoLevel(map(method(this, "shadowChain"), this.redoData));
+    this.addUndoLevel(map(method(this, "shadowChain"), data));
     // Revert changes, save dirty nodes.
-    var dirty = map(method(this, "revertChain"), this.redoData);
-    // Clean up redo data.
-    this.redoData = null;
+    var dirty = map(method(this, "revertChain"), data);
     return dirty;
   },
 
   // Clear the undo history, link the current document (which is
   // expected to be just text nodes and BRs).
   reset: function() {
-    this.history = []; this.redoData = null;
+    this.history = []; this.redoHistory = [];
     var chain = [], line = "", start = null;
     var pos = this.container.firstChild;
     while (true) {
@@ -135,7 +134,7 @@ History.prototype = {
     // Store the changes.
     this.addUndoLevel(map(commitChain, chains));
     // Any redo data is now out of date, so clear it.
-    this.redoData = null;
+    this.redoHistory = [];
   },
 
   // Link a chain into the DOM nodes (or the first/last links for null
@@ -335,7 +334,7 @@ History.prototype = {
       if (cursor && cursor.start == line.from) {
         var prev = this.after(line.from);
         var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
-        select.focusInText(textNode, Math.max(0, Math.min(cursor.offset + cursordiff, line.text.length)));
+        select.focusNode({node: textNode, offset: Math.max(0, cursor.offset + cursordiff)});
       }
     }
 
