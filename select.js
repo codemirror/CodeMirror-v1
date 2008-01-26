@@ -162,16 +162,16 @@ var select = {};
     // text node to moveToElementText. This won't work precisely if
     // there are newlines in the text node or text nodes immediately
     // in front of it.
-    select.focusNode = function(start, end) {
+    select.focusNode = function(container, start, end) {
       function rangeAt(node, offset) {
-        var range = node.ownerDocument.body.createTextRange();
-        var focusable = node.previousSibling;
+        var range = container.ownerDocument.body.createTextRange();
+        var focusable = node && node.previousSibling;
         while (focusable && focusable.nodeType == 3) {
           offset += focusable.nodeValue.length;
           focusable = focusable.previousSibling;
         }
         if (!focusable) {
-          range.moveToElementText(node.parentNode);
+          range.moveToElementText(container);
           range.collapse(true);
         }
         else {
@@ -425,12 +425,14 @@ var select = {};
       return {start: topNode, offset: range.toString().length};
     };
 
-    select.focusNode = function(start, end) {
+    select.focusNode = function(container, start, end) {
       end = end || start;
-      var win = end.node.ownerDocument.defaultView,
+      var win = container.ownerDocument.defaultView,
           range = win.document.createRange();
       function setPoint(point, side) {
-        if (point.node.nodeType == 3)
+        if (!point.node)
+          range["set" + side + "Before"](container);
+        else if (point.node.nodeType == 3)
           range["set" + side](point.node, point.offset);
         else
           range["set" + side + (point.offset ? "After" : "Before")](point.node);

@@ -187,7 +187,7 @@ var Editor = (function(){
     // DOM tree, we can still try to continue.
     this.fallbackSize = 15;
     var cursor;
-    if (fromCursor && cursor = select.cursorLine(this.container)) {
+    if (fromCursor && (cursor = select.cursorLine(this.container))) {
       // Adjust information returned by cursorline -- in here, BRs
       // count as a character, and null nodes mean 'end of document'.
       if (cursor.start)
@@ -397,7 +397,7 @@ var Editor = (function(){
       return accum.join("").replace(nbspRegexp, " ");
     },
 
-    // Move the cursor to the start of a specific line.
+    // Move the cursor to the start of a specific line (counting from 1).
     jumpToLine: function(line) {
       if (line <= 1 || !this.container.firstChild) {
         select.focusAfterNode(null, this.container);
@@ -455,10 +455,18 @@ var Editor = (function(){
 
       // If the selection exists within a single text node, it has to
       // be split.
-      if (start.node && start.node == end.node && start.node.nodeName != "BR") {
-        end.node = this.doc.createTextNode(end.node.currentText.slice(end.offset));
+      if (start.node == end.node) {
+        if (!start.node) {
+          end.node = this.container.firstChild;
+        }
+        else if (start.node.nodeName == "BR") {
+          end.node = start.node.nextSibling;
+        }
+        else {
+          end.node = this.doc.createTextNode(end.node.currentText.slice(end.offset));
+          insertAfter(end.node, start.node);
+        }
         end.replaced = true;
-        insertAfter(end.node, start.node);
       }
 
       // Cut off the parts of start.node and end.node that fall within
@@ -475,19 +483,17 @@ var Editor = (function(){
       }
 
       // Remove all nodes between them.
-      if (end.node != start.node) {
-        var pos = start.node ? start.node.nextSibling : this.container.firstChild;
-        while (pos && pos != end.node) {
-          var temp = pos.nextSibling;
-          removeElement(pos);
-          pos = temp;
-        }
+      var pos = start.node ? start.node.nextSibling : this.container.firstChild;
+      while (pos && pos != end.node) {
+        var temp = pos.nextSibling;
+        removeElement(pos);
+        pos = temp;
       }
 
       // Add the new lines, restore the cursor, mark changed area as
       // dirty.
       this.insertLines(text, start.node);
-      this.select(start, {node: end.node, offset: 0});
+      this.select(start, end.node && {node: end.node, offset: 0});
       this.addDirtyNode(start.node);
       this.scheduleHighlight();
     },
@@ -501,10 +507,11 @@ var Editor = (function(){
     select: function(from, to) {
       // select.focusNode only works on leaf nodes.
       function actualNode(node) {
-        while (node.firstChild) node = node.firstChild;
+        while (node && node.firstChild) node = node.firstChild;
         return node;
       }
-      select.focusNode({node: actualNode(from.node), offset: from.offset},
+      select.focusNode(this.container,
+                       {node: actualNode(from.node), offset: from.offset},
                        to && {node: actualNode(to.node), offset: to.offset});
     },
 

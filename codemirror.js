@@ -91,8 +91,9 @@ var CodeMirror = (function(){
     selection: function() {
       return this.editor.selectedText();
     },
-    replaceSelection: function(text) {
-      return this.editor.replaceSelection(text);
+    replaceSelection: function(text, focus) {
+      this.editor.replaceSelection(text);
+      if (focus) this.win.focus();
     },
     getSearchCursor: function(string, fromCursor) {
       return this.editor.getSearchCursor(string, fromCursor);

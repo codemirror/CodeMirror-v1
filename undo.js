@@ -334,7 +334,7 @@ History.prototype = {
       if (cursor && cursor.start == line.from) {
         var prev = this.after(line.from);
         var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
-        select.focusNode({node: textNode, offset: Math.max(0, cursor.offset + cursordiff)});
+        select.focusNode(this.container, {node: textNode, offset: Math.max(0, cursor.offset + cursordiff)});
       }
     }
 
