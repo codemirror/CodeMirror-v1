@@ -180,8 +180,8 @@ var Editor = (function(){
   function SearchCursor(editor, string, fromCursor) {
     this.editor = editor; this.container = editor.container;
     this.string = string;
-    // Are we currently at an occurence of the search string?
-    this.atOccurance = false;
+    // Are we currently at an occurrence of the search string?
+    this.atOccurrence = false;
     // The object stores a set of nodes coming after its current
     // position, so that when the current point is taken out of the
     // DOM tree, we can still try to continue.
@@ -215,7 +215,7 @@ var Editor = (function(){
       // and the possibility to look up the current node and save its
       // position.
       var traverse = traverseDOM(this.point);
-      var buffer = "", offset = this.offset + (this.atOccurance ? 1 : 0);
+      var buffer = "", offset = this.offset + (this.atOccurrence ? 1 : 0);
       var total = offset;
 
       // Fetch the next character, or null if end of buffer.
@@ -265,7 +265,7 @@ var Editor = (function(){
           if (!search) {
             pushBack(this.string);
             savePos(this);
-            return (this.atOccurance = true);
+            return (this.atOccurrence = true);
           }
         }
         else if (backtrack) {
@@ -276,13 +276,13 @@ var Editor = (function(){
       }
 
       this.point = null;
-      return (this.atOccurance = false);
+      return (this.atOccurrence = false);
     },
 
     select: function() {
-      // Can only select if we are at an occurance and that occurance
+      // Can only select if we are at an occurrence and that occurrence
       // is still in the document.
-      if (!this.atOccurance || this.point.parentNode != this.container)
+      if (!this.atOccurrence || this.point.parentNode != this.container)
         return false;
 
       // Find the end of the match.

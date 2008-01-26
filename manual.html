@@ -6,7 +6,7 @@
   <body>
     <h1>CodeMirror user manual</h1>
 
-    <h2>Usage</h2>
+    <h2>Basic Usage</h2>
 
     <p>Inside the editor, the tab key is used to re-indent the current
     selection (or the current line when nothing is selected), and
@@ -16,10 +16,10 @@
     when some colouring has become out-of-date without the editor
     noticing it.</p>
 
-    <p>The editor sports an (as of yet) experimental undo/redo system,
-    accessible with control-z (undo) and control-y (redo). Safari will
-    not allow client scripts to capture control-z presses, but you can
-    use control-backspace instead on that browser.</p>
+    <p>The editor sports an undo/redo system, accessible with
+    control-z (undo) and control-y (redo). Safari will not allow
+    client scripts to capture control-z presses, but you can use
+    control-backspace instead on that browser.</p>
 
     <p>To use CodeMirror in a document, you should add a script tag to
     load <a href="codemirror.js"><code>codemirror.js</code></a>. This
@@ -204,6 +204,53 @@
       editor. You'll probably not want to provide a global default for
       this, but add it to the <code>options</code> object passed to
       individual editors as they are created.</dd>
+
+    </dl>
+
+    <h2>Programming interface</h2>
+
+    <p>To be as flexible as possible, CodeMirror implements a very
+    plain editable field, without any accompanying buttons, bells, and
+    whistles. <code>CodeMirror</code> objects do, however, provide a
+    number of methods that make it possible to add extra functionality
+    around the editor. <a
+    href="mirrorframe.js"><code>mirrorframe.js</code></a> provides a
+    basic example of their usage.</p>
+
+    <dl>
+
+      <dt><code>getCode</code></dt><dd>Returns the current content of
+      the editor, as a string.</dd>
+
+      <dt><code>setCode</code></dt><dd>Takes a single string argument,
+      and replaces the current content of the editor with that
+      value.</dd>
+
+      <dt><code>selection</code></dt><dd>Returns the text that is
+      currently selected in the editor.</dd>
+
+      <dt><code>replaceSelection</code></dt><dd>When called with a
+      string argument, replaces the currently selected text with the
+      given string. Can be given a second, optional argument which, if
+      true, causes the editor to also gain focus.</dd>
+
+      <dt><code>jumpToLine</code></dt><dd>Moves the cursor to the
+      start of the given line (a number).</dd>
+
+      <dt><code>getSearchCursor</code></dt><dd>Takes two arguments, a
+      search string and a boolean indicating whether searching should
+      start at the cursor (<code>true</code>) or at the start of the
+      document (<code>false</code>). Returns an object that provides
+      an interface for searching. Call its <code>findNext</code>
+      method to search for an occurrence of the given string. This
+      returns <code>true</code> if something is found, or
+      <code>false</code> if the end of document is reached. When an
+      occurrence has been found, you can call <code>select</code> to
+      select it, or <code>replace</code> to replace it with a given
+      string. Note that, while a search cursor tries to remember its
+      position in the document, when big chunks of text are removed
+      near its current position, it might skip back to the start of
+      the buffer.</dd>
 
     </dl>
 
