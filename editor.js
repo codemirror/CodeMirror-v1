@@ -367,6 +367,7 @@ var Editor = (function(){
     addEventHandler(document, "keydown", method(this, "keyDown"));
     addEventHandler(document, "keypress", method(this, "keyPress"));
     addEventHandler(document, "keyup", method(this, "keyUp"));
+    addEventHandler(document.body, "paste", method(this, "markCursorDirty"));
   }
 
   function isSafeKey(code) {
