@@ -93,6 +93,9 @@ var CodeMirror = (function(){
     },
     replaceSelection: function(text) {
       return this.editor.replaceSelection(text);
+    },
+    getSearchCursor: function(string, fromCursor) {
+      return this.editor.getSearchCursor(string, fromCursor);
     }
   };
 

@@ -429,8 +429,14 @@ var select = {};
       end = end || start;
       var win = end.node.ownerDocument.defaultView,
           range = win.document.createRange();
-      range.setEnd(end.node, end.offset);
-      range.setStart(start.node, start.offset);
+      function setPoint(point, side) {
+        if (point.node.nodeType == 3)
+          range["set" + side](point.node, point.offset);
+        else
+          range["set" + side + (point.offset ? "After" : "Before")](point.node);
+      }
+      setPoint(end, "End");
+      setPoint(start, "Start");
       selectRange(range, win);
     };
   }

@@ -154,6 +154,14 @@ var Editor = (function(){
   }
 
   var nbspRegexp = new RegExp(nbsp, "g");
+  
+  // Determine the text size of a processed node.
+  function nodeSize(node) {
+    if (node.nodeName == "BR")
+      return 1;
+    else
+      return node.currentText.length;
+  }
 
   // Search backwards through the top-level nodes until the next BR or
   // the start of the frame.
@@ -163,6 +171,168 @@ var Editor = (function(){
     return node;
   };
 
+  // Client interface for searching the content of the editor. Create
+  // these by calling CodeMirror.getSearchCursor. To use, call
+  // findNext on the resulting object -- this returns a boolean
+  // indicating whether anything was found, and can be called again to
+  // skip to the next find. Use the select and replace methods to
+  // actually do something with the found locations.
+  function SearchCursor(editor, string, fromCursor) {
+    this.editor = editor; this.container = editor.container;
+    this.string = string;
+    // Are we currently at an occurence of the search string?
+    this.atOccurance = false;
+    // The object stores a set of nodes coming after its current
+    // position, so that when the current point is taken out of the
+    // DOM tree, we can still try to continue.
+    this.fallbackSize = 15;
+    var cursor;
+    if (fromCursor && cursor = select.cursorLine(this.container)) {
+      // Adjust information returned by cursorline -- in here, BRs
+      // count as a character, and null nodes mean 'end of document'.
+      if (cursor.start)
+        cursor.offset++;
+      else
+        cursor.start = this.container.firstChild;
+      this.savePoint(cursor.start, cursor.offset);
+    }
+    else {
+      this.savePoint(this.container.firstChild, 0);
+    }
+  }
+
+  SearchCursor.prototype = {
+    findNext: function() {
+      // Can not search for empty string.
+      if (!this.string) this.point = null;
+      // End of buffer;
+      if (!this.point || !this.container.firstChild) return false;
+      // Make sure point is at a node that is still in the document.
+      this.doFallback();
+
+      // This chunk of variables and functions implement an interface
+      // for going over the result of traverseDOM, with backtracking,
+      // and the possibility to look up the current node and save its
+      // position.
+      var traverse = traverseDOM(this.point);
+      var buffer = "", offset = this.offset + (this.atOccurance ? 1 : 0);
+      var total = offset;
+
+      // Fetch the next character, or null if end of buffer.
+      function nextChar() {
+        while (offset >= buffer.length) {
+          offset -= buffer.length;
+          try {buffer = traverse.next();}
+          catch (e) {
+            if (e != StopIteration) throw e;
+            return null;
+          }
+        }
+        total++;
+        return buffer.charAt(offset++);
+      }
+      // Re-scan the given string.
+      function pushBack(piece) {
+        total -= piece.length;
+        buffer = piece + buffer.slice(offset);
+        offset = 0;
+      }
+      // Save the current node. total is used to count the characters
+      // consumed, which makes it possible to find back the relevant
+      // node. Can not just take the last node, because backtracking
+      // might have brought us back from there.
+      function savePos(self) {
+        for (var i = 0; true; i++) {
+          var node = traverse.nodes[i];
+          var size = nodeSize(node);
+          if (total <= size) {
+            self.savePoint(node, total);
+            return;
+          }
+          total -= size;
+        }
+      }
+
+      // Now search this stream for the needle string. While matching,
+      // characters are pushed into the backtrack variable -- if the
+      // match fails, we skip back to the second character of this
+      // string.
+      var search = this.string, backtrack = "", ch;
+      while (ch = nextChar()) {
+        if (ch == search.charAt(0)) {
+          search = search.slice(1);
+          backtrack += ch;
+          if (!search) {
+            pushBack(this.string);
+            savePos(this);
+            return (this.atOccurance = true);
+          }
+        }
+        else if (backtrack) {
+          pushBack(backtrack.slice(1));
+          backtrack = "";
+          search = this.string;
+        }
+      }
+
+      this.point = null;
+      return (this.atOccurance = false);
+    },
+
+    select: function() {
+      // Can only select if we are at an occurance and that occurance
+      // is still in the document.
+      if (!this.atOccurance || this.point.parentNode != this.container)
+        return false;
+
+      // Find the end of the match.
+      var endNode = this.point, endOffset = this.offset + this.string.length;
+      while (endNode && endOffset > nodeSize(endNode)) {
+        endOffset -= nodeSize(endNode);
+        endNode = endNode.nextSibling;
+      }
+      // If the end is not in the document, bail.
+      if (!endNode)
+        return false;
+
+      this.editor.select({node: this.point, offset: this.offset},
+                         {node: endNode, offset: endOffset});
+      return true;
+    },
+
+    replace: function(string) {
+      if (this.select())
+        this.editor.replaceSelection(string);
+    },
+
+    // Save current point, and a bunch of nodes after that.
+    savePoint: function(point, offset) {
+      this.point = point;
+      this.offset = offset;
+      this.fallback = [];
+      if (!point) return;
+      for (var count = this.fallbackSize; count && point.nextSibling; count--) {
+        point = point.nextSibling;
+        this.fallback.push(point);
+      }
+    },
+
+    // See if point is still valid. If not, try to restore position
+    // using fallback nodes. If that also fails, jump back to start of
+    // document.
+    doFallback: function() {
+      if (this.point.parentNode == this.container)
+        return;
+      this.offset = 0;
+      for (var i = 0; i < this.fallbackSize; i++) {
+        if (this.fallback[i].parentNode == this.container) {
+          this.point = this.fallback[i];
+          return;
+        }
+      }
+      this.point = this.container.firstChild;
+    }
+  };
 
   // The Editor object is the main inside-the-iframe interface.
   function Editor(options) {
@@ -317,9 +487,25 @@ var Editor = (function(){
       // Add the new lines, restore the cursor, mark changed area as
       // dirty.
       this.insertLines(text, start.node);
-      select.focusAfterNode(start.node, this.container);
+      this.select(start, {node: end.node, offset: 0});
       this.addDirtyNode(start.node);
       this.scheduleHighlight();
+    },
+
+    getSearchCursor: function(string, fromCursor) {
+      return new SearchCursor(this, string, fromCursor);
+    },
+
+    // Select a piece of the document. Parameters are node/offset
+    // objects, to is optional.
+    select: function(from, to) {
+      // select.focusNode only works on leaf nodes.
+      function actualNode(node) {
+        while (node.firstChild) node = node.firstChild;
+        return node;
+      }
+      select.focusNode({node: actualNode(from.node), offset: from.offset},
+                       to && {node: actualNode(to.node), offset: to.offset});
     },
 
     // Intercept enter and tab, and assign their new functions.
@@ -528,7 +714,7 @@ var Editor = (function(){
     // Add a node to the set of dirty nodes, if it isn't already in
     // there.
     addDirtyNode: function(node) {
-      if (!node) node = this.container.firstChild;
+      node = node || this.container.firstChild;
       if (!node) return;
 
       for (var i = 0; i < this.dirty.length; i++)
