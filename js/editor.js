@@ -352,8 +352,10 @@ var Editor = (function(){
     if (options.content)
       this.importCode(options.content);
 
-    if (options.continuousScanning !== false)
-      this.scanDocument(options.continousScanning, options.linesPerPass);
+    if (options.continuousScanning !== false) {
+      this.scanner = this.documentScanner(options.linesPerPass);
+      this.delayScanning();
+    }
 
     // In IE, designMode frames can not run any scripts, so we use
     // contentEditable instead. Random ActiveX check is there because
@@ -518,6 +520,9 @@ var Editor = (function(){
 
     // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
+      // Don't scan when the user is typing.
+      this.delayScanning();
+
       if (event.keyCode == 13) { // enter
         if (event.ctrlKey) {
           this.reparseBuffer();
@@ -799,12 +804,11 @@ var Editor = (function(){
         this.scheduleHighlight();
     },
 
-    // Starts a continuous scanning process for this document -- will
-    // gradually highlight the entire buffer, all the time, regardless
-    // of whether any keypresses were detected.
-    scanDocument: function(delay, linesPer) {
+    // Creates a function that, when called through a timeout, will
+    // continuously re-parse the document.
+    documentScanner: function(linesPer) {
       var self = this, pos = null;
-      function scan() {
+      return function() {
         // If the current node is no longer in the document... oh
         // well, we start over.
         if (pos && pos.parentNode != self.container)
@@ -813,9 +817,17 @@ var Editor = (function(){
         var result = self.highlight(pos, linesPer, true);
         select.selectMarked(sel);
         pos = result.node;
-        self.parent.setTimeout(scan, delay);
+        self.delayScanning();
       }
-      self.parent.setTimeout(scan, delay);
+    },
+
+    // Starts the continuous scanning process for this document after
+    // a given interval.
+    delayScanning: function() {
+      if (this.scanner) {
+        this.parent.clearTimeout(this.documentScan);
+        this.documentScan = this.parent.setTimeout(this.scanner, this.options.continuousScanning);
+      }
     },
 
     // The function that does the actual highlighting/colouring (with
