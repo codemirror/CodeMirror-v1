@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>CodeMirror user manual</title>
-    <link rel="stylesheet" type="text/css" href="docs.css"/>
+    <link rel="stylesheet" type="text/css" href="css/docs.css"/>
   </head>
   <body>
     <h1>CodeMirror user manual</h1>
@@ -22,7 +22,7 @@
     control-backspace instead on that browser.</p>
 
     <p>To use CodeMirror in a document, you should add a script tag to
-    load <a href="codemirror.js"><code>codemirror.js</code></a>. This
+    load <a href="js/codemirror.js"><code>codemirror.js</code></a>. This
     adds two objects to your environment, <code>CodeMirror</code> and
     <code>CodeMirrorConfig</code>. The first is the interface to the
     editor, the second can be used to configure it. (Note that this is
@@ -51,7 +51,7 @@
     editor can be given a set of specific options to override these
     defaults. In this case, we specified that the parser should be
     loaded from the <a
-    href="parsexml.js"><code>"parsexml.js"</code></a> file, and that
+    href="js/parsexml.js"><code>"parsexml.js"</code></a> file, and that
     <code>"xmlcolors.css"</code> should be used to specify the colours
     of the code.</p>
 
@@ -78,7 +78,7 @@
     CodeMirror:</p>
 
     <dl>
-      <dt><a href="codemirror.js"><code>codemirror.js</code></a></dt>
+      <dt><a href="js/codemirror.js"><code>codemirror.js</code></a></dt>
       <dd>Main interface, takes care of default configuration and the
       definition of editor frames. Include this in your HTML
       document.</dd>
@@ -86,25 +86,25 @@
       compressed version of the Base and Iter modules of <a
       href="http://www.mochikit.com">MochiKit</a>, which are used by
       the files below.</dd>
-      <dt><a href="editor.js"><code>editor.js</code></a></dt> <dd>The
+      <dt><a href="js/editor.js"><code>editor.js</code></a></dt> <dd>The
       code that takes care of reacting to user input, colouring text,
       and indenting lines.</dd>
-      <dt><a href="util.js"><code>util.js</code></a></dt> <dd>A few
+      <dt><a href="js/util.js"><code>util.js</code></a></dt> <dd>A few
       generic utility functions.</dd>
       <dt><a
-      href="stringstream.js"><code>stringstream.js</code></a></dt>
+      href="js/stringstream.js"><code>stringstream.js</code></a></dt>
       <dd>Objects for wrapping the textual input to the parser.</dd>
-      <dt><a href="select.js"><code>select.js</code></a></dt> <dd>Some
+      <dt><a href="js/select.js"><code>select.js</code></a></dt> <dd>Some
       helper utilities for working with selected text and cursor
       positions.</dd>
       <dt><a
-      href="tokenizejavascript.js"><code>tokenizejavascript.js</code></a></dt>
+      href="js/tokenizejavascript.js"><code>tokenizejavascript.js</code></a></dt>
       <dd>A JavaScript tokeniser. Only included when selected as part
       of the <code>parserfile</code> option.</dd>
       <dt><a
-      href="parsejavascript.js"><code>parsejavascript.js</code></a></dt>
+      href="js/parsejavascript.js"><code>parsejavascript.js</code></a></dt>
       <dd>The JavaScript parser.</dd>
-      <dt><a href="parsexml.js"><code>parsexml.js</code></a></dt>
+      <dt><a href="js/parsexml.js"><code>parsexml.js</code></a></dt>
       <dd>A parser for XML, with some optional kludges that make it
       work rather well for HTML. Some details are in the file
       itself.</dd>
@@ -123,13 +123,13 @@
     <ul>
       <li>If you define a global <code>CodeMirrorConfig</code> object
       before loading <a
-      href="codemirror.js"><code>codemirror.js</code></a>, the
+      href="js/codemirror.js"><code>codemirror.js</code></a>, the
       configuration options in that object will override the
       defaults.</li>
       <li>By assigning to the properties of the
       <code>CodeMirrorConfig</code> object, configuration defaults can
       be overridden after loading <a
-      href="codemirror.js"><code>codemirror.js</code></a>.</li>
+      href="js/codemirror.js"><code>codemirror.js</code></a>.</li>
       <li>The <code>CodeMirror</code> constructor can be given a second
       argument, an object, which will override some options for just
       that editor. Options not mentioned in this object will default to
@@ -138,13 +138,13 @@
 
     <p>The options that can be specified are these (most have sensible
     defaults specified in <a
-    href="codemirror.js"><code>codemirror.js</code></a>):</p>
+    href="js/codemirror.js"><code>codemirror.js</code></a>):</p>
 
     <dl>
 
       <dt><code>stylesheet</code></dt><dd>The file name of the style-sheet
       that should be used to colour the code in the editor frame. See <a
-      href="jscolors.css"><code>jscolors.css</code></a> for an
+      href="css/jscolors.css"><code>jscolors.css</code></a> for an
       example.</dd>
 
       <dt><code>path</code></dt><dd>The path that is prefixed to
@@ -214,7 +214,7 @@
     whistles. <code>CodeMirror</code> objects do, however, provide a
     number of methods that make it possible to add extra functionality
     around the editor. <a
-    href="mirrorframe.js"><code>mirrorframe.js</code></a> provides a
+    href="js/mirrorframe.js"><code>mirrorframe.js</code></a> provides a
     basic example of their usage.</p>
 
     <dl>
@@ -259,14 +259,14 @@
     <p>A parser is implemented by one or more files (see
     <code>parserfile</code> above) which, when loaded, add a
     <code>Parser</code> object to the <code>Editor</code> object
-    defined by <a href="editor.js"><code>editor.js</code></a>. This
+    defined by <a href="js/editor.js"><code>editor.js</code></a>. This
     object must support the following interface:</p>
 
     <dl>
 
       <dt><code>make</code></dt><dd>A function that, given a string
       stream (see <a
-      href="stringstream.js"><code>stringstream.js</code></a>),
+      href="js/stringstream.js"><code>stringstream.js</code></a>),
       creates a parser. The behaviour of this parser is described
       below.</dd>
 
@@ -315,8 +315,8 @@
     and can clobber the state of the old parser if it wants.</p>
 
     <p>For examples, see <a
-    href="parsejavascript.js"><code>parsejavascript.js</code></a> and
-    <a href="parsexml.js"><code>parsexml.js</code></a>.</p>
+    href="js/parsejavascript.js"><code>parsejavascript.js</code></a> and
+    <a href="js/parsexml.js"><code>parsexml.js</code></a>.</p>
 
   </body>
 </html>
