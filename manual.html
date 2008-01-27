@@ -51,9 +51,9 @@
     editor can be given a set of specific options to override these
     defaults. In this case, we specified that the parser should be
     loaded from the <a
-    href="js/parsexml.js"><code>"parsexml.js"</code></a> file, and that
-    <code>"xmlcolors.css"</code> should be used to specify the colours
-    of the code.</p>
+    href="js/parsexml.js"><code>"parsexml.js"</code></a> file, and
+    that <a href="css/xmlcolors.css"><code>"xmlcolors.css"</code></a>
+    should be used to specify the colours of the code.</p>
 
     <p>Another example:</p>
 
@@ -91,6 +91,9 @@
       and indenting lines.</dd>
       <dt><a href="js/util.js"><code>util.js</code></a></dt> <dd>A few
       generic utility functions.</dd>
+      <dt><a
+      href="js/undo.js"><code>undo.js</code></a></dt>
+      <dd>Implements the undo history for the editor.</dd>
       <dt><a
       href="js/stringstream.js"><code>stringstream.js</code></a></dt>
       <dd>Objects for wrapping the textual input to the parser.</dd>
@@ -298,17 +301,16 @@
     <p>Token objects represent a single significant piece of the text
     that is being edited. It must have a <code>value</code> property
     holding the text it stands for, and a <code>style</code> property
-    with the CSS style that should be used to colour this element.
-    This style can be anything, except that any whitespace at the
-    start of a line should <em>always</em> have class
-    <code>"whitespace"</code>: The editor must be able to recognize
-    these when it indents lines. Furthermore, each newline character
-    <em>must</em> have its own separate token, which has an
-    <code>indentation</code> property holding a function that can be
-    used to determine the proper indentation level for the next line.
-    This function optionally takes the text in the first token of the
-    next line as an argument, which it can use to adjust the
-    indentation level.</p>
+    with the CSS class that should be used to colour this element.
+    This can be anything, except that any whitespace at the start of a
+    line should <em>always</em> have class <code>"whitespace"</code>:
+    The editor must be able to recognize these when it indents lines.
+    Furthermore, each newline character <em>must</em> have its own
+    separate token, which has an <code>indentation</code> property
+    holding a function that can be used to determine the proper
+    indentation level for the next line. This function optionally
+    takes the text in the first token of the next line as an argument,
+    which it can use to adjust the indentation level.</p>
 
     <p>So far this should be pretty easy. The hard part is that this
     iterator must also have a <code>copy</code> method. This method,
