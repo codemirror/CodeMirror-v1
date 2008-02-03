@@ -20,6 +20,7 @@ function MirrorFrame(place, options) {
 
   makeButton("Search", "search");
   makeButton("Replace", "replace");
+  makeButton("Current line", "line");
   makeButton("Jump to line", "jump");
   makeButton("Insert constructor", "macro");
 
@@ -59,6 +60,11 @@ MirrorFrame.prototype = {
     var line = prompt("Jump to line:", "");
     if (line && !isNaN(Number(line)))
       this.mirror.jumpToLine(Number(line));
+  },
+
+  line: function() {
+    alert("The cursor is currently at line " + this.mirror.currentLine());
+    this.mirror.focus();
   },
 
   macro: function() {

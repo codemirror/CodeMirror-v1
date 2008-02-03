@@ -421,6 +421,18 @@ var Editor = (function(){
       select.scrollToCursor(this.container);
     },
 
+    // Find the line that the cursor is currently on.
+    currentLine: function() {
+      var line = 1, cursor = select.selectionPosition(this.container, true);
+      if (!cursor) return;
+
+      for (cursor = cursor.node; cursor; cursor = cursor.previousSibling) {
+        if (cursor.nodeName == "BR")
+          line++;
+      }
+      return line;
+    },
+
     // Retrieve the selected text.
     selectedText: function() {
       this.highlightAtCursor();

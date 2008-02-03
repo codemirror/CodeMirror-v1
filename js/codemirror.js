@@ -87,16 +87,22 @@ var CodeMirror = (function(){
     setCode: function(code) {
       this.editor.importCode(code);
     },
+    focus: function() {
+      this.win.focus();
+    },
     jumpToLine: function(line) {
       this.editor.jumpToLine(line);
-      this.win.focus();
+      this.focus();
+    },
+    currentLine: function() {
+      return this.editor.currentLine();
     },
     selection: function() {
       return this.editor.selectedText();
     },
     replaceSelection: function(text, focus) {
       this.editor.replaceSelection(text);
-      if (focus) this.win.focus();
+      if (focus) this.focus();
     },
     getSearchCursor: function(string, fromCursor) {
       return this.editor.getSearchCursor(string, fromCursor);
