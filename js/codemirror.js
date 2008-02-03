@@ -115,7 +115,38 @@ var CodeMirror = (function(){
     return function(newElement) {
       element.parentNode.replaceChild(newElement, element);
     };
-  }
+  };
+
+  CodeMirror.fromTextArea = function(area, options) {
+    if (typeof area == "string")
+      area = document.getElementById(area);
+
+    options = options || {};
+    if (area.style.width) options.width = area.style.width;
+    if (area.style.height) options.height = area.style.height;
+    options.content = area.value;
+
+    if (area.form) {
+      function updateField() {
+        area.value = mirror.getCode();
+      }
+      if (typeof area.form.addEventListener == "function")
+        area.form.addEventListener("submit", updateField, false);
+      else
+        area.form.attachEvent("onsubmit", updateField);
+    }
+
+    function insert(frame) {
+      if (area.nextSibling)
+        area.parentNode.insertBefore(frame, area.nextSibling);
+      else
+        area.parentNode.appendChild(frame);
+    }
+
+    area.style.display = "none";
+    var mirror = new CodeMirror(insert, options);
+    return mirror;
+  };
 
   return CodeMirror;
 })();
