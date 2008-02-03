@@ -349,6 +349,9 @@ var Editor = (function(){
     if (options.parserConfig && Editor.Parser.configure)
       Editor.Parser.configure(options.parserConfig);
 
+    if (!options.textWrapping)
+      this.doc.body.style.whiteSpace = "pre";
+
     this.dirty = [];
     if (options.content)
       this.importCode(options.content);

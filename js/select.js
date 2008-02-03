@@ -120,16 +120,20 @@ var select = {};
       range.select();
     };
 
-    // Used to normalize the effect of the enter key, since browsers
-    // do widely different things when pressing enter in designMode.
-    select.insertNewlineAtCursor = function(window) {
+    function insertAtCursor(window, html) {
       var selection = window.document.selection;
       if (selection) {
         var range = selection.createRange();
-        range.pasteHTML("<br/>");
+        range.pasteHTML(html);
         range.collapse(false);
         range.select();
       }
+    }
+
+    // Used to normalize the effect of the enter key, since browsers
+    // do widely different things when pressing enter in designMode.
+    select.insertNewlineAtCursor = function(window) {
+      insertAtCursor(window, "<br/>");
     };
 
     // Get the BR node at the start of the line on which the cursor
@@ -394,26 +398,29 @@ var select = {};
       selectRange(range, win);
     };
 
-    select.insertNewlineAtCursor = function(window) {
+    insertNodeAtCursor = function(window, node) {
       var range = selectionRange(window);
       if (!range) return;
 
-      var br = window.document.createElement("BR");
       // On Opera, insertNode is completely broken when the range is
       // in the middle of a text node.
       if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {
         var start = range.startContainer, text = start.nodeValue;
         start.parentNode.insertBefore(window.document.createTextNode(text.substr(0, range.startOffset)), start);
         start.nodeValue = text.substr(range.startOffset);
-        start.parentNode.insertBefore(br, start);
+        start.parentNode.insertBefore(node, start);
       }
       else {
-        range.insertNode(br);
+        range.insertNode(node);
       }
 
-      range.setEndAfter(br);
+      range.setEndAfter(node);
       range.collapse(false);
       selectRange(range, window);
+    }
+
+    select.insertNewlineAtCursor = function(window) {
+      insertNodeAtCursor(window, window.document.createElement("BR"));
     };
 
     select.cursorLine = function(container) {

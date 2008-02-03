@@ -36,6 +36,7 @@ var CodeMirror = (function(){
     undoDepth: 20,
     undoDelay: 800,
     disableSpellcheck: true,
+    textWrapping: true,
     width: "100%",
     height: "300px",
     parserConfig: null
