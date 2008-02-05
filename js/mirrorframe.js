@@ -13,6 +13,7 @@ function MirrorFrame(place, options) {
   var self = this;
   function makeButton(name, action) {
     var button = document.createElement("BUTTON");
+    button.type = "button";
     button.appendChild(document.createTextNode(name));
     self.home.appendChild(button);
     button.onclick = function(){self[action].call(self);};
