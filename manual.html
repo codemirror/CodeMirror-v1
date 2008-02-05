@@ -59,8 +59,9 @@
 
     <pre class="code">var editor = new CodeMirror(CodeMirror.replace("inputfield"), {
   parserfile: ["tokenizejavascript.js", "parsejavascript.js"],
-  path: "lib/codemirror/",
-  stylesheet: "lib/codemirror/jscolors.css"
+  path: "lib/codemirror/js/",
+  stylesheet: "lib/codemirror/css/jscolors.css",
+  content: document.getElementById("inputfield").value
 });</pre>
 
     <p>Here we use the utility function
@@ -79,6 +80,12 @@
     which will load the content of the editor into the textarea, so
     that it can be submitted as normal. This function optionally takes
     a configuration object as second argument.</p>
+
+    <pre class="code">var editor = CodeMirror.fromTextArea("inputfield", {
+  parserfile: ["tokenizejavascript.js", "parsejavascript.js"],
+  path: "lib/codemirror/js/",
+  stylesheet: "lib/codemirror/css/jscolors.css"
+});</pre>
 
     <p>The reason that the script path has to be configured is that
     CodeMirror will load in a bunch of extra files when an editor is
