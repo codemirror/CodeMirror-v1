@@ -248,44 +248,47 @@
 
     <dl>
 
-      <dt><code>getCode</code></dt><dd>Returns the current content of
+      <dt><code>getCode()</code></dt><dd>Returns the current content of
       the editor, as a string.</dd>
 
-      <dt><code>setCode</code></dt><dd>Takes a single string argument,
-      and replaces the current content of the editor with that
-      value.</dd>
+      <dt><code>setCode(string)</code></dt><dd>Replaces the current
+      content of the editor with the given value.</dd>
 
-      <dt><code>selection</code></dt><dd>Returns the text that is
-      currently selected in the editor.</dd>
+      <dt><code>selection()</code> &#8594;
+      <code>string</code></dt><dd>Returns the text that is currently
+      selected in the editor.</dd>
 
-      <dt><code>replaceSelection</code></dt><dd>When called with a
-      string argument, replaces the currently selected text with the
-      given string. Can be given a second, optional argument which, if
-      true, causes the editor to also gain focus.</dd>
+      <dt><code>replaceSelection(string,
+      focus)</code></dt><dd>Replaces the currently selected text with
+      the given string. Can be given a second, optional argument
+      which, if true, causes the editor to also gain focus.</dd>
 
-      <dt><code>focus</code></dt><dd>Gives focus to the editor
+      <dt><code>focus()</code></dt><dd>Gives focus to the editor
       frame.</dd>
 
-      <dt><code>currentLine</code></dt><dd>Returns a number indicating
-      the line on which the cursor is currently sitting.</dd>
+      <dt><code>currentLine()</code> &#8594;
+      <code>number</code></dt><dd>Returns the line on which the cursor
+      is currently sitting.</dd>
 
-      <dt><code>jumpToLine</code></dt><dd>Moves the cursor to the
-      start of the given line (a number).</dd>
+      <dt><code>jumpToLine(number)</code></dt><dd>Moves the cursor to
+      the start of the given line.</dd>
 
-      <dt><code>getSearchCursor</code></dt><dd>Takes two arguments, a
-      search string and a boolean indicating whether searching should
-      start at the cursor (<code>true</code>) or at the start of the
-      document (<code>false</code>). Returns an object that provides
-      an interface for searching. Call its <code>findNext</code>
-      method to search for an occurrence of the given string. This
-      returns <code>true</code> if something is found, or
-      <code>false</code> if the end of document is reached. When an
-      occurrence has been found, you can call <code>select</code> to
-      select it, or <code>replace</code> to replace it with a given
-      string. Note that, while a search cursor tries to remember its
-      position in the document, when big chunks of text are removed
-      near its current position, it might skip back to the start of
-      the buffer.</dd>
+      <dt><code>getSearchCursor(string, atCursor)</code> &#8594;
+      <code>cursor</code></dt><dd>The first argument indicates the
+      string that should be searched for, and the second indicates
+      whether searching should start at the cursor (<code>true</code>)
+      or at the start of the document (<code>false</code>). Returns an
+      object that provides an interface for searching. Call its
+      <code>findNext()</code> method to search for an occurrence of
+      the given string. This returns <code>true</code> if something is
+      found, or <code>false</code> if the end of document is reached.
+      When an occurrence has been found, you can call
+      <code>select()</code> to select it, or
+      <code>replace(string)</code> to replace it with a given string.
+      Note that, while a search cursor tries to remember its position
+      in the document, when big chunks of text are removed near its
+      current position, it might skip back to the start of the
+      buffer.</dd>
 
     </dl>
 
@@ -299,8 +302,8 @@
 
     <dl>
 
-      <dt><code>make</code></dt><dd>A function that, given a string
-      stream (see <a
+      <dt><code>make(stream)</code></dt><dd>A function that, given a
+      string stream (see <a
       href="js/stringstream.js"><code>stringstream.js</code></a>),
       creates a parser. The behaviour of this parser is described
       below.</dd>
@@ -310,10 +313,10 @@
       indentation of the current line to be recomputed (for example
       <code>"{}"</code> for c-like languages).</dd>
 
-      <dt><code>configure</code></dt><dd>An optional function that can
-      be used to configure the parser. If it exists, and an editor is
-      given a <code>parserConfig</code> option, it will be called with
-      the value of that option.</dd>
+      <dt><code>configure(object)</code></dt><dd>An optional function
+      that can be used to configure the parser. If it exists, and an
+      editor is given a <code>parserConfig</code> option, it will be
+      called with the value of that option.</dd>
 
     </dl>
 
