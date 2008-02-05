@@ -546,8 +546,8 @@ var Editor = (function(){
         }
         else {
           select.insertNewlineAtCursor(this.win);
-          select.scrollToCursor(this.container);
           this.indentAtCursor();
+          select.scrollToCursor(this.container);
         }
         event.stop();
       }

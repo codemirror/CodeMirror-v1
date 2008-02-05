@@ -461,7 +461,7 @@ var select = {};
       var element = select.selectionTopNode(container, true) || container.firstChild;
       
       // In Opera, BR elements *always* have a scrollTop property of zero. Go Opera.
-      while (element && window.opera && element.nodeName == "BR")
+      while (element && !element.offsetTop)
         element = element.previousSibling;
 
       var y = 0, pos = element;
