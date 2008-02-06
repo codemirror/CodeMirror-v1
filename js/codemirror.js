@@ -100,6 +100,9 @@ var CodeMirror = (function(){
     selection: function() {
       return this.editor.selectedText();
     },
+    reindent: function() {
+      this.editor.reindent();
+    },
     replaceSelection: function(text, focus) {
       this.editor.replaceSelection(text);
       if (focus) this.focus();

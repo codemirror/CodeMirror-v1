@@ -522,6 +522,12 @@ var Editor = (function(){
       return new SearchCursor(this, string, fromCursor);
     },
 
+    // Re-indent the whole buffer
+    reindent: function() {
+      if (this.container.firstChild)
+        this.indentRegion(null, this.container.lastChild);
+    },
+
     // Select a piece of the document. Parameters are node/offset
     // objects, to is optional.
     select: function(from, to) {
@@ -675,13 +681,13 @@ var Editor = (function(){
     // is re-indented.
     handleTab: function() {
       var start = select.selectionTopNode(this.container, true),
-          end = select.selectionTopNode(this.container, false);
+        end = select.selectionTopNode(this.container, false);
       if (start === false || end === false) return;
 
       if (start == end)
         this.indentAtCursor();
       else
-        this.indentSelection(start, end);
+        this.indentRegion(start, end);
     },
 
     // Adjust the amount of whitespace at the start of the line that
@@ -707,7 +713,7 @@ var Editor = (function(){
 
     // Indent all lines whose start falls inside of the current
     // selection.
-    indentSelection: function(current, end) {
+    indentRegion: function(current, end) {
       var sel = select.markSelection(this.win);
       if (!current)
         this.indentLineAfter(current);

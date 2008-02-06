@@ -24,6 +24,7 @@ function MirrorFrame(place, options) {
   makeButton("Current line", "line");
   makeButton("Jump to line", "jump");
   makeButton("Insert constructor", "macro");
+  makeButton("Indent all", "reindent");
 
   this.mirror = new CodeMirror(this.home, options);
 }
@@ -72,5 +73,9 @@ MirrorFrame.prototype = {
     var name = prompt("Name your constructor:", "");
     if (name)
       this.mirror.replaceSelection("function " + name + "() {\n  \n}\n\n" + name + ".prototype = {\n  \n};\n", true);
+  },
+
+  reindent: function() {
+    this.mirror.reindent();
   }
 };
