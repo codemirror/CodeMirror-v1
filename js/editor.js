@@ -355,6 +355,8 @@ var Editor = (function(){
     this.dirty = [];
     if (options.content)
       this.importCode(options.content);
+    else // FF acts weird when the editable document is completely empty
+      this.container.appendChild(this.doc.createElement("SPAN"));
 
     if (options.continuousScanning !== false) {
       this.scanner = this.documentScanner(options.linesPerPass);
