@@ -666,15 +666,20 @@ var Editor = (function(){
       var to = select.selectionTopNode(this.container, false);
       if (pos === false || !to) return;
 
-      var toIsText = to.nodeType == 3;
-      if (!toIsText)
-        to.dirty = true;
-
       var sel = select.markSelection(this.win);
-      while (to.parentNode == this.container && (toIsText || to.dirty)) {
-        var result = this.highlight(pos, 1, true);
-        if (result) pos = result.node;
-        else break;
+      if (pos == to) {
+        this.highlight(pos, 1, true);
+      }
+      else {
+        var toIsText = to.nodeType == 3;
+        if (!toIsText)
+          to.dirty = true;
+
+        while (to.parentNode == this.container && (toIsText || to.dirty)) {
+          var result = this.highlight(pos, 1, true);
+          if (result) pos = result.node;
+          if (!result || result.left) break;
+        }
       }
       select.selectMarked(sel);
     },
