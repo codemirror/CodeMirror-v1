@@ -840,7 +840,7 @@ var Editor = (function(){
         var sel = select.markSelection(self.win);
         var result = self.highlight(pos, linesPer, true);
         select.selectMarked(sel);
-        pos = result.node;
+        pos = result ? result.node : null;
         self.delayScanning();
       }
     },
