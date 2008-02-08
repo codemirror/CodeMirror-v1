@@ -27,10 +27,8 @@ more information.</p>
 </div>
 
 <script type="text/javascript">
-  var textarea = document.getElementById('code');
-  var editor = new CodeMirror(CodeMirror.replace(textarea), {
+  var editor = CodeMirror.fromTextArea('code', {
     height: "350px",
-    content: textarea.value,
     parserfile: "parsexml.js",
     stylesheet: "css/xmlcolors.css",
     path: "js/",
