@@ -33,13 +33,13 @@ var Editor = (function(){
     var leaving = false;
 
     function simplifyNode(node) {
-      leaving = false;
-
       if (node.nodeType == 3) {
-        node.nodeValue = splitSpaces(node.nodeValue.replace(/[\n\r]/g, ""));
+        var text = node.nodeValue = splitSpaces(node.nodeValue.replace(/[\n\r]/g, ""));
+        if (text.length) leaving = false;
         result.push(node);
       }
       else if (node.nodeName == "BR" && node.childNodes.length == 0) {
+        leaving = false;
         result.push(node);
       }
       else {
