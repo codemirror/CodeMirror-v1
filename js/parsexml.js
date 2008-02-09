@@ -3,14 +3,16 @@
  * are expected to not have a closing tag, and doNotIndent specifies
  * the tags inside of which no indentation should happen (see Config
  * object). These can be disabled by passing the editor an object like
- * {autoSelfClosers: {}, doNotIndent: {}} as parserConfig option.
+ * {useHTMLKludges: false} as parserConfig option.
  */
 
 Editor.Parser = (function() {
-  var Config = {
+  var Kludges = {
     autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true, "meta": true},
     doNotIndent: {"pre": true}
   };
+  var NoKludges = {autoSelfClosers: {}, doNotIndent: {}};
+  var UseKludges = Kludges;
 
   // Simple stateful tokenizer for XML documents. Returns a
   // MochiKit-style iterator, with a state property that contains a
@@ -182,7 +184,7 @@ Editor.Parser = (function() {
     }
 
     function pushContext(tagname, startOfLine) {
-      var noIndent = Config.doNotIndent.hasOwnProperty(tagname) || (context && context.noIndent);
+      var noIndent = UseKludges.doNotIndent.hasOwnProperty(tagname) || (context && context.noIndent);
       context = {prev: context, name: tagname, indent: indented, startOfLine: startOfLine, noIndent: noIndent};
     }
     function popContext() {
@@ -238,7 +240,7 @@ Editor.Parser = (function() {
     }
     function endtag(startOfLine) {
       return function(style, content) {
-        if (content == "/>" || (content == ">" && Config.autoSelfClosers.hasOwnProperty(currentTag))) cont();
+        if (content == "/>" || (content == ">" && UseKludges.autoSelfClosers.hasOwnProperty(currentTag))) cont();
         else if (content == ">") pushContext(currentTag, startOfLine) || cont();
         else mark("error") || cont(arguments.callee);
       };
@@ -301,8 +303,11 @@ Editor.Parser = (function() {
   return {
     make: parseXML,
     electricChars: "/",
-    configure: function(opions) {
-      update(Config, options);
+    configure: function(config) {
+      if (config.useHTMLKludges)
+        UseKludges = Kludges;
+      else
+        UseKludges = NoKludges;
     }
   };
 })();
