@@ -667,21 +667,19 @@ var Editor = (function(){
       var pos = select.selectionTopNode(this.container, true);
       var to = select.selectionTopNode(this.container, false);
       if (pos === false || !to) return;
+      // Skip one node ahead to make sure the cursor itself is
+      // *inside* a highlighted line.
+      if (to.nextSibling) to = to.nextSibling;
 
       var sel = select.markSelection(this.win);
-      if (pos == to) {
-        this.highlight(pos, 1, true);
-      }
-      else {
-        var toIsText = to.nodeType == 3;
-        if (!toIsText)
-          to.dirty = true;
+      var toIsText = to.nodeType == 3;
+      if (!toIsText) to.dirty = true;
 
-        while (to.parentNode == this.container && (toIsText || to.dirty)) {
-          var result = this.highlight(pos, 1, true);
-          if (result) pos = result.node;
-          if (!result || result.left) break;
-        }
+      // Highlight lines as long as to is in the document and dirty.
+      while (to.parentNode == this.container && (toIsText || to.dirty)) {
+        var result = this.highlight(pos, 1, true);
+        if (result) pos = result.node;
+        if (!result || result.left) break;
       }
       select.selectMarked(sel);
     },
@@ -882,7 +880,7 @@ var Editor = (function(){
         return;
       // Backtrack to the first node before from that has a partial
       // parse stored.
-      while (from && !from.parserFromHere)
+      while (from && (!from.parserFromHere || from.dirty))
         from = from.previousSibling;
       // If we are at the end of the document, do nothing.
       if (from && !from.nextSibling)
