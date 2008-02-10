@@ -168,19 +168,32 @@ var select = {};
     // in front of it.
     select.focusNode = function(container, start, end) {
       function rangeAt(node, offset) {
-        var range = container.ownerDocument.body.createTextRange();
-        var focusable = node && node.previousSibling;
-        while (focusable && focusable.nodeType == 3) {
-          offset += focusable.nodeValue.length;
-          focusable = focusable.previousSibling;
+        var inside = true;
+        // Move backward and upward from text nodes, because they can
+        // not be directly selected.
+        if (node && node.nodeType == 3) {
+          while (node.nodeType == 3 && node.previousSibling) {
+            node = node.previousSibling;
+            if (node.nodeType == 3) {
+              offset += node.nodeValue.length;
+            }
+            else {
+              inside = false;
+              break;
+            }
+          }
+          if (node.nodeType == 3)
+            node = node.parentNode;
         }
-        if (!focusable) {
+
+        var range = container.ownerDocument.body.createTextRange();
+        if (!node) {
           range.moveToElementText(container);
           range.collapse(true);
         }
         else {
-          range.moveToElementText(focusable);
-          range.collapse(false);
+          range.moveToElementText(node);
+          range.collapse(inside);
         }
         range.move("character", offset);
         return range;
@@ -443,16 +456,20 @@ var select = {};
       end = end || start;
       var win = container.ownerDocument.defaultView,
           range = win.document.createRange();
-      function setPoint(point, side) {
-        if (!point.node)
+      function setPoint(node, offset, side) {
+        // Make sure we have a leaf node
+        while (node && node.firstChild)
+          node = node.firstChild;
+
+        if (!node)
           range["set" + side + "Before"](container);
-        else if (point.node.nodeType == 3)
-          range["set" + side](point.node, point.offset);
+        else if (node.nodeType == 3)
+          range["set" + side](node, offset);
         else
-          range["set" + side + (point.offset ? "After" : "Before")](point.node);
+          range["set" + side + (offset ? "After" : "Before")](node);
       }
-      setPoint(end, "End");
-      setPoint(start, "Start");
+      setPoint(end.node, end.offset, "End");
+      setPoint(start.node, start.offset, "Start");
       selectRange(range, win);
     };
 

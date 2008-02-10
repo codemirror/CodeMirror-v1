@@ -426,6 +426,34 @@ var Editor = (function(){
       select.scrollToCursor(this.container);
     },
 
+    jumpToChar: function(start, end) {
+      if (!this.container.firstChild) return;
+      if (end <= start) end = null;
+
+      var normalise = traverseDOM(this.container.firstChild);
+      var nodeFrom = 0, nodeTo = 0, node = null;
+
+      function nodeAt(offset) {
+        while (true) {
+          if (offset <= nodeTo) return {node: node, offset: offset - nodeFrom};
+
+          while (normalise.nodes.length == 0) {
+            try {normalise.next();}
+            catch (e) {
+              if (e == StopIteration) return {node: node, offset: 0};
+              else throw e;
+            }
+          }
+          node = normalise.nodes.shift();
+          nodeFrom = nodeTo;
+          nodeTo = nodeFrom + nodeSize(node);
+        }
+      }
+
+      start = nodeAt(start); end = end && nodeAt(end);
+      this.select(start, end);
+    },
+
     // Find the line that the cursor is currently on.
     currentLine: function() {
       var line = 1, cursor = select.selectionPosition(this.container, true);
@@ -536,14 +564,7 @@ var Editor = (function(){
     // Select a piece of the document. Parameters are node/offset
     // objects, to is optional.
     select: function(from, to) {
-      // select.focusNode only works on leaf nodes.
-      function actualNode(node) {
-        while (node && node.firstChild) node = node.firstChild;
-        return node;
-      }
-      select.focusNode(this.container,
-                       {node: actualNode(from.node), offset: from.offset},
-                       to && {node: actualNode(to.node), offset: to.offset});
+      select.focusNode(this.container, from, to);
     },
 
     // Intercept enter and tab, and assign their new functions.
