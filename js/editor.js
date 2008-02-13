@@ -587,13 +587,19 @@ var Editor = (function(){
         this.handleTab();
         event.stop();
       }
-      else if (event.ctrlKey && (event.keyCode == 90 || event.keyCode == 8)) { // ctrl-Z, ctrl-backspace
-        this.undo();
-        event.stop();
-      }
-      else if (event.ctrlKey && event.keyCode == 89) { // ctrl-Y
-        this.redo();
-        event.stop();
+      else if (event.ctrlKey) {
+        if (event.keyCode == 90 || event.keyCode == 8) { // Z, backspace
+          this.undo();
+          event.stop();
+        }
+        else if (event.keyCode == 89) { // Y
+          this.redo();
+          event.stop();
+        }
+        else if (event.keyCode == 83 && this.options.saveFunction) { // S
+          this.options.saveFunction();
+          event.stop();
+        }
       }
     },
 

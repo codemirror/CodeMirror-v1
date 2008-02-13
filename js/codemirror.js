@@ -33,6 +33,7 @@ var CodeMirror = (function(){
     linesPerPass: 15,
     passDelay: 200,
     continuousScanning: false,
+    saveFunction: null,
     undoDepth: 20,
     undoDelay: 800,
     disableSpellcheck: true,
