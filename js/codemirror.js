@@ -112,6 +112,9 @@ var CodeMirror = (function(){
       this.editor.replaceSelection(text);
       if (focus) this.focus();
     },
+    replaceChars: function(text, start, end) {
+      this.editor.replaceChars(text, start, end);
+    },
     getSearchCursor: function(string, fromCursor) {
       return this.editor.getSearchCursor(string, fromCursor);
     }

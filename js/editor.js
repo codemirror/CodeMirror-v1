@@ -427,31 +427,9 @@ var Editor = (function(){
     },
 
     jumpToChar: function(start, end) {
-      if (!this.container.firstChild) return;
-      if (end <= start) end = null;
-
-      var normalise = traverseDOM(this.container.firstChild);
-      var nodeFrom = 0, nodeTo = 0, node = null;
-
-      function nodeAt(offset) {
-        while (true) {
-          if (offset <= nodeTo) return {node: node, offset: offset - nodeFrom};
-
-          while (normalise.nodes.length == 0) {
-            try {normalise.next();}
-            catch (e) {
-              if (e == StopIteration) return {node: node, offset: 0};
-              else throw e;
-            }
-          }
-          node = normalise.nodes.shift();
-          nodeFrom = nodeTo;
-          nodeTo = nodeFrom + nodeSize(node);
-        }
-      }
-
-      start = nodeAt(start); end = end && nodeAt(end);
-      this.select(start, end);
+      var nodes = this.nodesAtChars(start, end);
+      if (nodes)
+        this.select(nodes.start, nodes.end);
     },
 
     // Find the line that the cursor is currently on.
@@ -505,9 +483,37 @@ var Editor = (function(){
       var start = select.selectionPosition(this.container, true);
       var end = select.selectionPosition(this.container, false);
       if (!start || !end) return;
+      
+      this.replaceRange(text, start, end);
+      this.select(start, end.node && {node: end.node, offset: 0});
+    },
 
-      // If the selection exists within a single text node, it has to
-      // be split.
+    replaceChars: function(text, start, end) {
+      var nodes = this.nodesAtChars(start, end, true);
+      if (nodes) {
+        var cBefore = select.selectionPosition(this.container, true);
+        this.replaceRange(text, nodes.start, nodes.end || clone(nodes.start));
+        var cAfter = select.selectionPosition(this.container, true);
+        if (cBefore.node != cAfter.node || cBefore.offset != cAfter.offset)
+          this.select(nodes.start);
+      }
+    },
+
+    getSearchCursor: function(string, fromCursor) {
+      return new SearchCursor(this, string, fromCursor);
+    },
+
+    // Re-indent the whole buffer
+    reindent: function() {
+      if (this.container.firstChild)
+        this.indentRegion(null, this.container.lastChild);
+    },
+
+    // Replace the text between two {node, offset} positions
+    replaceRange: function(text, start, end) {
+      var endReplaced = false;
+      // If the range falls within a single text node, it has to be
+      // split.
       if (start.node == end.node) {
         if (!start.node) {
           end.node = this.container.firstChild;
@@ -519,7 +525,7 @@ var Editor = (function(){
           end.node = this.doc.createTextNode(end.node.currentText.slice(end.offset));
           insertAfter(end.node, start.node);
         }
-        end.replaced = true;
+        endReplaced = true;
       }
 
       // Cut off the parts of start.node and end.node that fall within
@@ -529,7 +535,7 @@ var Editor = (function(){
         clearElement(start.node);
         start.node.appendChild(this.doc.createTextNode(start.node.currentText));
       }
-      if (end.node && !end.replaced && end.node.nodeName != "BR") {
+      if (end.node && !endReplaced && end.node.nodeName != "BR") {
         end.node.currentText = end.node.currentText.slice(end.offset);
         clearElement(end.node);
         end.node.appendChild(this.doc.createTextNode(end.node.currentText));
@@ -546,19 +552,34 @@ var Editor = (function(){
       // Add the new lines, restore the cursor, mark changed area as
       // dirty.
       this.insertLines(text, start.node);
-      this.select(start, end.node && {node: end.node, offset: 0});
       this.addDirtyNode(start.node);
       this.scheduleHighlight();
     },
 
-    getSearchCursor: function(string, fromCursor) {
-      return new SearchCursor(this, string, fromCursor);
-    },
+    nodesAtChars: function(start, end, lookForSelection) {
+      if (!this.container.firstChild) return null;
+      if (end <= start) end = null;
 
-    // Re-indent the whole buffer
-    reindent: function() {
-      if (this.container.firstChild)
-        this.indentRegion(null, this.container.lastChild);
+      var normalise = traverseDOM(this.container.firstChild);
+      var nodeFrom = 0, nodeTo = 0, node = null;
+
+      function nodeAt(offset) {
+        while (true) {
+          if (offset <= nodeTo) return {node: node, offset: offset - nodeFrom};
+
+          while (normalise.nodes.length == 0) {
+            try {normalise.next();}
+            catch (e) {
+              if (e == StopIteration) return {node: node, offset: 0};
+              else throw e;
+            }
+          }
+          node = normalise.nodes.shift();
+          nodeFrom = nodeTo;
+          nodeTo = nodeFrom + nodeSize(node);
+        }
+      }
+      return {start: nodeAt(start), end: end && nodeAt(end)};
     },
 
     // Select a piece of the document. Parameters are node/offset
