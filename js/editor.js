@@ -607,11 +607,11 @@ var Editor = (function(){
       }
       else if (event.ctrlKey) {
         if (event.keyCode == 90 || event.keyCode == 8) { // Z, backspace
-          this.undo();
+          this.history.undo();
           event.stop();
         }
         else if (event.keyCode == 89) { // Y
-          this.redo();
+          this.history.redo();
           event.stop();
         }
         else if (event.keyCode == 83 && this.options.saveFunction) { // S
@@ -693,18 +693,6 @@ var Editor = (function(){
         }
       }
       return whiteSpace;
-    },
-
-    undo: function() {
-      this.highlightAtCursor();
-      forEach(this.history.undo(), method(this, "addDirtyNode"));
-      this.scheduleHighlight();
-    },
-
-    redo: function() {
-      this.highlightAtCursor();
-      forEach(this.history.redo(), method(this, "addDirtyNode"));
-      this.scheduleHighlight();
     },
 
     // Re-highlight the selected part of the document.
@@ -864,8 +852,8 @@ var Editor = (function(){
     // left, and information about the place where it stopped. If
     // there are dirty nodes left after this function has spent all
     // its lines, it shedules another highlight to finish the job.
-    highlightDirty: function() {
-      var lines = this.options.linesPerPass;
+    highlightDirty: function(all) {
+      var lines = all ? Infinity : this.options.linesPerPass;
       var sel = select.markSelection(this.win);
       var start;
       while (lines > 0 && (start = this.getDirtyNode())){

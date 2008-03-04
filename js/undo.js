@@ -71,9 +71,9 @@ History.prototype = {
     // Store the current equivalents of these chains, in case the user
     // wants to redo.
     this.redoHistory.push(map(method(this, "shadowChain"), data));
-    // The editor wants to know which nodes it should reparse, so
-    // revertChain returns those.
-    return map(method(this, "revertChain"), data);
+    // The editor needs to know which nodes it should reparse, so we
+    // tell it about the ndoes revertChain returns.
+    this.notifyDirty(map(method(this, "revertChain"), data));
   },
 
   // Redo the last undone change (only works once, no history is
@@ -87,9 +87,8 @@ History.prototype = {
     // Store the changes we are about to redo, so they can be undone
     // again.
     this.addUndoLevel(map(method(this, "shadowChain"), data));
-    // Revert changes, save dirty nodes.
-    var dirty = map(method(this, "revertChain"), data);
-    return dirty;
+    // Revert changes, mark dirty nodes.
+    this.notifyDirty(map(method(this, "revertChain"), data));
   },
 
   // Clear the undo history, link the current document (which is
@@ -117,9 +116,17 @@ History.prototype = {
 
   // [ end of public interface ]
 
+  // Notify the editor that some nodes have changed.
+  notifyDirty: function(nodes) {
+    forEach(nodes, method(parent, "addDirtyNode"))
+    parent.scheduleHighlight();
+  },
+
   // Check whether the touched nodes hold any changes, if so, commit
   // them.
   commit: function() {
+    // Make sure there are no pending dirty nodes.
+    parent.highlightDirty(true);
     // Build set of chains.
     var chains = this.touchedChains(), self = this;
     if (!chains.length) return;
