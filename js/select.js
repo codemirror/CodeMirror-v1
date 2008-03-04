@@ -92,21 +92,6 @@ var select = {};
       return result;
     };
 
-    // Like selectionTopNode, but also gives an offset of the cursor
-    // within this node (in characters).
-    select.selectionPosition = function(container, start) {
-      var topNode = select.selectionTopNode(container, start);
-      if (topNode === false) return null;
-      if (topNode && topNode.nodeType == 3) throw "selectionPostion only works on normalized documents.";
-
-      var range = container.ownerDocument.selection.createRange();
-      range.collapse(start);
-      var range2 = range.duplicate();
-      range2.moveToElementText(topNode || container);
-      range2.setEndPoint("EndToStart", range);
-      return {node: topNode, offset: range2.text.length};
-    };
-
     // Not needed in IE model -- see W3C model.
     select.replaceSelection = function(){};
 
@@ -139,15 +124,16 @@ var select = {};
     // Get the BR node at the start of the line on which the cursor
     // currently is, and the offset into the line. Returns null as
     // node if cursor is on first line.
-    select.cursorLine = function(container) {
+    select.cursorLine = function(container, start) {
       var selection = container.ownerDocument.selection;
       if (!selection) return null;
 
-      var topNode = select.selectionTopNode(container, false);
+      var topNode = select.selectionTopNode(container, start);
       while (topNode && topNode.nodeName != "BR")
         topNode = topNode.previousSibling;
 
       var range = selection.createRange(), range2 = range.duplicate();
+      range.collapse(start);
       if (topNode) {
         range2.moveToElementText(topNode);
         range2.collapse(false);
@@ -160,6 +146,26 @@ var select = {};
 
       return {start: topNode, offset: range.text.length};
     };
+
+    select.setCursorLine = function(container, from, to) {
+      function rangeAt(pos) {
+        var range = container.ownerDocument.body.createTextRange();
+        if (!pos.start) {
+          range.moveToElementText(container);
+          range.collapse(true);
+        }
+        else {
+          range.moveToElementText(node);
+          range.collapse(false);
+        }
+        range.move("character", pos.offset);
+      }
+
+      var range = rangeAt(from);
+      if (to && to != from)
+        range.setEndPoint("EndToEnd", rangeAt(to));
+      range.select();
+    }
 
     // Set the cursor inside a given textnode. The implementation for
     // IE is hopelessly crummy because it does not allow one to pass a
@@ -321,16 +327,6 @@ var select = {};
       }
     };
 
-    select.selectionPosition = function(container, start) {
-      var topNode = select.selectionTopNode(container, start);
-      if (topNode === false) return null;
-
-      var range = selectionRange(container.ownerDocument.defaultView).cloneRange();
-      range.collapse(start);
-      range.setStartBefore(topNode || container);
-      return {node: topNode, offset: range.toString().length};
-    };
-
     select.selectMarked = function (sel) {
       if (!sel)
         return;
@@ -436,21 +432,51 @@ var select = {};
       insertNodeAtCursor(window, window.document.createElement("BR"));
     };
 
-    select.cursorLine = function(container) {
+    select.cursorLine = function(container, start) {
       var range = selectionRange(window);
       if (!range) return;
 
-      var topNode = select.selectionTopNode(container, false);
+      var topNode = select.selectionTopNode(container, start);
       while (topNode && topNode.nodeName != "BR")
         topNode = topNode.previousSibling;
 
       range = range.cloneRange();
+      range.collapse(start);
       if (topNode)
         range.setStartAfter(topNode);
       else
         range.setStartBefore(container);
       return {start: topNode, offset: range.toString().length};
     };
+
+    select.setCursorLine = function(container, from, to) {
+      var win = container.ownerDocument.defaultView,
+          range = win.document.createRange();
+      function setPoint(node, offset, side) {
+        if (!node)
+          node = container.firstChild;
+        else
+          node = node.nextSibling;
+
+        if (offset == 0) {
+          range["set" + side + "Before"](node);
+          return;
+        }
+        while (node && node.nodeType == "SPAN" && node.firstChild && node.firstChild.nodeType == 3) {
+          var length = node.firstChild.nodeValue.length;
+          if (length >= offset) {
+            range["set" + side](node.firstChild, offset);
+            break;
+          }
+          offset -= length;
+        }
+      }
+
+      end = end || start;
+      setPoint(end.node, end.offset, "End");
+      setPoint(start.node, start.offset, "Start");
+      selectRange(range, win);
+    },
 
     select.focusNode = function(container, start, end) {
       end = end || start;

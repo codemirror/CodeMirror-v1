@@ -271,11 +271,6 @@
       <dt><code>jumpToLine(number)</code></dt><dd>Moves the cursor to
       the start of the given line.</dd>
 
-      <dt><code>jumpToChar(start, end)</code></dt><dd>Moves the
-      selection to the given positions, in characters. Newlines count
-      as a single character. <code>end</code> may be omitted to not
-      select anything.</dd>
-
       <dt><code>selection()</code> &#8594;
       <code>string</code></dt><dd>Returns the text that is currently
       selected in the editor.</dd>
@@ -284,11 +279,6 @@
       focus)</code></dt><dd>Replaces the currently selected text with
       the given string. Can be given a second, optional argument
       which, if true, causes the editor to also gain focus.</dd>
-
-      <dt><code>replaceChars(string, start,
-      end)</code></dt><dd>Replaces the given range of characters with
-      the given string. <code>end</code> may be omitted to just insert
-      the string at the given position.</dd>
 
       <dt><code>reindent()</code></dt><dd>Automatically re-indent the
       whole document.</dd>

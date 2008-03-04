@@ -91,6 +91,20 @@ History.prototype = {
     this.notifyDirty(map(method(this, "revertChain"), data));
   },
 
+  // Push a changeset into the document.
+  push: function(from, to, lines) {
+    var chain = [];
+    for (var i = 0; i < lines.length; i++) {
+      var end = (i == lines.length - 1) ? to : this.container.ownerDocument.createElement("BR");
+      chain.push({from: from, to: end, text: lines[i]});
+      from = end;
+    }
+
+    this.commit();
+    this.addUndoLevel([this.shadowChain(chain)]);
+    this.notifyDirty([this.revertChain(chain)]);
+  },
+
   // Clear the undo history, link the current document (which is
   // expected to be just text nodes and BRs).
   reset: function() {
@@ -114,12 +128,16 @@ History.prototype = {
     this.linkChain(chain);
   },
 
-  // [ end of public interface ]
+  textAfter: function(br) {
+    return this.after(br).text;
+  },
 
-  // Notify the editor that some nodes have changed.
-  notifyDirty: function(nodes) {
-    forEach(nodes, method(parent, "addDirtyNode"))
-    parent.scheduleHighlight();
+  nodeAfter: function(br) {
+    return this.after(br).to;
+  },
+
+  nodeBefore: function(br) {
+    return this.before(br).from;
   },
 
   // Check whether the touched nodes hold any changes, if so, commit
@@ -142,6 +160,14 @@ History.prototype = {
     this.addUndoLevel(map(commitChain, chains));
     // Any redo data is now out of date, so clear it.
     this.redoHistory = [];
+  },
+
+  // [ end of public interface ]
+
+  // Notify the editor that some nodes have changed.
+  notifyDirty: function(nodes) {
+    forEach(nodes, method(parent, "addDirtyNode"))
+    parent.scheduleHighlight();
   },
 
   // Link a chain into the DOM nodes (or the first/last links for null
@@ -302,7 +328,7 @@ History.prototype = {
     // Some attempt is made to prevent the cursor from jumping
     // randomly when an undo or redo happens. It still behaves a bit
     // strange sometimes.
-    var cursor = select.cursorLine(this.container), self = this;
+    var cursor = select.cursorLine(this.container, false), self = this;
 
     // Remove all nodes in the DOM tree between from and to (null for
     // start/end of container).
