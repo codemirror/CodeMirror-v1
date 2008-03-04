@@ -21,7 +21,6 @@ Editor.Parser = (function() {
     function isWhiteSpace(ch) {
       return ch != "\n" && realWhiteSpace.test(ch);
     }
-    var nameMatch = matcher(new RegExp("[^\\s" + nbsp + "=<>\\\"\\'\\/?]"));
     // The following functions are all state functions -- they 'consume'
     // and label the next token based on the current parser state.
     function inText() {
@@ -88,7 +87,7 @@ Editor.Parser = (function() {
         return "whitespace";
       }
       else {
-        this.source.nextWhile(nameMatch);
+        this.source.nextWhile(matcher(/[^\s\u00a0=<>\"\'\/?]/));
         return "name";
       }
     }

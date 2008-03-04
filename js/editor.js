@@ -20,9 +20,8 @@ var Editor = (function(){
     return buffer.join("");
   }
 
-  var multiWhiteSpace = new RegExp("[\\t " + nbsp + "]{2,}", "g");
   function splitSpaces(string) {
-    return string.replace(multiWhiteSpace, function(s) {return safeWhiteSpace(s.length);});
+    return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
   }
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
@@ -153,8 +152,6 @@ var Editor = (function(){
     return {next: function(){return cc();}, nodes: nodeQueue};
   }
 
-  var nbspRegexp = new RegExp(nbsp, "g");
-  
   // Determine the text size of a processed node.
   function nodeSize(node) {
     if (node.nodeName == "BR")
@@ -406,7 +403,7 @@ var Editor = (function(){
 
       var accum = [];
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
-      return accum.join("").replace(nbspRegexp, " ");
+      return accum.join("").replace(/\u00a0/g, " ");
     },
 
     // Move the cursor to the start of a specific line (counting from 1).
@@ -827,7 +824,7 @@ var Editor = (function(){
         function(node) {container.insertBefore(node, next);}
       : function(node) {container.appendChild(node);};
 
-      var lines = splitSpaces(string.replace(nbspRegexp, " ")).replace(/\r\n?/g, "\n").split("\n");
+      var lines = splitSpaces(string.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
       for (var i = 0; i != lines.length; i++) {
         var line = lines[i];
         if (i > 0)

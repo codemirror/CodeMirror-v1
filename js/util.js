@@ -53,10 +53,10 @@ function isAncestor(node, child) {
 }
 
 // The non-breaking space character.
-var nbsp = String.fromCharCode(160);
+var nbsp = "\u00a0";
 // Unfortunately, IE's regexp matcher thinks non-breaking spaces
 // aren't whitespace.
-var realWhiteSpace = new RegExp("^[\\s" + nbsp + "]*$");
+var realWhiteSpace = /^[\s\u00a0]*$/;
 
 // Standardize a few unportable event properties.
 function normalizeEvent(event) {

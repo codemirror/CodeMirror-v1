@@ -182,9 +182,8 @@ History.prototype = {
   touchedChains: function() {
     var self = this;
     // Compare two strings, treating nbsps as spaces.
-    var nbspRegex = new RegExp(nbsp, "g");
     function compareText(a, b) {
-      return a.replace(nbspRegex, " ") == b.replace(nbspRegex, " ");
+      return a.replace(/\u00a0/g, " ") == b.replace(/\u00a0/g, " ");
     }
 
     // The temp system is a crummy hack to speed up determining
