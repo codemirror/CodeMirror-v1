@@ -150,15 +150,16 @@ var select = {};
     select.setCursorLine = function(container, from, to) {
       function rangeAt(pos) {
         var range = container.ownerDocument.body.createTextRange();
-        if (!pos.start) {
+        if (!pos.node) {
           range.moveToElementText(container);
           range.collapse(true);
         }
         else {
-          range.moveToElementText(node);
+          range.moveToElementText(pos.node);
           range.collapse(false);
         }
         range.move("character", pos.offset);
+        return range;
       }
 
       var range = rangeAt(from);
