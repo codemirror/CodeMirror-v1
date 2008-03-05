@@ -367,11 +367,11 @@ History.prototype = {
       if (cursor && cursor.node == line.from) {
         var prev = this.after(line.from);
         var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
-        select.focusNode(this.container, {node: textNode, offset: Math.max(0, cursor.offset + cursordiff)});
+        select.setCursorLine(this.container, {node: line.from, offset: Math.max(0, cursor.offset + cursordiff)});
       }
       // Cursor was in removed line, this is last new line.
       else if (cursor && (i == chain.length - 1) && cursor.node && cursor.node.parentNode != this.container) {
-        select.focusNode(this.container, {node: textNode, offset: line.text.length});
+        select.setCursorLine(this.container, {node: line.from, offset: line.text.length});
       }
     }
 

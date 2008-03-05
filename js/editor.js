@@ -428,12 +428,6 @@ var Editor = (function(){
         this.indentRegion(null, this.container.lastChild);
     },
 
-    // Select a piece of the document. Parameters are node/offset
-    // objects, to is optional.
-    select: function(from, to) {
-      select.focusNode(this.container, from, to);
-    },
-
     // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
       // Don't scan when the user is typing.

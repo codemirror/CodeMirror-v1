@@ -168,51 +168,6 @@ var select = {};
       range.select();
     }
 
-    // Set the cursor inside a given textnode. The implementation for
-    // IE is hopelessly crummy because it does not allow one to pass a
-    // text node to moveToElementText. This won't work precisely if
-    // there are newlines in the text node or text nodes immediately
-    // in front of it.
-    select.focusNode = function(container, start, end) {
-      function rangeAt(node, offset) {
-        var inside = true;
-        // Move backward and upward from text nodes, because they can
-        // not be directly selected.
-        if (node && node.nodeType == 3) {
-          while (node.nodeType == 3 && node.previousSibling) {
-            node = node.previousSibling;
-            if (node.nodeType == 3) {
-              offset += node.nodeValue.length;
-            }
-            else {
-              inside = false;
-              break;
-            }
-          }
-          if (node.nodeType == 3)
-            node = node.parentNode;
-        }
-
-        var range = container.ownerDocument.body.createTextRange();
-        if (!node) {
-          range.moveToElementText(container);
-          range.collapse(true);
-        }
-        else {
-          range.moveToElementText(node);
-          range.collapse(inside);
-        }
-        range.move("character", offset);
-        return range;
-      }
-
-      end = end || start;
-      var range = rangeAt(end.node, end.offset);
-      if (start.node != end.node || start.offset != end.offset)
-        range.setEndPoint("StartToStart", rangeAt(start.node, start.offset));
-      range.select();
-    };
-
     // Make sure the cursor is visible.
     select.scrollToCursor = function(container) {
       var selection = container.ownerDocument.selection;
@@ -453,6 +408,7 @@ var select = {};
     select.setCursorLine = function(container, from, to) {
       var win = container.ownerDocument.defaultView,
           range = win.document.createRange();
+
       function setPoint(node, offset, side) {
         if (!node)
           node = container.firstChild;
@@ -461,45 +417,36 @@ var select = {};
 
         if (offset == 0) {
           range["set" + side + "Before"](node);
-          return;
+          return true;
         }
-        while (node) {
-          if (node.currentText) {
-            var length = node.firstChild.nodeValue.length;
-            if (length >= offset)
-              break;
-            offset -= length;
+
+        var backlog = []
+        function decompose(node) {
+          if (node.nodeType == 3)
+            backlog.push(node);
+          else
+            forEach(node.childNodes, decompose);
+        }
+        while (true) {
+          while (node && !backlog.length) {
+            decompose(node);
+            node = node.nextSibling;
           }
-          node = node.nextSibling;
+          var cur = backlog.shift();
+          if (!cur) return false;
+
+          var length = cur.nodeValue.length;
+          if (length >= offset) {
+            range["set" + side](cur, offset);
+            return true;
+          }
+          offset -= length;
         }
-        range["set" + side](node.firstChild, offset);
       }
 
-      to = to || start;
-      setPoint(to.node, to.offset, "End");
-      setPoint(from.node, from.offset, "Start");
-      selectRange(range, win);
-    },
-
-    select.focusNode = function(container, start, end) {
-      end = end || start;
-      var win = container.ownerDocument.defaultView,
-          range = win.document.createRange();
-      function setPoint(node, offset, side) {
-        // Make sure we have a leaf node
-        while (node && node.firstChild)
-          node = node.firstChild;
-
-        if (!node)
-          range["set" + side + "Before"](container);
-        else if (node.nodeType == 3)
-          range["set" + side](node, offset);
-        else
-          range["set" + side + (offset ? "After" : "Before")](node);
-      }
-      setPoint(end.node, end.offset, "End");
-      setPoint(start.node, start.offset, "Start");
-      selectRange(range, win);
+      to = to || from;
+      if (setPoint(to.node, to.offset, "End") && setPoint(from.node, from.offset, "Start"))
+        selectRange(range, win);
     };
 
     select.scrollToCursor = function(container) {
