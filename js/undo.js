@@ -60,7 +60,6 @@ History.prototype = {
 
   // Undo the last change.
   undo: function() {
-    this.parent.clearTimeout(this.commitTimeout);
     // Make sure pending changes have been committed.
     this.commit();
 
@@ -144,6 +143,7 @@ History.prototype = {
   // Check whether the touched nodes hold any changes, if so, commit
   // them.
   commit: function() {
+    this.parent.clearTimeout(this.commitTimeout);
     // Make sure there are no pending dirty nodes.
     this.editor.highlightDirty(true);
     // Build set of chains.
