@@ -124,7 +124,7 @@ var select = {};
     // Get the BR node at the start of the line on which the cursor
     // currently is, and the offset into the line. Returns null as
     // node if cursor is on first line.
-    select.cursorLine = function(container, start) {
+    select.cursorPos = function(container, start) {
       var selection = container.ownerDocument.selection;
       if (!selection) return null;
 
@@ -147,7 +147,7 @@ var select = {};
       return {node: topNode, offset: range.text.length};
     };
 
-    select.setCursorLine = function(container, from, to) {
+    select.setCursorPos = function(container, from, to) {
       function rangeAt(pos) {
         var range = container.ownerDocument.body.createTextRange();
         if (!pos.node) {
@@ -388,7 +388,7 @@ var select = {};
       insertNodeAtCursor(window, window.document.createElement("BR"));
     };
 
-    select.cursorLine = function(container, start) {
+    select.cursorPos = function(container, start) {
       var range = selectionRange(window);
       if (!range) return;
 
@@ -405,7 +405,7 @@ var select = {};
       return {node: topNode, offset: range.toString().length};
     };
 
-    select.setCursorLine = function(container, from, to) {
+    select.setCursorPos = function(container, from, to) {
       var win = container.ownerDocument.defaultView,
           range = win.document.createRange();
 

@@ -329,7 +329,7 @@ History.prototype = {
     // Some attempt is made to prevent the cursor from jumping
     // randomly when an undo or redo happens. It still behaves a bit
     // strange sometimes.
-    var cursor = select.cursorLine(this.container, false), self = this;
+    var cursor = select.cursorPos(this.container, false), self = this;
 
     // Remove all nodes in the DOM tree between from and to (null for
     // start/end of container).
@@ -367,11 +367,11 @@ History.prototype = {
       if (cursor && cursor.node == line.from) {
         var prev = this.after(line.from);
         var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
-        select.setCursorLine(this.container, {node: line.from, offset: Math.max(0, cursor.offset + cursordiff)});
+        select.setCursorPos(this.container, {node: line.from, offset: Math.max(0, cursor.offset + cursordiff)});
       }
       // Cursor was in removed line, this is last new line.
       else if (cursor && (i == chain.length - 1) && cursor.node && cursor.node.parentNode != this.container) {
-        select.setCursorLine(this.container, {node: line.from, offset: line.text.length});
+        select.setCursorPos(this.container, {node: line.from, offset: line.text.length});
       }
     }
 

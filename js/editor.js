@@ -190,7 +190,7 @@ var Editor = (function(){
     // DOM tree, we can still try to continue.
     this.fallbackSize = 15;
     var cursor;
-    if (fromCursor && (cursor = select.cursorLine(this.editor.container))) {
+    if (fromCursor && (cursor = select.cursorPos(this.editor.container))) {
       this.line = cursor.node;
       this.offset = cursor.offset;
     }
@@ -266,7 +266,7 @@ var Editor = (function(){
 
     select: function() {
       if (this.atOccurrence) {
-        select.setCursorLine(this.editor.container, this.atOccurrence.from, this.atOccurrence.to);
+        select.setCursorPos(this.editor.container, this.atOccurrence.from, this.atOccurrence.to);
         select.scrollToCursor(this.editor.container);
       }
     },
@@ -370,7 +370,7 @@ var Editor = (function(){
 
     // Find the line that the cursor is currently on.
     currentLine: function() {
-      var pos = select.cursorLine(this.container, true), line = 1;
+      var pos = select.cursorPos(this.container, true), line = 1;
       if (!pos) return 1;
       for (cursor = pos.node; cursor; cursor = cursor.previousSibling)
         if (cursor.nodeName == "BR") line++;
@@ -382,8 +382,8 @@ var Editor = (function(){
       var h = this.history;
       h.commit();
 
-      var start = select.cursorLine(this.container, true),
-          end = select.cursorLine(this.container, false);
+      var start = select.cursorPos(this.container, true),
+          end = select.cursorPos(this.container, false);
       if (!start || !end) return "";
 
       if (start.node == end.node)
@@ -399,12 +399,12 @@ var Editor = (function(){
     // Replace the selection with another piece of text.
     replaceSelection: function(text) {
       this.history.commit();
-      var start = select.cursorLine(this.container, true),
-          end = select.cursorLine(this.container, false);
+      var start = select.cursorPos(this.container, true),
+          end = select.cursorPos(this.container, false);
       if (!start || !end) return;
 
       end = this.replaceRange(start, end, text);
-      select.setCursorLine(this.container, start, end);
+      select.setCursorPos(this.container, start, end);
     },
 
     replaceRange: function(from, to, text) {
