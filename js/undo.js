@@ -64,13 +64,13 @@ History.prototype = {
     this.commit();
 
     // If there is no undo info left, bail.
-    if (!this.history.length) return [];
+    if (!this.history.length) return;
     
     // The history contains an array of line chains.
     var data = this.history.pop();
     // Store the current equivalents of these chains, in case the user
     // wants to redo.
-    this.redoHistory.push(map(method(this, "shadowChain"), data));
+    this.redoHistory.push(this.recordChange(data));
     // The editor needs to know which nodes it should reparse, so we
     // tell it about the ndoes revertChain returns.
     this.notifyDirty(map(method(this, "revertChain"), data));
@@ -80,12 +80,12 @@ History.prototype = {
   redo: function() {
     this.commit();
     if (!this.redoHistory.length)
-      return [];
+      return;
 
     var data = this.redoHistory.pop();
     // Store the changes we are about to redo, so they can be undone
     // again.
-    this.addUndoLevel(map(method(this, "shadowChain"), data));
+    this.addUndoLevel(this.recordChange(data));
     // Revert changes, mark dirty nodes.
     this.notifyDirty(map(method(this, "revertChain"), data));
   },
@@ -100,7 +100,7 @@ History.prototype = {
     }
 
     this.commit();
-    this.addUndoLevel([this.shadowChain(chain)]);
+    this.addUndoLevel(this.recordChange[chain]);
     this.notifyDirty([this.revertChain(chain)]);
   },
 
@@ -133,15 +133,11 @@ History.prototype = {
     var chains = this.touchedChains(), self = this;
     if (!chains.length) return;
 
-    // Link the chains into the DOM nodes, getting back their
-    // predecessors.
-    function commitChain(chain) {
-      var shadow = self.shadowChain(chain);
-      self.linkChain(chain);
-      return shadow;
-    };
+    var shadows = this.recordChange(chains);
+    // Link the chains into the DOM nodes.
+    forEach(shadows, method(this, "linkChain"));
     // Store the changes.
-    this.addUndoLevel(map(commitChain, chains));
+    this.addUndoLevel(shadows);
     // Any redo data is now out of date, so clear it.
     this.redoHistory = [];
   },
@@ -289,6 +285,15 @@ History.prototype = {
     });
 
     return chains;
+  },
+
+  recordChange: function(chains) {
+    var shadows = [];
+    for (var i = 0; i < chains.length; i++)
+      shadows.push(this.shadowChain(chains[i]));
+    if (this.onChange)
+      this.onChange(shadows, chains);
+    return shadows;
   },
 
   // Find the 'shadow' of a given chain by following the links in the
