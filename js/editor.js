@@ -23,6 +23,9 @@ var Editor = (function(){
   function splitSpaces(string) {
     return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
   }
+  function asEditorLines(string) {
+    return splitSpaces(string.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
+  }
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
@@ -329,16 +332,10 @@ var Editor = (function(){
   }
 
   Editor.prototype = {
-    // Split a chunk of code into lines, put them in the frame, and
-    // schedule them to be coloured.
+    // Import a piece of code into the editor.
     importCode: function(code) {
-      clearElement(this.container);
-      this.insertLines(code, null);
+      this.history.push(null, null, asEditorLines(code));
       this.history.reset();
-      if (this.container.firstChild){
-        this.addDirtyNode(this.container.firstChild);
-        this.scheduleHighlight();
-      }
     },
 
     // Extract the code from the editor.
@@ -408,7 +405,7 @@ var Editor = (function(){
     },
 
     replaceRange: function(from, to, text) {
-      var lines = splitSpaces(text.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
+      var lines = asEditorLines(text);
       lines[0] = this.history.textAfter(from.node).slice(0, from.offset) + lines[0];
       var lastLine = lines[lines.length - 1];
       lines[lines.length - 1] = lastLine + this.history.textAfter(to.node).slice(to.offset);
@@ -644,25 +641,6 @@ var Editor = (function(){
       if (node.nodeType != 3)
         node.dirty = true;
       this.dirty.push(node);
-    },
-
-    // Insert the code from string after the given node (null for
-    // start of document).
-    insertLines: function(string, after) {
-      var container = this.container;
-      var next = after ? after.nextSibling : this.container.firstChild;
-      var insert = next ?
-        function(node) {container.insertBefore(node, next);}
-      : function(node) {container.appendChild(node);};
-
-      var lines = splitSpaces(string.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
-      for (var i = 0; i != lines.length; i++) {
-        var line = lines[i];
-        if (i > 0)
-          insert(this.doc.createElement("BR"));
-        if (line.length > 0)
-          insert(this.doc.createTextNode(line));
-      }
     },
 
     // Cause a highlight pass to happen in options.passDelay

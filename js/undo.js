@@ -104,27 +104,11 @@ History.prototype = {
     this.notifyDirty([this.revertChain(chain)]);
   },
 
-  // Clear the undo history, link the current document (which is
-  // expected to be just text nodes and BRs).
+  // Clear the undo history, make the current document the start
+  // position.
   reset: function() {
+    this.commit();
     this.history = []; this.redoHistory = [];
-    var chain = [], line = "", start = null;
-    var pos = this.container.firstChild;
-    while (true) {
-      if (!pos || pos.nodeName == "BR") {
-        chain.push({from: start, to: pos, text: line});
-        line = ""; start = pos;
-      }
-      else if (pos.nodeType == 3) {
-        line += pos.nodeValue;
-      }
-      else {
-        throw "Invalid history reset: " + pos.nodeName + " node found.";
-      }
-      if (!pos) break;
-      pos = pos.nextSibling;
-    }
-    this.linkChain(chain);
   },
 
   textAfter: function(br) {
