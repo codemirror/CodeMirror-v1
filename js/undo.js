@@ -76,8 +76,7 @@ History.prototype = {
     this.notifyDirty(map(method(this, "revertChain"), data));
   },
 
-  // Redo the last undone change (only works once, no history is
-  // stored for this).
+  // Redo the last undone change.
   redo: function() {
     this.commit();
     if (!this.redoHistory.length)
