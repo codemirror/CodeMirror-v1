@@ -166,7 +166,11 @@ var Editor = (function(){
     while (node && node.nodeName != "BR")
       node = node.previousSibling;
     return node;
-  };
+  }
+
+  function cleanText(text) {
+    return text.replace(/\u00a0/g, " ");
+  }
 
   // Client interface for searching the content of the editor. Create
   // these by calling CodeMirror.getSearchCursor. To use, call
@@ -175,8 +179,10 @@ var Editor = (function(){
   // skip to the next find. Use the select and replace methods to
   // actually do something with the found locations.
   function SearchCursor(editor, string, fromCursor) {
-    this.editor = editor; this.container = editor.container;
-    this.string = string;
+    this.editor = editor;
+    this.history = editor.history;
+    this.history.commit();
+
     // Are we currently at an occurrence of the search string?
     this.atOccurrence = false;
     // The object stores a set of nodes coming after its current
@@ -184,151 +190,90 @@ var Editor = (function(){
     // DOM tree, we can still try to continue.
     this.fallbackSize = 15;
     var cursor;
-    if (fromCursor && (cursor = select.cursorLine(this.container))) {
-      // Adjust information returned by cursorline -- in here, BRs
-      // count as a character, and null nodes mean 'end of document'.
-      if (cursor.start)
-        cursor.offset++;
-      else
-        cursor.start = this.container.firstChild;
-      this.savePoint(cursor.start, cursor.offset);
+    if (fromCursor && (cursor = select.cursorLine(this.editor.container))) {
+      this.line = cursor.node;
+      this.offset = cursor.offset;
     }
     else {
-      this.savePoint(this.container.firstChild, 0);
+      this.line = null;
+      this.offset = 0;
     }
+    this.valid = !!string;
+
+    var target = string.split("\n"), self = this;;
+    this.matches = (target.length == 1) ?
+      function() {
+        var match = cleanText(self.history.textAfter(self.line).slice(self.offset)).indexOf(string);
+        if (match > -1)
+          return {from: {node: self.line, offset: self.offset + match},
+                  to: {node: self.line, offset: self.offset + match + string.length}};
+      } :
+      function() {
+        var firstLine = cleanText(self.history.textAfter(self.line).slice(self.offset));
+        var match = firstLine.lastIndexOf(target[0]);
+        if (match == -1 || match != firstLine.length - target[0].length)
+          return false;
+        var startOffset = self.offset + match;
+
+        var line = self.history.nodeAfter(self.line);
+        for (var i = 1; i < target.length - 1; i++) {
+          if (cleanText(self.history.textAfter(line)) != target[i])
+            return false;
+          line = self.history.nodeAfter(line);
+        }
+
+        if (cleanText(self.history.textAfter(line)).indexOf(target[target.length - 1]) != 0)
+          return false;
+
+        return {from: {node: self.line, offset: startOffset},
+                to: {node: line, offset: target[target.length - 1].length}};
+      };
   }
 
   SearchCursor.prototype = {
     findNext: function() {
-      // Can not search for empty string.
-      if (!this.string) this.point = null;
-      // End of buffer;
-      if (!this.point || !this.container.firstChild) return false;
-      // Make sure point is at a node that is still in the document.
-      this.doFallback();
+      // End of buffer, or no valid search string.
+      if (!this.valid) return false;
+      this.atOccurrence = false;
+      var self = this;
 
-      // This chunk of variables and functions implement an interface
-      // for going over the result of traverseDOM, with backtracking,
-      // and the possibility to look up the current node and save its
-      // position.
-      var traverse = traverseDOM(this.point);
-      var buffer = "", offset = this.offset + (this.atOccurrence ? 1 : 0);
-      var total = offset;
-
-      // Fetch the next character, or null if end of buffer.
-      function nextChar() {
-        while (offset >= buffer.length) {
-          offset -= buffer.length;
-          try {buffer = traverse.next();}
-          catch (e) {
-            if (e != StopIteration) throw e;
-            return null;
-          }
+      function saveAfter(pos) {
+        if (self.history.textAfter(pos.node).length < pos.offset) {
+          self.line = pos.node;
+          self.offset = pos.offset + 1;
         }
-        total++;
-        return buffer.charAt(offset++);
-      }
-      // Re-scan the given string.
-      function pushBack(piece) {
-        total -= piece.length;
-        buffer = piece + buffer.slice(offset);
-        offset = 0;
-      }
-      // Save the current node. total is used to count the characters
-      // consumed, which makes it possible to find back the relevant
-      // node. Can not just take the last node, because backtracking
-      // might have brought us back from there.
-      function savePos(self) {
-        for (var i = 0; true; i++) {
-          var node = traverse.nodes[i];
-          var size = nodeSize(node);
-          if (total <= size) {
-            self.savePoint(node, total);
-            return;
-          }
-          total -= size;
+        else {
+          self.line = self.history.nodeAfter(pos.node);
+          self.offset = 0;
         }
       }
 
-      // Now search this stream for the needle string. While matching,
-      // characters are pushed into the backtrack variable -- if the
-      // match fails, we skip back to the second character of this
-      // string.
-      var search = this.string, backtrack = "", ch;
-      while (ch = nextChar()) {
-        if (ch == search.charAt(0)) {
-          search = search.slice(1);
-          backtrack += ch;
-          if (!search) {
-            pushBack(this.string);
-            savePos(this);
-            return (this.atOccurrence = true);
-          }
+      while (true) {
+        var match = this.matches();
+        if (match) {
+          this.atOccurrence = match;
+          saveAfter(match.from);
+          return true;
         }
-        else if (backtrack) {
-          pushBack(backtrack.slice(1));
-          backtrack = "";
-          search = this.string;
+        this.line = this.history.nodeAfter(this.line);
+        this.offset = 0;
+        if (!this.line) {
+          this.valid = false;
+          return false;
         }
       }
-
-      this.point = null;
-      return (this.atOccurrence = false);
     },
 
     select: function() {
-      // Can only select if we are at an occurrence and that occurrence
-      // is still in the document.
-      if (!this.atOccurrence || this.point.parentNode != this.container)
-        return false;
-
-      // Find the end of the match.
-      var endNode = this.point, endOffset = this.offset + this.string.length;
-      while (endNode && endOffset > nodeSize(endNode)) {
-        endOffset -= nodeSize(endNode);
-        endNode = endNode.nextSibling;
+      if (this.atOccurrence) {
+        select.setCursorLine(this.editor.container, this.atOccurrence.from, this.atOccurrence.to);
+        select.scrollToCursor(this.editor.container);
       }
-      // If the end is not in the document, bail.
-      if (!endNode)
-        return false;
-
-      this.editor.select({node: this.point, offset: this.offset},
-                         {node: endNode, offset: endOffset});
-      select.scrollToCursor(this.container);
-      return true;
     },
 
     replace: function(string) {
-      if (this.select())
-        this.editor.replaceSelection(string);
-    },
-
-    // Save current point, and a bunch of nodes after that.
-    savePoint: function(point, offset) {
-      this.point = point;
-      this.offset = offset;
-      this.fallback = [];
-      if (!point) return;
-      for (var count = this.fallbackSize; count && point.nextSibling; count--) {
-        point = point.nextSibling;
-        this.fallback.push(point);
-      }
-    },
-
-    // See if point is still valid. If not, try to restore position
-    // using fallback nodes. If that also fails, jump back to start of
-    // document.
-    doFallback: function() {
-      if (this.point.parentNode == this.container)
-        return;
-      this.offset = 0;
-      for (var i = 0; i < this.fallbackSize; i++) {
-        if (this.fallback[i].parentNode == this.container) {
-          this.point = this.fallback[i];
-          return;
-        }
-      }
-      this.point = this.container.firstChild;
+      if (this.atOccurrence)
+        this.editor.replaceRange(this.atOccurrence.from, this.atOccurrence.to, string);
     }
   };
 
@@ -339,7 +284,7 @@ var Editor = (function(){
     this.doc = document;
     this.container = this.doc.body;
     this.win = window;
-    this.history = new History(this.container, this.options.undoDepth, this.options.undoDelay, this.parent);
+    this.history = new History(this.container, this.options.undoDepth, this.options.undoDelay, this);
 
     if (!Editor.Parser)
       throw "No parser loaded.";
@@ -403,7 +348,7 @@ var Editor = (function(){
 
       var accum = [];
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
-      return accum.join("").replace(/\u00a0/g, " ");
+      return cleanText(accum.join(""));
     },
 
     // Move the cursor to the start of a specific line (counting from 1).
@@ -426,27 +371,29 @@ var Editor = (function(){
     // Find the line that the cursor is currently on.
     currentLine: function() {
       var pos = select.cursorLine(this.container, true), line = 1;
-      if (!cursor) return 1;
-      for (cursor = cursor.node; cursor; cursor = cursor.previousSibling)
+      if (!pos) return 1;
+      for (cursor = pos.node; cursor; cursor = cursor.previousSibling)
         if (cursor.nodeName == "BR") line++;
       return line;
     },
 
     // Retrieve the selected text.
     selectedText: function() {
-      this.history.commit();
+      var h = this.history;
+      h.commit();
+
       var start = select.cursorLine(this.container, true),
           end = select.cursorLine(this.container, false);
       if (!start || !end) return "";
 
       if (start.node == end.node)
-        return history.textAfter(start.node).slice(start.offset, end.offset);
+        return h.textAfter(start.node).slice(start.offset, end.offset);
 
-      var text = [history.textAfter(start.node).slice(start.offset)];
-      for (pos = history.nodeAfter(start.node); pos != end.node; pos = history.nodeAfter(pos))
-        text.push(history.textAfter(pos));
-      text.push(history.textAfter(end.node).slice(0, end.offset));
-      return text.join("\n").replace(/\u00a0/g, " ");
+      var text = [h.textAfter(start.node).slice(start.offset)];
+      for (pos = h.nodeAfter(start.node); pos != end.node; pos = h.nodeAfter(pos))
+        text.push(h.textAfter(pos));
+      text.push(h.textAfter(end.node).slice(0, end.offset));
+      return cleanText(text.join("\n"));
     },
 
     // Replace the selection with another piece of text.
@@ -456,16 +403,19 @@ var Editor = (function(){
           end = select.cursorLine(this.container, false);
       if (!start || !end) return;
 
-      var lines = splitSpaces(text.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
-      lines[0] = this.history.textAfter(start.node).slice(0, start.offset) + lines[0];
-      var lastLine = lines[lines.length - 1];
-      lines[lines.length - 1] = this.history.textAfter(end.node).slice(end.offset) + lastLine;
-      var end = history.nodeAfter(end.node)
-      this.history.push(start.node, end, lines);
+      end = this.replaceRange(start, end, text);
+      select.setCursorLine(this.container, start, end);
+    },
 
-      end.node = history.nodeBefore(end);
-      end.offset = lastLine.length;
-      select.setCursorLine(start, end);
+    replaceRange: function(from, to, text) {
+      var lines = splitSpaces(text.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
+      lines[0] = this.history.textAfter(from.node).slice(0, from.offset) + lines[0];
+      var lastLine = lines[lines.length - 1];
+      lines[lines.length - 1] = lastLine + this.history.textAfter(to.node).slice(to.offset);
+      var end = this.history.nodeAfter(to.node)
+      this.history.push(from.node, end, lines);
+      return {node: this.history.nodeBefore(end),
+              offset: lastLine.length};
     },
 
     getSearchCursor: function(string, fromCursor) {

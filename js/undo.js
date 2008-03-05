@@ -26,10 +26,11 @@
 // delay (of no input) after which it commits a set of changes, and,
 // unfortunately, the 'parent' window -- a window that is not in
 // designMode, and on which setTimeout works in every browser.
-function History(container, maxDepth, commitDelay, parent) {
+function History(container, maxDepth, commitDelay, editor) {
   this.container = container;
   this.maxDepth = maxDepth; this.commitDelay = commitDelay;
-  this.parent = parent;
+  this.editor = editor;
+  this.parent = editor.parent;
   // This line object represents the initial, empty editor.
   var initial = {text: "", from: null, to: null};
   // As the borders between lines are represented by BR elements, the
@@ -144,7 +145,7 @@ History.prototype = {
   // them.
   commit: function() {
     // Make sure there are no pending dirty nodes.
-    parent.highlightDirty(true);
+    this.editor.highlightDirty(true);
     // Build set of chains.
     var chains = this.touchedChains(), self = this;
     if (!chains.length) return;
@@ -166,8 +167,8 @@ History.prototype = {
 
   // Notify the editor that some nodes have changed.
   notifyDirty: function(nodes) {
-    forEach(nodes, method(parent, "addDirtyNode"))
-    parent.scheduleHighlight();
+    forEach(nodes, method(this.editor, "addDirtyNode"))
+    this.editor.scheduleHighlight();
   },
 
   // Link a chain into the DOM nodes (or the first/last links for null
@@ -363,13 +364,13 @@ History.prototype = {
       insert(textNode);
       // See if the cursor was on this line. Put it back (vaguely
       // adjusting for changed line length) if it was.
-      if (cursor && cursor.start == line.from) {
+      if (cursor && cursor.node == line.from) {
         var prev = this.after(line.from);
         var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
         select.focusNode(this.container, {node: textNode, offset: Math.max(0, cursor.offset + cursordiff)});
       }
       // Cursor was in removed line, this is last new line.
-      else if (cursor && (i == chain.length - 1) && cursor.start && cursor.start.parentNode != this.container) {
+      else if (cursor && (i == chain.length - 1) && cursor.node && cursor.node.parentNode != this.container) {
         select.focusNode(this.container, {node: textNode, offset: line.text.length});
       }
     }

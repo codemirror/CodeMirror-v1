@@ -144,7 +144,7 @@ var select = {};
       }
       range.setEndPoint("StartToStart", range2);
 
-      return {start: topNode, offset: range.text.length};
+      return {node: topNode, offset: range.text.length};
     };
 
     select.setCursorLine = function(container, from, to) {
@@ -446,7 +446,7 @@ var select = {};
         range.setStartAfter(topNode);
       else
         range.setStartBefore(container);
-      return {start: topNode, offset: range.toString().length};
+      return {node: topNode, offset: range.toString().length};
     };
 
     select.setCursorLine = function(container, from, to) {
@@ -462,19 +462,21 @@ var select = {};
           range["set" + side + "Before"](node);
           return;
         }
-        while (node && node.nodeType == "SPAN" && node.firstChild && node.firstChild.nodeType == 3) {
-          var length = node.firstChild.nodeValue.length;
-          if (length >= offset) {
-            range["set" + side](node.firstChild, offset);
-            break;
+        while (node) {
+          if (node.currentText) {
+            var length = node.firstChild.nodeValue.length;
+            if (length >= offset)
+              break;
+            offset -= length;
           }
-          offset -= length;
+          node = node.nextSibling;
         }
+        range["set" + side](node.firstChild, offset);
       }
 
-      end = end || start;
-      setPoint(end.node, end.offset, "End");
-      setPoint(start.node, start.offset, "Start");
+      to = to || start;
+      setPoint(to.node, to.offset, "End");
+      setPoint(from.node, from.offset, "Start");
       selectRange(range, win);
     },
 
