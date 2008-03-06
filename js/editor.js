@@ -621,15 +621,18 @@ var Editor = (function(){
         this.indentLineAfter(current);
       else
         current = startOfLine(current.previousSibling);
+      end = startOfLine(end);
 
-      while (current != end) {
+      while (true) {
         var result = this.highlight(current, 1);
         var next = result ? result.node : null;
 
-        while (current != next && current != end)
+        while (current != next)
           current = current ? current.nextSibling : this.container.firstChild;
-        if (current != end)
-          if (next) this.indentLineAfter(next);
+        if (next)
+          this.indentLineAfter(next);
+        if (current == end)
+          break;
       }
       select.selectMarked(sel);
     },
