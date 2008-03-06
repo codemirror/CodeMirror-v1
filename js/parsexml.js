@@ -8,7 +8,8 @@
 
 Editor.Parser = (function() {
   var Kludges = {
-    autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true, "meta": true},
+    autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true,
+                      "meta": true, "col": true, "frame": true, "base": true, "area": true},
     doNotIndent: {"pre": true}
   };
   var NoKludges = {autoSelfClosers: {}, doNotIndent: {}};
