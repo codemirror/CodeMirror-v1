@@ -93,11 +93,8 @@ Editor.Parser = (function() {
     }
     function inAttribute(quote) {
       return function() {
-        var escaped = false;
         while (this.source.notEquals("\n")) {
-          var ch = this.source.next();
-          escaped = (ch == "\\");
-          if (ch == quote && !escaped) {
+          if (this.source.next() == quote) {
             this.state = inTag;
             break;
           }
