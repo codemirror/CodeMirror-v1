@@ -135,7 +135,7 @@ var CodeMirror = (function(){
     options = options || {};
     if (area.style.width) options.width = area.style.width;
     if (area.style.height) options.height = area.style.height;
-    options.content = area.value;
+    if (options.content == null) options.content = area.value;
 
     if (area.form) {
       function updateField() {
