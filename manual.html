@@ -296,10 +296,10 @@
       When an occurrence has been found, you can call
       <code>select()</code> to select it, or
       <code>replace(string)</code> to replace it with a given string.
-      Note that, while a search cursor tries to remember its position
-      in the document, when big chunks of text are removed near its
-      current position, it might skip back to the start of the
-      buffer.</dd>
+      Note that letting the user change the document, or
+      programmatically changing it in any way except for calling
+      <code>replace</code> on the cursor itself, might cause a cursor
+      object to skip back to the beginning of the document.</dd>
 
     </dl>
 

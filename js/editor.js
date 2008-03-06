@@ -193,6 +193,7 @@ var Editor = (function(){
     // DOM tree, we can still try to continue.
     this.fallbackSize = 15;
     var cursor;
+    // Start from the cursor when specified and a cursor can be found.
     if (fromCursor && (cursor = select.cursorPos(this.editor.container))) {
       this.line = cursor.node;
       this.offset = cursor.offset;
@@ -203,14 +204,20 @@ var Editor = (function(){
     }
     this.valid = !!string;
 
+    // Create a matcher function based on the kind of string we have.
     var target = string.split("\n"), self = this;;
     this.matches = (target.length == 1) ?
+      // For one-line strings, searching can be done simply by calling
+      // indexOf on the current line.
       function() {
         var match = cleanText(self.history.textAfter(self.line).slice(self.offset)).indexOf(string);
         if (match > -1)
           return {from: {node: self.line, offset: self.offset + match},
                   to: {node: self.line, offset: self.offset + match + string.length}};
       } :
+      // Multi-line strings require internal iteration over lines, and
+      // some clunky checks to make sure the first match ends at the
+      // end of the line and the last match starts at the start.
       function() {
         var firstLine = cleanText(self.history.textAfter(self.line).slice(self.offset));
         var match = firstLine.lastIndexOf(target[0]);
@@ -235,11 +242,19 @@ var Editor = (function(){
 
   SearchCursor.prototype = {
     findNext: function() {
-      // End of buffer, or no valid search string.
       if (!this.valid) return false;
       this.atOccurrence = false;
       var self = this;
 
+      // Go back to the start of the document if the current line is
+      // no longer in the DOM tree.
+      if (this.line && !this.line.parentNode) {
+        this.line = null;
+        this.offset = 0;
+      }
+
+      // Set the cursor's position one character after the given
+      // position.
       function saveAfter(pos) {
         if (self.history.textAfter(pos.node).length < pos.offset) {
           self.line = pos.node;
@@ -253,6 +268,7 @@ var Editor = (function(){
 
       while (true) {
         var match = this.matches();
+        // Found the search string.
         if (match) {
           this.atOccurrence = match;
           saveAfter(match.from);
@@ -260,6 +276,7 @@ var Editor = (function(){
         }
         this.line = this.history.nodeAfter(this.line);
         this.offset = 0;
+        // End of document.
         if (!this.line) {
           this.valid = false;
           return false;
@@ -275,8 +292,12 @@ var Editor = (function(){
     },
 
     replace: function(string) {
-      if (this.atOccurrence)
+      if (this.atOccurrence) {
         this.editor.replaceRange(this.atOccurrence.from, this.atOccurrence.to, string);
+        this.line = this.atOccurrence.from.node;
+        this.offset = this.atOccurrence.from.offset;
+        this.atOccurrence = false;
+      }
     }
   };
 
