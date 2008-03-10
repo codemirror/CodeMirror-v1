@@ -38,7 +38,7 @@
   // very useful for testing your parser.
   window.singleStringStream = function(string) {
     var pos = 0, start = 0;
-    return update(base, {
+    return update({
       peek: function() {
         if (pos < string.length)
           return string.charAt(pos);
@@ -59,7 +59,7 @@
         start = pos;
         return result;
       }
-    });
+    }, base);
   }
 
   // Make a string stream out of an iterator that returns strings. This
@@ -70,7 +70,7 @@
     var current = "", pos = 0;
     var peeked = null, accum = "";
 
-    return update(base, {
+    return update({
       peek: function(){
         if (!peeked) {
           try {peeked = this.step();}
@@ -116,6 +116,6 @@
         }
         return temp;
       }
-    });
+    }, base);
   }
 })();

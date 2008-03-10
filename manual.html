@@ -98,10 +98,6 @@
       <dd>Main interface, takes care of default configuration and the
       definition of editor frames. Include this in your HTML
       document.</dd>
-      <dt><code>Mochi.js</code></dt> <dd>This file contains a
-      compressed version of the Base and Iter modules of <a
-      href="http://www.mochikit.com">MochiKit</a>, which are used by
-      the files below.</dd>
       <dt><a href="js/editor.js"><code>editor.js</code></a></dt> <dd>The
       code that takes care of reacting to user input, colouring text,
       and indenting lines.</dd>
@@ -177,10 +173,10 @@
 
       <dt><code>basefiles</code></dt><dd>An array of strings naming
       the files containing the base CodeMirror functionality. Defaults
-      to <code>["Mochi.js", "util.js", "stringstream.js", "select.js",
-      "undo.js", "editor.js"]</code>, but if you put them all into a
-      single file to reduce latency, or add some functionality, you
-      might have to adjust that.</dd>
+      to <code>["util.js", "stringstream.js", "select.js", "undo.js",
+      "editor.js"]</code>, but if you put them all into a single file
+      to reduce latency, or add some functionality, you might have to
+      adjust that.</dd>
       
       <dt><code>linesPerPass</code></dt><dd>Specifies the maximum
       amount of lines that the highlighter tries to colour in one

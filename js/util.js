@@ -1,5 +1,52 @@
 /* A few useful utility functions. */
 
+// Capture a method on an object.
+function method(obj, name) {
+  return function() {obj[name].apply(obj, arguments);};
+}
+
+// Write properties from an object into another object.
+function update(obj, from) {
+  for (var name in from)
+    obj[name] = from[name];
+  return obj;
+}
+
+// The value used to signal the end of a sequence in iterators.
+var StopIteration = {toString: function() {return "StopIteration"}};
+
+// Checks whether the argument is an iterator or a regular sequence,
+// turns it into an iterator.
+function iter(seq) {
+  var i = 0;
+  if (seq.next) return seq;
+  else return {
+    next: function() {
+      if (i >= seq.length) throw StopIteration;
+      else return seq[++i];
+    }
+  };
+}
+
+// Apply a function to each element in a sequence.
+function forEach(iter, f) {
+  if (iter.next) {
+    try {while (true) f(iter.next());}
+    catch (e) {if (e != StopIteration) throw e;}
+  }
+  else {
+    for (var i = 0; i < iter.length; i++)
+      f(iter[i]);
+  }
+}
+
+// Map a function over a sequence, producing an array of results.
+function map(iter, f) {
+  var accum = [];
+  forEach(iter, function(val) {accum.push(f(val));});
+  return accum;
+}
+
 // Create a predicate function that tests a string againsts a given
 // regular expression.
 function matcher(regexp){
