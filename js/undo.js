@@ -63,31 +63,18 @@ History.prototype = {
     // Make sure pending changes have been committed.
     this.commit();
 
-    // If there is no undo info left, bail.
-    if (!this.history.length) return;
-    
-    // The history contains an array of line chains.
-    var data = this.history.pop();
-    // Store the current equivalents of these chains, in case the user
-    // wants to redo.
-    this.redoHistory.push(this.recordChange(data));
-    // The editor needs to know which nodes it should reparse, so we
-    // tell it about the ndoes revertChain returns.
-    this.notifyDirty(map(method(this, "revertChain"), data));
+    if (this.history.length)
+      // Take the top diff from the history, apply it, and store its
+      // shadow in the redo history.
+      this.redoHistory.push(this.updateTo(this.history.pop(), "applyChain"));
   },
 
   // Redo the last undone change.
   redo: function() {
     this.commit();
     if (!this.redoHistory.length)
-      return;
-
-    var data = this.redoHistory.pop();
-    // Store the changes we are about to redo, so they can be undone
-    // again.
-    this.addUndoLevel(this.recordChange(data));
-    // Revert changes, mark dirty nodes.
-    this.notifyDirty(map(method(this, "revertChain"), data));
+      // The inverse of undo, basically.
+      this.addUndoLevel(this.updateTo(this.redoHistory.pop(), "applyChain"));
   },
 
   // Push a changeset into the document.
@@ -98,10 +85,13 @@ History.prototype = {
       chain.push({from: from, to: end, text: lines[i]});
       from = end;
     }
+    this.pushChains([chain]);
+  },
 
+  pushChains: function(chains) {
     this.commit();
-    this.addUndoLevel(this.recordChange[chain]);
-    this.notifyDirty([this.revertChain(chain)]);
+    this.addUndoLevel(this.updateTo(chains, "applyChain"));
+    this.redoHistory = [];
   },
 
   // Clear the undo history, make the current document the start
@@ -131,18 +121,31 @@ History.prototype = {
     this.editor.highlightDirty(true);
     // Build set of chains.
     var chains = this.touchedChains(), self = this;
-    if (!chains.length) return;
-
-    var shadows = this.recordChange(chains);
-    // Link the chains into the DOM nodes.
-    forEach(shadows, method(this, "linkChain"));
-    // Store the changes.
-    this.addUndoLevel(shadows);
-    // Any redo data is now out of date, so clear it.
-    this.redoHistory = [];
+    
+    if (chains.length) {
+      this.addUndoLevel(this.updateTo(chains, "linkChain"));
+      this.redoHistory = [];
+    }
   },
 
   // [ end of public interface ]
+
+  // Update the document with a given set of chains, return its
+  // shadow. updateFunc should be "applyChain" or "linkChain". In the
+  // second case, the chains are taken to correspond the the current
+  // document, and only the state of the line data is updated. In the
+  // first case, the content of the chains is also pushed iinto the
+  // document.
+  updateTo: function(chains, updateFunc) {
+    var shadows = [], dirty = [];
+    for (var i = 0; i < chains.length; i++) {
+      shadows.push(this.shadowChain(chains[i]));
+      dirty.push(this[updateFunc](chains[i]));
+    }
+    if (updateFunc == "applyChain")
+      this.notifyDirty(dirty);
+    return shadows;
+  },
 
   // Notify the editor that some nodes have changed.
   notifyDirty: function(nodes) {
@@ -287,13 +290,9 @@ History.prototype = {
     return chains;
   },
 
-  recordChange: function(chains) {
-    var shadows = [];
-    for (var i = 0; i < chains.length; i++)
-      shadows.push(this.shadowChain(chains[i]));
+  recordChange: function(shadows, chains) {
     if (this.onChange)
       this.onChange(shadows, chains);
-    return shadows;
   },
 
   // Find the 'shadow' of a given chain by following the links in the
@@ -313,7 +312,7 @@ History.prototype = {
 
   // Update the DOM tree to contain the lines specified in a given
   // chain, link this chain into the DOM nodes.
-  revertChain: function(chain) {
+  applyChain: function(chain) {
     // Some attempt is made to prevent the cursor from jumping
     // randomly when an undo or redo happens. It still behaves a bit
     // strange sometimes.
