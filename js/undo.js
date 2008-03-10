@@ -349,11 +349,19 @@ History.prototype = {
       // Add the text.
       var textNode = this.container.ownerDocument.createTextNode(line.text);
       insert(textNode);
-      // See if the cursor was on this line. Put it back (vaguely
-      // adjusting for changed line length) if it was.
+      // See if the cursor was on this line. Put it back, adjusting
+      // for changed line length, if it was.
       if (cursor && cursor.node == line.from) {
+        var cursordiff = 0;
         var prev = this.after(line.from);
-        var cursordiff = (prev && i == chain.length - 1) ? line.text.length - prev.text.length : 0;
+        if (prev && i == chain.length - 1) {
+          // Only adjust if the cursor is after the unchanged part of
+          // the line.
+          for (var match = 0; match < cursor.offset &&
+               line.text.charAt(match) == prev.text.charAt(match); match++);
+          if (cursor.offset > match)
+            cursordiff = line.text.length - prev.text.length;
+        }
         select.setCursorPos(this.container, {node: line.from, offset: Math.max(0, cursor.offset + cursordiff)});
       }
       // Cursor was in removed line, this is last new line.
