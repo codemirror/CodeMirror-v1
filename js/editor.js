@@ -344,9 +344,6 @@ var Editor = (function(){
       addEventHandler(document, "keyup", method(this, "keyUp"));
       addEventHandler(document.body, "paste", method(this, "markCursorDirty"));
     }
-
-    if (options.initCallback)
-      this.parent.setTimeout(options.initCallback, 0);
   }
 
   function isSafeKey(code) {
@@ -924,4 +921,9 @@ var Editor = (function(){
 addEventHandler(window, "load", function() {
   var CodeMirror = window.frameElement.CodeMirror;
   CodeMirror.editor = new Editor(CodeMirror.options);
+  if (CodeMirror.options.initCallback) {
+    this.parent.setTimeout(function(){
+      CodeMirror.options.initCallback(CodeMirror);
+    }, 0);
+  }
 });
