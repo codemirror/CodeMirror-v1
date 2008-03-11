@@ -72,7 +72,7 @@ History.prototype = {
   // Redo the last undone change.
   redo: function() {
     this.commit();
-    if (!this.redoHistory.length)
+    if (this.redoHistory.length)
       // The inverse of undo, basically.
       this.addUndoLevel(this.updateTo(this.redoHistory.pop(), "applyChain"));
   },
