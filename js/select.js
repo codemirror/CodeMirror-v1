@@ -85,8 +85,8 @@ var select = {};
           return topLevelNodeAt(around, container);
       }
       // Fall-back hack
-      range.pasteHTML("<span id='// temp //'></span>");
-      var temp = container.ownerDocument.getElementById("// temp //");
+      range.pasteHTML("<span id='xxx-temp-xxx'></span>");
+      var temp = container.ownerDocument.getElementById("xxx-temp-xxx");
       var result = topLevelNodeBefore(temp, container);
       removeElement(temp);
       return result;
