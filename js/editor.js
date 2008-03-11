@@ -324,24 +324,26 @@ var Editor = (function(){
     else // FF acts weird when the editable document is completely empty
       this.container.appendChild(this.doc.createElement("SPAN"));
 
-    if (options.continuousScanning !== false) {
-      this.scanner = this.documentScanner(options.linesPerPass);
-      this.delayScanning();
+    if (!options.readOnly) {
+      if (options.continuousScanning !== false) {
+        this.scanner = this.documentScanner(options.linesPerPass);
+        this.delayScanning();
+      }
+
+      // In IE, designMode frames can not run any scripts, so we use
+      // contentEditable instead. Random ActiveX check is there because
+      // Opera apparently also supports some kind of perverted form of
+      // contentEditable.
+      if (document.body.contentEditable != undefined && window.ActiveXObject)
+        document.body.contentEditable = "true";
+      else
+        document.designMode = "on";
+
+      addEventHandler(document, "keydown", method(this, "keyDown"));
+      addEventHandler(document, "keypress", method(this, "keyPress"));
+      addEventHandler(document, "keyup", method(this, "keyUp"));
+      addEventHandler(document.body, "paste", method(this, "markCursorDirty"));
     }
-
-    // In IE, designMode frames can not run any scripts, so we use
-    // contentEditable instead. Random ActiveX check is there because
-    // Opera apparently also supports some kind of perverted form of
-    // contentEditable.
-    if (document.body.contentEditable != undefined && window.ActiveXObject)
-      document.body.contentEditable = "true";
-    else
-      document.designMode = "on";
-
-    addEventHandler(document, "keydown", method(this, "keyDown"));
-    addEventHandler(document, "keypress", method(this, "keyPress"));
-    addEventHandler(document, "keyup", method(this, "keyUp"));
-    addEventHandler(document.body, "paste", method(this, "markCursorDirty"));
 
     if (options.initCallback)
       this.parent.setTimeout(options.initCallback, 0);
