@@ -56,13 +56,19 @@ var select = {};
       if (!sel)
         return;
       var range1 = sel.window.document.body.createTextRange(), range2 = range1.duplicate();
-      if (sel.start.y < 0 || sel.end.y > sel.window.document.body.clientHeight) {
-        range1.moveToBookmark(sel.bookmark);
+      var done = false;
+      if (sel.start.y >= 0 && sel.end.y < sel.window.document.body.clientHeight) {
+        // This can fail for various hard-to-handle reasons, so we
+        // fall back to moveToBookmark when it throws.
+        try {
+          range1.moveToPoint(sel.start.x, sel.start.y);
+          range2.moveToPoint(sel.end.x, sel.end.y);
+          range1.setEndPoint("EndToStart", range2);
+          done = true;
+        } catch(e) {}
       }
-      else {
-        range1.moveToPoint(sel.start.x, sel.start.y);
-        range2.moveToPoint(sel.end.x, sel.end.y);
-        range1.setEndPoint("EndToStart", range2);
+      if (!done) {
+        range1.moveToBookmark(sel.bookmark);
       }
       range1.select();
     };
