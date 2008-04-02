@@ -199,6 +199,7 @@ var select = {};
 
       var result = {start: {node: range.startContainer, offset: range.startOffset},
                     end: {node: range.endContainer, offset: range.endOffset},
+                    changed: false,
                     window: win,
                     scrollX: opera_scroll && win.document.body.scrollLeft,
                     scrollY: opera_scroll && win.document.body.scrollTop};
@@ -230,6 +231,69 @@ var select = {};
         result.end.node.selectEnd = result.end;
 
       return result;
+    };
+
+    select.selectMarked = function (sel) {
+      if (!sel || !sel.changed)
+        return;
+      var win = sel.window;
+      var range = win.document.createRange();
+
+      function setPoint(point, which) {
+        if (point.node) {
+          // Remove the link back to the selection.
+          delete point.node["select" + which];
+          // Some magic to generalize the setting of the start and end
+          // of a range.
+          if (point.offset == 0)
+            range["set" + which + "Before"](point.node);
+          else
+            range["set" + which](point.node, point.offset);
+        }
+        else {
+          range.setStartAfter(win.document.body.lastChild || win.document.body);
+        }
+      }
+
+      // Have to restore the scroll position of the frame in Opera.
+      if (opera_scroll){
+        sel.window.document.body.scrollLeft = sel.scrollX;
+        sel.window.document.body.scrollTop = sel.scrollY;
+      }
+      setPoint(sel.end, "End");
+      setPoint(sel.start, "Start");
+      selectRange(range, win);
+    };
+
+    // This is called by the code in codemirror.js whenever it is
+    // replacing a part of the DOM tree. The function sees whether the
+    // given oldNode is part of the current selection, and updates
+    // this selection if it is. Because nodes are often only partially
+    // replaced, the length of the part that gets replaced has to be
+    // taken into account -- the selection might stay in the oldNode
+    // if the newNode is smaller than the selection's offset. The
+    // offset argument is needed in case the selection does move to
+    // the new object, and the given length is not the whole length of
+    // the new node (part of it might have been used to replace
+    // another node).
+    select.replaceSelection = function(oldNode, newNode, length, offset) {
+      function replace(which) {
+        var selObj = oldNode["select" + which];
+        if (selObj) {
+          selObj.changed = true;
+          if (selObj.offset > length) {
+            selObj.offset -= length;
+          }
+          else {
+            newNode["select" + which] = selObj;
+            delete oldNode["select" + which];
+            selObj.node = newNode;
+            selObj.offset += (offset || 0);
+          }
+        }
+      }
+      replace("Start");
+      replace("End");
     };
 
     // Helper for selecting a range object.
@@ -287,68 +351,6 @@ var select = {};
         else
           return topLevelNodeAt(node.childNodes[offset - 1], container);
       }
-    };
-
-    select.selectMarked = function (sel) {
-      if (!sel)
-        return;
-      var win = sel.window;
-      var range = win.document.createRange();
-
-      function setPoint(point, which) {
-        if (point.node) {
-          // Remove the link back to the selection.
-          delete point.node["select" + which];
-          // Some magic to generalize the setting of the start and end
-          // of a range.
-          if (point.offset == 0)
-            range["set" + which + "Before"](point.node);
-          else
-            range["set" + which](point.node, point.offset);
-        }
-        else {
-          range.setStartAfter(win.document.body.lastChild || win.document.body);
-        }
-      }
-
-      // Have to restore the scroll position of the frame in Opera.
-      if (opera_scroll){
-        sel.window.document.body.scrollLeft = sel.scrollX;
-        sel.window.document.body.scrollTop = sel.scrollY;
-      }
-      setPoint(sel.end, "End");
-      setPoint(sel.start, "Start");
-      selectRange(range, win);
-    };
-
-    // This is called by the code in codemirror.js whenever it is
-    // replacing a part of the DOM tree. The function sees whether the
-    // given oldNode is part of the current selection, and updates
-    // this selection if it is. Because nodes are often only partially
-    // replaced, the length of the part that gets replaced has to be
-    // taken into account -- the selection might stay in the oldNode
-    // if the newNode is smaller than the selection's offset. The
-    // offset argument is needed in case the selection does move to
-    // the new object, and the given length is not the whole length of
-    // the new node (part of it might have been used to replace
-    // another node).
-    select.replaceSelection = function(oldNode, newNode, length, offset) {
-      function replace(which) {
-        var selObj = oldNode["select" + which];
-        if (selObj) {
-          if (selObj.offset > length) {
-            selObj.offset -= length;
-          }
-          else {
-            newNode["select" + which] = selObj;
-            delete oldNode["select" + which];
-            selObj.node = newNode;
-            selObj.offset += (offset || 0);
-          }
-        }
-      }
-      replace("Start");
-      replace("End");
     };
 
     select.focusAfterNode = function(node, container) {
