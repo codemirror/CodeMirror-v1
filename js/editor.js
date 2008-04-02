@@ -316,7 +316,9 @@ var Editor = (function(){
       Editor.Parser.configure(options.parserConfig);
 
     if (!options.textWrapping)
-      this.doc.body.style.whiteSpace = "pre";
+      this.container.style.whiteSpace = "pre";
+
+    select.setCursorPos(this.container, {node: null, offset: 0});
 
     this.dirty = [];
     if (options.content)

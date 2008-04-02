@@ -30,6 +30,9 @@ var select = {};
   // Most functions are defined in two ways, one for the IE selection
   // model, one for the W3C one.
   if (ie_selection) {
+    // Used to prevent restoring a selection when we do not need to.
+    var documentChanged = false;
+
     // Store the current selection in such a way that it can be
     // restored after we manipulated the DOM tree. For IE, we store
     // pixel coordinates.
@@ -40,6 +43,7 @@ var select = {};
       start.collapse(true);
       end.collapse(false);
 
+      documentChanged = false;
       var body = win.document.body;
       // And we better hope no fool gave this window a padding or a
       // margin, or all these computations will be in vain.
@@ -53,8 +57,10 @@ var select = {};
 
     // Restore a stored selection.
     select.selectMarked = function(sel) {
-      if (!sel)
+      if (!sel || !documentChanged)
         return;
+
+      documentChanged = false;
       var range1 = sel.window.document.body.createTextRange(), range2 = range1.duplicate();
       var done = false;
       if (sel.start.y >= 0 && sel.end.y < sel.window.document.body.clientHeight) {
@@ -71,6 +77,13 @@ var select = {};
         range1.moveToBookmark(sel.bookmark);
       }
       range1.select();
+    };
+
+
+    // See W3C model for the actual role of this function. Here it
+    // just sets a flag indicating the selection should be restored.
+    select.replaceSelection = function(){
+      documentChanged = true;
     };
 
     // Get the top-level node that one end of the cursor is inside or
@@ -93,13 +106,12 @@ var select = {};
       // Fall-back hack
       range.pasteHTML("<span id='xxx-temp-xxx'></span>");
       var temp = container.ownerDocument.getElementById("xxx-temp-xxx");
-      var result = topLevelNodeBefore(temp, container);
-      removeElement(temp);
-      return result;
+      if (temp) {
+        var result = topLevelNodeBefore(temp, container);
+        removeElement(temp);
+        return result;
+      }
     };
-
-    // Not needed in IE model -- see W3C model.
-    select.replaceSelection = function(){};
 
     // Place the cursor after this.start. This is only useful when
     // manually moving the cursor instead of restoring it to its old
