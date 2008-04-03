@@ -435,6 +435,9 @@ var select = {};
         else
           node = node.nextSibling;
 
+        if (!node)
+          return;
+
         if (offset == 0) {
           range["set" + side + "Before"](node);
           return true;
