@@ -246,7 +246,7 @@ var select = {};
     };
 
     select.selectMarked = function (sel) {
-      if (!sel || !sel.changed)
+      if (!sel || !(sel.start.changed || sel.end.changed))
         return;
       var win = sel.window;
       var range = win.document.createRange();
