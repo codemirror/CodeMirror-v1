@@ -727,9 +727,9 @@ var Editor = (function(){
         var sel = select.markSelection(self.win);
         var result = self.highlight(pos, linesPer, true);
         select.selectMarked(sel);
-        pos = result ? result.node : null;
+        pos = result ? (result.node && result.node.nextSibling) : null;
         self.delayScanning();
-      }
+      };
     },
 
     // Starts the continuous scanning process for this document after
