@@ -47,7 +47,8 @@ function tokenizer(source, state) {
       if (source.applies(isWhiteSpace))
         type = "whitespace";
       else
-        type = this.state(source, function(s) {tokenizer.state = s;});
+        while (!type)
+          type = this.state(source, function(s) {tokenizer.state = s;});
 
       if (type)
         return this.take(type);
