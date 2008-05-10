@@ -5,7 +5,8 @@
 // change the tokenizer's state, and can be ignored for stateless
 // tokenizers. This function should advance the stream over a token
 // and return a string or object containing information about the next
-// token. When a string is given, it is wrapped in a {style, type}
+// token, or null to pass and have the (new) state be called to finish
+// the token. When a string is given, it is wrapped in a {style, type}
 // object. In the resulting object, the characters consumed are stored
 // under the content property. Any whitespace following them is also
 // automatically consumed, and added to the value property. (Thus,

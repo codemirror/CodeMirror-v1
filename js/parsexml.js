@@ -46,7 +46,7 @@ Editor.Parser = (function() {
         }
       }
       else if (ch == "&") {
-        while (source.notEquals("\n")) {
+        while (!source.endOfLine()) {
           if (source.next() == ";")
             break;
         }
@@ -84,7 +84,7 @@ Editor.Parser = (function() {
 
     function inAttribute(quote) {
       return function(source, setState) {
-        while (source.notEquals("\n")) {
+        while (!source.endOfLine()) {
           if (source.next() == quote) {
             setState(inTag);
             break;
@@ -97,7 +97,7 @@ Editor.Parser = (function() {
     function inBlock(style, terminator) {
       return function(source, setState) {
         var rest = terminator;
-        while (source.more() && source.notEquals("\n")) {
+        while (!source.endOfLine()) {
           var ch = source.next();
           if (ch == rest.charAt(0)) {
             rest = rest.slice(1);
@@ -122,7 +122,7 @@ Editor.Parser = (function() {
   // The parser. The structure of this function largely follows that of
   // parseJavaScript in parsejavascript.js (there is actually a bit more
   // shared code than I'd like), but it is quite a bit simpler.
-  var parseXML = function(source) {
+  function parseXML(source) {
     var tokens = tokenizeXML(source);
     var cc = [base];
     var tokenNr = 0, indented = 0;

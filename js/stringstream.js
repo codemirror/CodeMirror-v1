@@ -28,9 +28,9 @@
     equals: function(ch) {
       return ch === this.peek();
     },
-    notEquals: function(ch) {
+    endOfLine: function() {
       var next = this.peek();
-      return (next !== null && next != ch);
+      return next == null || next == "\n";
     }
   };
 
@@ -60,7 +60,7 @@
         return result;
       }
     }, base);
-  }
+  };
 
   // Make a string stream out of an iterator that returns strings. This
   // is applied to the result of traverseDOM (see codemirror.js), and
@@ -117,5 +117,5 @@
         return temp;
       }
     }, base);
-  }
+  };
 })();

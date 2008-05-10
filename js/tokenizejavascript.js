@@ -6,7 +6,7 @@ var tokenizeJavaScript = (function() {
   function nextUntilUnescaped(source, end, result){
     var escaped = false;
     var next;
-    while(source.more() && !source.equals("\n")){
+    while(!source.endOfLine()){
       var next = source.next();
       if (next == end && !escaped)
         break;
