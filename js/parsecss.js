@@ -100,7 +100,7 @@ Editor.Parser = (function() {
 
   function indentCSS(inBraces, inRule) {
     return function(nextChars) {
-      if (!inBraces || /^\{/.test(nextChars)) return 0;
+      if (!inBraces || /^\}/.test(nextChars)) return 0;
       else if (inRule) return 4;
       else return 2;
     };
