@@ -17,101 +17,92 @@ Editor.Parser = (function() {
 
   // Simple stateful tokenizer for XML documents. Returns a
   // MochiKit-style iterator, with a state property that contains a
-  // function encapsulating the current state.
-  function tokenizeXML(source, startState) {
-    function isWhiteSpace(ch) {
-      return ch != "\n" && realWhiteSpace.test(ch);
-    }
-    // The following functions are all state functions -- they 'consume'
-    // and label the next token based on the current parser state.
-    function inText() {
-      var ch = this.source.next();
+  // function encapsulating the current state. See tokenize.js.
+  var tokenizeXML = (function() {
+    function inText(source, setState) {
+      var ch = source.next();
       if (ch == "<") {
-        if (this.source.equals("!")) {
-          this.source.next();
-          if (this.source.equals("[")) {
-            this.source.next();
-            this.state = inBlock("cdata", "]]>");
-            return this.state();
+        if (source.equals("!")) {
+          source.next();
+          if (source.equals("[")) {
+            source.next();
+            
+            setState(inBlock("cdata", "]]>"));
+            return null;
           }
-          else if (this.source.equals("-")) {
-            this.source.next();
-            this.state = inBlock("comment", "-->");
-            return this.state();
+          else if (source.equals("-")) {
+            source.next();
+            setState(inBlock("comment", "-->"));
+            return null;
           }
           else {
             return "text";
           }
         }
         else {
-          if (this.source.applies(matcher(/[?\/]/))) this.source.next();
-          this.state = inTag;
+          if (source.applies(matcher(/[?\/]/))) source.next();
+          setState(inTag);
           return "punctuation";
         }
       }
       else if (ch == "&") {
-        while (this.source.notEquals("\n")) {
-          if (this.source.next() == ";")
+        while (source.notEquals("\n")) {
+          if (source.next() == ";")
             break;
         }
         return "entity";
       }
-      else if (isWhiteSpace(ch)) {
-        this.source.nextWhile(isWhiteSpace);
-        return "whitespace";
-      }
       else {
-        this.source.nextWhile(matcher(/[^&<\n]/));
+        source.nextWhile(matcher(/[^&<\n]/));
         return "text";
       }
     }
-    function inTag() {
-      var ch = this.source.next();
+
+    function inTag(source, setState) {
+      var ch = source.next();
       if (ch == ">") {
-        this.state = inText;
+        setState(inText);
         return "punctuation";
       }
-      else if (/[?\/]/.test(ch) && this.source.equals(">")) {
-        this.source.next();
-        this.state = inText;
+      else if (/[?\/]/.test(ch) && source.equals(">")) {
+        source.next();
+        setState(inText);
         return "punctuation";
       }
       else if (ch == "=") {
         return "punctuation";
       }
       else if (/[\'\"]/.test(ch)) {
-        this.state = inAttribute(ch);
-        return this.state();
-      }
-      else if (isWhiteSpace(ch)) {
-        this.source.nextWhile(isWhiteSpace);
-        return "whitespace";
+        setState(inAttribute(ch));
+        return null;
       }
       else {
-        this.source.nextWhile(matcher(/[^\s\u00a0=<>\"\'\/?]/));
+        source.nextWhile(matcher(/[^\s\u00a0=<>\"\'\/?]/));
         return "name";
       }
     }
+
     function inAttribute(quote) {
-      return function() {
-        while (this.source.notEquals("\n")) {
-          if (this.source.next() == quote) {
-            this.state = inTag;
+      return function(source, setState) {
+        while (source.notEquals("\n")) {
+          if (source.next() == quote) {
+            setState(inTag);
             break;
           }
         }
         return "attribute";
       };
     }
+
     function inBlock(style, terminator) {
-      return function() {
+      return function(source, setState) {
         var rest = terminator;
-        while (this.source.more() && this.source.notEquals("\n")) {
-          var ch = this.source.next();
+        while (source.more() && source.notEquals("\n")) {
+          var ch = source.next();
           if (ch == rest.charAt(0)) {
             rest = rest.slice(1);
             if (rest.length == 0) {
-              this.state = inText;
+              setState(inText);
               break;
             }
           }
@@ -123,29 +114,10 @@ Editor.Parser = (function() {
       };
     }
 
-    return {
-      state: startState || inText,
-      source: source,
-      
-      newLine: function() {
-        this.source.next();
-        return "whitespace";
-      },
-
-      next: function(){
-        if (!this.source.more()) throw StopIteration;
-        
-        var token = {
-          style: (this.source.equals("\n") ? this.newLine() : this.state()),
-          content: this.source.get()
-        };
-        if (token.content != "\n") // newlines must stand alone
-          this.source.nextWhile(isWhiteSpace);
-        token.value = token.content + this.source.get();
-        return token;
-      }
+    return function(source, startState) {
+      return tokenizer(source, startState || inText);
     };
-  }
+  })();
 
   // The parser. The structure of this function largely follows that of
   // parseJavaScript in parsejavascript.js (there is actually a bit more

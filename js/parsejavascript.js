@@ -81,22 +81,23 @@ Editor.Parser = (function() {
 
       // Fetch a token.
       var token = tokens.next();
+
       // Adjust column and indented.
       if (token.type == "whitespace" && column == 0)
         indented = token.value.length;
       column += token.value.length;
-      if (token.type == "newline"){
+      if (token.content == "\n"){
         indented = column = 0;
         // If the lexical scope's align property is still undefined at
         // the end of the line, it is an un-aligned scope.
         if (!("align" in lexical))
           lexical.align = false;
-        // Newline tokens get a lexical context associated with them,
-        // which is used for indentation.
+        // Newline tokens get an indentation function associated with
+        // them.
         token.indentation = indentJS(lexical);
       }
       // No more processing for meaningless tokens.
-      if (token.type == "whitespace" || token.type == "newline" || token.type == "comment")
+      if (token.type == "whitespace" || token.type == "comment")
         return token;
       // When a meaningful token is found and the lexical scope's
       // align is undefined, it is an aligned scope.
@@ -108,13 +109,13 @@ Editor.Parser = (function() {
       while(true){
         consume = marked = false;
         // Take and execute the topmost action.
-        cc.pop()(token.type, token.name);
+        cc.pop()(token.type, token.content);
         if (consume){
           // Marked is used to change the style of the current token.
           if (marked)
             token.style = marked;
           // Here we differentiate between local and global variables.
-          else if (token.type == "variable" && inScope(token.name))
+          else if (token.type == "variable" && inScope(token.content))
             token.style = "localvariable";
           return token;
         }
@@ -129,16 +130,14 @@ Editor.Parser = (function() {
     // objects are not mutated in a harmful way, so they can be shared
     // between runs of the parser.
     function copy(){
-      var _context = context, _lexical = lexical, _cc = cc.concat([]), _regexp = tokens.regexp, _comment = tokens.inComment;
+      var _context = context, _lexical = lexical, _cc = cc.concat([]), _tokenState = tokens.state;
   
       return function(input){
         context = _context;
         lexical = _lexical;
         cc = _cc.concat([]); // copies the array
         column = indented = 0;
-        tokens = tokenizeJavaScript(input);
-        tokens.regexp = _regexp;
-        tokens.inComment = _comment;
+        tokens = tokenizeJavaScript(input, _tokenState);
         return parser;
       };
     }
