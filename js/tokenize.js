@@ -50,10 +50,7 @@ function tokenizer(source, state) {
         while (!type)
           type = this.state(source, function(s) {tokenizer.state = s;});
 
-      if (type)
-        return this.take(type);
-      else
-        return this.next();
+      return this.take(type);
     }
   };
   return tokenizer;

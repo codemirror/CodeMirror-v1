@@ -40,14 +40,14 @@ Editor.Parser = (function() {
         source.nextWhile(matcher(/[\w.%]/));
         return "unit";
       }
-      else if (/[,.+->*\/]/.test(ch)) {
+      else if (/[,.+>*\/]/.test(ch)) {
         return "select-op";
       }
       else if (/[;{}:\[\]]/.test(ch)) {
         return "punctuation";
       }
       else {
-        source.nextWhile(matcher(/[\w\\-]/));
+        source.nextWhile(matcher(/[\w\\\-_]/));
         return "identifier";
       }
     }
