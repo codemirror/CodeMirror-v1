@@ -27,12 +27,12 @@ var select = {};
     return topLevelNodeAt(node.previousSibling, top);
   }
 
+  // Used to prevent restoring a selection when we do not need to.
+  var documentChanged = false;
+
   // Most functions are defined in two ways, one for the IE selection
   // model, one for the W3C one.
   if (ie_selection) {
-    // Used to prevent restoring a selection when we do not need to.
-    var documentChanged = false;
-
     // Store the current selection in such a way that it can be
     // restored after we manipulated the DOM tree. For IE, we store
     // pixel coordinates.
@@ -204,6 +204,7 @@ var select = {};
     // object can be updated when the nodes are replaced before the
     // selection is restored.
     select.markSelection = function (win) {
+      documentChanged = false;
       var selection = win.getSelection();
       if (!selection || selection.rangeCount == 0)
         return null;
@@ -211,7 +212,6 @@ var select = {};
 
       var result = {start: {node: range.startContainer, offset: range.startOffset},
                     end: {node: range.endContainer, offset: range.endOffset},
-                    changed: false,
                     window: win,
                     scrollX: opera_scroll && win.document.body.scrollLeft,
                     scrollY: opera_scroll && win.document.body.scrollTop};
@@ -246,7 +246,7 @@ var select = {};
     };
 
     select.selectMarked = function (sel) {
-      if (!sel || !(sel.start.changed || sel.end.changed))
+      if (!sel || !documentChanged)
         return;
       var win = sel.window;
       var range = win.document.createRange();
@@ -289,10 +289,10 @@ var select = {};
     // the new node (part of it might have been used to replace
     // another node).
     select.replaceSelection = function(oldNode, newNode, length, offset) {
+      documentChanged = true;
       function replace(which) {
         var selObj = oldNode["select" + which];
         if (selObj) {
-          selObj.changed = true;
           if (selObj.offset > length) {
             selObj.offset -= length;
           }
