@@ -110,8 +110,9 @@ var CodeMirror = (function(){
       this.editor.reindent();
     },
     replaceSelection: function(text, focus) {
-      this.editor.replaceSelection(text);
+      var result = this.editor.replaceSelection(text);
       if (focus) this.focus();
+      return result;
     },
     replaceChars: function(text, start, end) {
       this.editor.replaceChars(text, start, end);

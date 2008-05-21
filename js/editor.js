@@ -434,10 +434,11 @@ var Editor = (function(){
       this.history.commit();
       var start = select.cursorPos(this.container, true),
           end = select.cursorPos(this.container, false);
-      if (!start || !end) return;
+      if (!start || !end) return false;
 
       end = this.replaceRange(start, end, text);
       select.setCursorPos(this.container, start, end);
+      return true;
     },
 
     replaceRange: function(from, to, text) {

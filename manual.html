@@ -280,7 +280,11 @@
       <dt><code>replaceSelection(string,
       focus)</code></dt><dd>Replaces the currently selected text with
       the given string. Can be given a second, optional argument
-      which, if true, causes the editor to also gain focus.</dd>
+      which, if true, causes the editor to also gain focus. On some
+      browsers, it is possible to not have any selection in a frame,
+      in which case this function can not do anything. A boolean is
+      returned indicating whether a successful replacement was
+      made.</dd>
 
       <dt><code>reindent()</code></dt><dd>Automatically re-indent the
       whole document.</dd>
