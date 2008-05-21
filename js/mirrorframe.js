@@ -71,8 +71,10 @@ MirrorFrame.prototype = {
 
   macro: function() {
     var name = prompt("Name your constructor:", "");
-    if (name)
-      this.mirror.replaceSelection("function " + name + "() {\n  \n}\n\n" + name + ".prototype = {\n  \n};\n", true);
+    if (name) {
+      if (!this.mirror.replaceSelection("function " + name + "() {\n  \n}\n\n" + name + ".prototype = {\n  \n};\n", true))
+        alert("Place the cursor in the document first.");
+    }
   },
 
   reindent: function() {
