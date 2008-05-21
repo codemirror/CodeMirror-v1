@@ -157,7 +157,9 @@ var select = {};
         range2.collapse(false);
       }
       else {
-        range2.moveToElementText(container);
+        // When nothing is selected, we can get all kinds of funky errors here.
+        try { range2.moveToElementText(container); }
+        catch (e) { return null; }
         range2.collapse(true);
       }
       range.setEndPoint("StartToStart", range2);
