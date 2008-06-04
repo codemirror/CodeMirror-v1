@@ -39,8 +39,13 @@ Editor.Parser = (function() {
             return "text";
           }
         }
+        else if (source.equals("?")) {
+          source.next();
+          setState(inBlock("processing", "?>"));
+          return null;
+        }
         else {
-          if (source.applies(matcher(/[?\/]/))) source.next();
+          if (source.equals("/")) source.next();
           setState(inTag);
           return "punctuation";
         }
@@ -178,7 +183,7 @@ Editor.Parser = (function() {
     function base() {
       return pass(element, base);
     }
-    var harmlessTokens = {"text": true, "entity": true, "comment": true, "cdata": true};
+    var harmlessTokens = {"text": true, "entity": true, "comment": true, "cdata": true, "processing": true};
     function element(style, content) {
       if (content == "<") cont(tagname, attributes, endtag(tokenNr == 1));
       else if (content == "</") cont(closetagname, expect(">"));

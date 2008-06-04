@@ -11,11 +11,11 @@
 }
 
 span.tagname {
-  color: #AA00BB;
+  color: #A0B;
 }
 
 span.attribute {
-  color: #228811;
+  color: #281;
 }
 
 span.punctuation {
@@ -23,23 +23,27 @@ span.punctuation {
 }
 
 span.attname {
-  color: #0000FF;
+  color: #00F;
 }
 
 span.comment {
-  color: #AA7700;
+  color: #A70;
 }
 
 span.cdata {
-  color: #4488AA;
+  color: #48A;
+}
+
+span.processing {
+  color: #999;
 }
 
 span.entity {
-  color: #AA2222;
+  color: #A22;
 }
 
 span.error {
-  color: #FF0000;
+  color: #F00;
 }
 
 span.text {
