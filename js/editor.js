@@ -332,12 +332,27 @@ var Editor = (function(){
         this.delayScanning();
       }
 
-      // In IE, designMode frames can not run any scripts, so we use
-      // contentEditable instead.
-      if (document.body.contentEditable != undefined && /MSIE/.test(navigator.userAgent))
-        document.body.contentEditable = "true";
-      else
-        document.designMode = "on";
+      function setEditable() {
+        // In IE, designMode frames can not run any scripts, so we use
+        // contentEditable instead.
+        if (document.body.contentEditable != undefined && /MSIE/.test(navigator.userAgent))
+          document.body.contentEditable = "true";
+        else
+          document.designMode = "on";
+      }
+
+      // If setting the frame editable fails, try again when the user
+      // focus it (happens when the frame is not visible on
+      // initialisation, in Firefox).
+      try {
+        setEditable();
+      }
+      catch(e) {
+        var focusEvent = addEventHandler(document, "focus", function() {
+          removeEventHandler(focusEvent);
+          setEditable();
+        });
+      }
 
       addEventHandler(document, "keydown", method(this, "keyDown"));
       addEventHandler(document, "keypress", method(this, "keyPress"));

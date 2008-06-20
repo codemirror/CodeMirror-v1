@@ -130,8 +130,16 @@ function addEventHandler(node, type, handler) {
   function wrapHandler(event) {
     handler(normalizeEvent(event || window.event));
   }
-  if (typeof node.addEventListener == "function")
+  if (typeof node.addEventListener == "function") {
     node.addEventListener(type, wrapHandler, false);
-  else
+    return function() { node.removeEventListener(type, wrapHandler, false); };
+  }
+  else {
     node.attachEvent("on" + type, wrapHandler);
+    return function() { node.detachEvent("on" + type, wrapHandler); };
+  }
+}
+
+function removeEventHandler(handler) {
+  handler();
 }
