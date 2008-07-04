@@ -839,19 +839,16 @@ var Editor = (function(){
           // Allow empty nodes when they are alone on a line, needed
           // for the FF cursor bug workaround (see select.js,
           // insertNewlineAtCursor).
-          while (part.nodeName == "SPAN" && part.currentText == ""){
+          while (part && part.nodeName == "SPAN" && part.currentText == ""){
+            var old = part;
             if ((!part.previousSibling || part.previousSibling.nodeName == "BR") &&
-                (!part.nextSibling || part.nextSibling.nodeName == "BR")) {
+                (!part.nextSibling || part.nextSibling.nodeName == "BR"))
               this.next();
-              part = this.get();
-            }
-            else {
-              var old = part;
+            else
               this.remove();
-              part = this.get();
-              // Adjust selection information, if any. See select.js for details.
-              select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
-            }
+            part = this.get();
+            // Adjust selection information, if any. See select.js for details.
+            select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
           }
           return part;
         }
