@@ -1,4 +1,4 @@
-/* Functionality for finding, storing, and re-storing selections
+/* Functionality for finding, storing, and restoring selections
  *
  * This does not provide a generic API, just the minimal functionality
  * required by the CodeMirror system.
@@ -6,6 +6,7 @@
 
 // Namespace object.
 var select = {};
+var gecko = /Gecko/.test(navigator.userAgent) && !window.opera;
 
 (function() {
   var ie_selection = document.selection && document.selection.createRangeCollection;
@@ -332,6 +333,10 @@ var select = {};
 
       var node = start ? range.startContainer : range.endContainer;
       var offset = start ? range.startOffset : range.endOffset;
+      // Work around (yet another) bug in Opera's selection model.
+      if (window.opera && !start && range.endContainer == container && range.endOffset == range.startOffset + 1 &&
+          container.childNodes[range.startOffset] && container.childNodes[range.startOffset].nodeName == "BR")
+        offset--;
 
       // For text nodes, we look at the node itself if the cursor is
       // inside, or at the node before it if the cursor is at the
@@ -389,25 +394,13 @@ var select = {};
       var range = selectionRange(window);
       if (!range) return;
 
-      // On Opera, insertNode is completely broken when the range is
-      // in the middle of a text node.
-      if (window.opera && range.startContainer.nodeType == 3 && range.startOffset != 0) {
-        var start = range.startContainer, text = start.nodeValue;
-        start.parentNode.insertBefore(window.document.createTextNode(text.substr(0, range.startOffset)), start);
-        start.nodeValue = text.substr(range.startOffset);
-        start.parentNode.insertBefore(node, start);
-      }
-      else {
-        range.insertNode(node);
-      }
-
+      range.insertNode(node);
       range.setEndAfter(node);
       range.collapse(false);
       selectRange(range, window);
       return node;
     }
 
-    var gecko = /Gecko/.test(navigator.userAgent);
     select.insertNewlineAtCursor = function(window) {
       insertNodeAtCursor(window, window.document.createElement("BR"));
       // Hack to work around an FF bug where (sometimes) the cursor

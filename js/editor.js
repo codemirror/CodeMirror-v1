@@ -21,7 +21,7 @@ var Editor = (function(){
   }
 
   function splitSpaces(string) {
-    if (string == " ") return "\u00a0";
+    if (string == " ") return nbsp;
     else return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
   }
   function asEditorLines(string) {
@@ -42,7 +42,7 @@ var Editor = (function(){
         result.push(node);
       }
       else if (node.nodeName == "BR" && node.childNodes.length == 0) {
-        leaving = false;
+        leaving = true;
         result.push(node);
       }
       else {
@@ -600,7 +600,7 @@ var Editor = (function(){
     // is re-indented.
     handleTab: function() {
       var start = select.selectionTopNode(this.container, true),
-        end = select.selectionTopNode(this.container, false);
+          end = select.selectionTopNode(this.container, false);
       if (start === false || end === false) return;
 
       if (start == end)
@@ -843,7 +843,7 @@ var Editor = (function(){
           // insertNewlineAtCursor).
           while (part && part.nodeName == "SPAN" && part.currentText == ""){
             var old = part;
-            if ((!part.previousSibling || part.previousSibling.nodeName == "BR") &&
+            if (gecko && (!part.previousSibling || part.previousSibling.nodeName == "BR") &&
                 (!part.nextSibling || part.nextSibling.nodeName == "BR"))
               this.next();
             else
