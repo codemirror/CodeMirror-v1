@@ -147,7 +147,7 @@ var tokenizeJavaScript = (function() {
       return readNumber();
     else if (ch == "/"){
       if (source.equals("*"))
-        return readMultilineComment(ch);
+      { source.next(); return readMultilineComment(ch); }
       else if (source.equals("/"))
         return nextUntilUnescaped(source, null, {type: "comment", style: "comment"});
       else if (regexp)
