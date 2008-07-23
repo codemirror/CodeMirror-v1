@@ -162,5 +162,20 @@ var CodeMirror = (function(){
     return mirror;
   };
 
+  CodeMirror.isProbablySupported = function() {
+    // This is rather awful, but can be useful.
+    var match;
+    if (window.opera)
+      return Number(window.opera.version()) >= 9.52;
+    else if (/Apple Computers, Inc/.test(navigator.vendor) && (match = navigator.userAgent.match(/Version\/(\d+(?:\.\d+)?)\./)))
+      return Number(match[1]) >= 3;
+    else if (document.selection && window.ActiveXComponent && (match = navigator.userAgent.match(/MSIE (\d+(?:\.\d*)?)\b/)))
+      return Number(match[1]) >= 6;
+    else if (/Gecko/.test(navigator.userAgent) && (match = navigator.userAgent.match(/\/(\d+\.\d+)\.\d+/)))
+      return Number(match[1]) >= 1.5;
+    else
+      return null;
+  };
+
   return CodeMirror;
 })();

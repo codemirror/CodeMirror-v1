@@ -78,14 +78,23 @@
     its files are not located in the same directory as the current
     HTML page, but in <code>"lib/codemirror/"</code>.</p>
 
-    <p>There is another utility function
-    <code>CodeMirror.fromTextArea</code> that will, given a textarea
-    node or the id of such a node, hide the textarea and replace it
-    with a CodeMirror frame. If the textarea was part of a form, an
-    <code>onsubmit</code> handler will be registered with this form,
-    which will load the content of the editor into the textarea, so
-    that it can be submitted as normal. This function optionally takes
-    a configuration object as second argument.</p>
+    <p>There is a function
+    <code>CodeMirror.isProbablySupported()</code> that causes some
+    1998-style browser detection to happen, returning
+    <code>false</code> if CodeMirror is probably not supported on the
+    browser, <code>true</code> if it probably is, and
+    <code>null</code> if it has no idea. As the name suggests, this is
+    not something you can rely on, but it's usually better than
+    nothing.</p>
+
+    <p>Another utility function, <code>CodeMirror.fromTextArea</code>,
+    will, given a textarea node or the id of such a node, hide the
+    textarea and replace it with a CodeMirror frame. If the textarea
+    was part of a form, an <code>onsubmit</code> handler will be
+    registered with this form, which will load the content of the
+    editor into the textarea, so that it can be submitted as normal.
+    This function optionally takes a configuration object as second
+    argument.</p>
 
     <pre class="code">var editor = CodeMirror.fromTextArea("inputfield", {
   parserfile: ["tokenizejavascript.js", "parsejavascript.js"],

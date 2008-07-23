@@ -633,8 +633,10 @@ var Editor = (function(){
       
       // Extract a 'paren' from a piece of text.
       function paren(node) {
-        var match = node.currentText.match(/^[\s\u00a0]*([\(\)\[\]{}])[\s\u00a0]*$/);
-        return match && match[1];
+        if (node.currentText) {
+          var match = node.currentText.match(/^[\s\u00a0]*([\(\)\[\]{}])[\s\u00a0]*$/);
+          return match && match[1];
+        }
       }
       // Determine the direction a paren is facing.
       function forward(ch) {
