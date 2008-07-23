@@ -360,6 +360,8 @@ var Editor = (function(){
       addEventHandler(document, "keyup", method(this, "keyUp"));
       addEventHandler(document.body, "paste", method(this, "markCursorDirty"));
       addEventHandler(document.body, "cut", method(this, "markCursorDirty"));
+      if (this.options.autoMatchParens)
+        addEventHandler(document.body, "click", method(this, "scheduleParenBlink"));
     }
   }
 
