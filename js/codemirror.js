@@ -50,7 +50,7 @@ var CodeMirror = (function(){
     this.options = options = options || {};
     setDefaults(options, CodeMirrorConfig);
 
-    frame = document.createElement("IFRAME");
+    var frame = this.frame = document.createElement("IFRAME");
     frame.style.border = "0";
     frame.style.width = options.width;
     frame.style.height = options.height;
