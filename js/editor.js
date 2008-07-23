@@ -447,7 +447,7 @@ var Editor = (function(){
       lines[0] = this.history.textAfter(from.node).slice(0, from.offset) + lines[0];
       var lastLine = lines[lines.length - 1];
       lines[lines.length - 1] = lastLine + this.history.textAfter(to.node).slice(to.offset);
-      var end = this.history.nodeAfter(to.node)
+      var end = this.history.nodeAfter(to.node);
       this.history.push(from.node, end, lines);
       return {node: this.history.nodeBefore(end),
               offset: lastLine.length};
@@ -467,6 +467,9 @@ var Editor = (function(){
     keyDown: function(event) {
       // Don't scan when the user is typing.
       this.delayScanning();
+      // Schedule a paren-highlight event, if configured.
+      if (this.options.autoMatchParens)
+        this.scheduleParenBlink();
 
       if (event.keyCode == 13) { // enter
         if (event.ctrlKey) {
@@ -509,6 +512,8 @@ var Editor = (function(){
       // here.
       if (event.code == 13 || event.code == 9)
         event.stop();
+      else if ((event.character == "[" || event.character == "]") && event.ctrlKey)
+        event.stop(), this.blinkParens();
       else if (electric && electric.indexOf(event.character) != -1)
         this.parent.setTimeout(method(this, "indentAtCursor"), 0);
     },
@@ -607,6 +612,83 @@ var Editor = (function(){
         this.indentAtCursor();
       else
         this.indentRegion(start, end);
+    },
+
+    // Delay (or initiate) the next paren blink event.
+    scheduleParenBlink: function() {
+      if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
+      this.parenEvent = this.parent.setTimeout(method(this, "blinkParens"), 300);
+    },
+
+    // Take the token before the cursor. If it contains a character in
+    // '()[]{}', search for the matching paren/brace/bracket, and
+    // highlight them in green for a moment, or red if no proper match
+    // was found.
+    blinkParens: function() {
+      // Clear the event property.
+      if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
+      this.parenEvent = null;
+      
+      // Extract a 'paren' from a piece of text.
+      function paren(node) {
+        var match = node.currentText.match(/^[\s\u00a0]*([\(\)\[\]{}])[\s\u00a0]*$/);
+        return match && match[1];
+      }
+      // Determine the direction a paren is facing.
+      function forward(ch) {
+        return /[\(\[\{]/.test(ch);
+      }
+
+      this.highlightAtCursor();
+      var cursor = select.selectionTopNode(this.container, true), ch, self = this;
+      if (!cursor || !(ch = paren(cursor))) return;
+      // We only look for tokens with the same className.
+      var className = cursor.className, dir = forward(ch), match = matching[ch];
+      
+      // Since parts of the document might not have been properly
+      // highlighted, and it is hard to know in advance which part we
+      // have to scan, we just try, and when we find dirty nodes we
+      // abort, parse them, and re-try.
+      function tryFindMatch() {
+        var stack = [], ch, ok = true;;
+        for (var runner = cursor; runner; runner = dir ? runner.nextSibling : runner.previousSibling) {
+          if (runner.className == className && runner.nodeName == "SPAN" && (ch = paren(runner))) {
+            if (forward(ch) == dir)
+              stack.push(ch);
+            else if (!stack.length)
+              ok = false;
+            else if (stack.pop() != matching[ch])
+              ok = false;
+            if (!stack.length) break;
+          }
+          else if (runner.dirty || runner.nodeName != "SPAN" && runner.nodeName != "BR") {
+            return {node: runner, status: "dirty"};
+          }
+        }
+        return {node: runner, status: runner && ok};
+      }
+      // Temporarily give the relevant nodes a colour.
+      function blink(node, ok) {
+        node.style.fontWeight = "bold";
+        node.style.color = ok ? "#8F8" : "#F88";
+        self.parent.setTimeout(function() {node.style.fontWeight = ""; node.style.color = "";}, 400);
+      }
+
+      while (true) {
+        var found = tryFindMatch();
+        if (found.status == "dirty") {
+          this.highlight(found.node, 1);
+          // Needed because in some corner cases a highlight does not
+          // reach a node.
+          found.node.dirty = false;
+          continue;
+        }
+        else {
+          blink(cursor, found.status);
+          if (found.node) blink(found.node, found.status);
+          break;
+        }
+      }
     },
 
     // Adjust the amount of whitespace at the start of the line that
@@ -845,7 +927,7 @@ var Editor = (function(){
             var old = part;
             if (gecko && (!part.previousSibling || part.previousSibling.nodeName == "BR") &&
                 (!part.nextSibling || part.nextSibling.nodeName == "BR"))
-              this.next();
+              (part.dirty = false), this.next();
             else
               this.remove();
             part = this.get();

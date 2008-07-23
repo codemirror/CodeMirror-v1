@@ -101,6 +101,8 @@ function isAncestor(node, child) {
 
 // The non-breaking space character.
 var nbsp = "\u00a0";
+var matching = {"{": "}", "[": "]", "(": ")",
+                "}": "{", "]": "[", ")": "("};
 
 // Standardize a few unportable event properties.
 function normalizeEvent(event) {
