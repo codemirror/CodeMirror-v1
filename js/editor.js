@@ -675,7 +675,7 @@ var Editor = (function(){
       function blink(node, ok) {
         node.style.fontWeight = "bold";
         node.style.color = ok ? "#8F8" : "#F88";
-        self.parent.setTimeout(function() {node.style.fontWeight = ""; node.style.color = "";}, 400);
+        self.parent.setTimeout(function() {node.style.fontWeight = ""; node.style.color = "";}, 500);
       }
 
       while (true) {
