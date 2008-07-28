@@ -325,7 +325,7 @@ var Editor = (function(){
     if (options.content)
       this.importCode(options.content);
     else // FF acts weird when the editable document is completely empty
-      this.container.appendChild(this.doc.createElement("SPAN"));
+      this.container.appendChild(this.doc.createElement("BR"));
 
     if (!options.readOnly) {
       if (options.continuousScanning !== false) {
@@ -929,11 +929,7 @@ var Editor = (function(){
           // insertNewlineAtCursor).
           while (part && part.nodeName == "SPAN" && part.currentText == ""){
             var old = part;
-            if (gecko && (!part.previousSibling || part.previousSibling.nodeName == "BR") &&
-                (!part.nextSibling || part.nextSibling.nodeName == "BR"))
-              (part.dirty = false), this.next();
-            else
-              this.remove();
+            this.remove();
             part = this.get();
             // Adjust selection information, if any. See select.js for details.
             select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);

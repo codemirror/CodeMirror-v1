@@ -6,7 +6,6 @@
 
 // Namespace object.
 var select = {};
-var gecko = /Gecko/.test(navigator.userAgent) && !window.opera;
 
 (function() {
   var ie_selection = document.selection && document.selection.createRangeCollection;
@@ -403,12 +402,6 @@ var gecko = /Gecko/.test(navigator.userAgent) && !window.opera;
 
     select.insertNewlineAtCursor = function(window) {
       insertNodeAtCursor(window, window.document.createElement("BR"));
-      // Hack to work around an FF bug where (sometimes) the cursor
-      // will appear at the end of line N when it really is sitting on
-      // the empty line N + 1. If this line is not completely empty,
-      // but has an empty text node, the problem seems to go away.
-      if (gecko)
-        insertNodeAtCursor(window, window.document.createTextNode(""));
     };
 
     select.cursorPos = function(container, start) {
