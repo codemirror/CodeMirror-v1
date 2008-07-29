@@ -574,7 +574,7 @@ var Editor = (function(){
           if (start)
             insertAfter(whiteSpace, start);
           else
-            insertAtStart(whiteSpace, this.containter);
+            insertAtStart(whiteSpace, this.container);
         }
       }
       return whiteSpace;
