@@ -940,7 +940,6 @@ var Editor = (function(){
       };
 
       var lineDirty = false, lineHasNodes = false;;
-      this.history.touch(from);
 
       // This forEach loops over the tokens from the parsed stream, and
       // at the same time uses the parts object to proceed through the
@@ -954,9 +953,9 @@ var Editor = (function(){
           if (part.nodeName != "BR")
             throw "Parser out of sync. Expected BR.";
 
-          if (part.dirty || !part.indentation)
-            lineDirty = true;
-          self.history.touch(part);
+          if (part.dirty || !part.indentation) lineDirty = true;
+          if (lineDirty) self.history.touch(from);
+          from = part;
 
           // Every <br> gets a copy of the parser state and a lexical
           // context assigned to it. The first is used to be able to
