@@ -34,6 +34,7 @@ var CodeMirror = (function(){
     passDelay: 200,
     continuousScanning: false,
     saveFunction: null,
+    onChange: null,
     undoDepth: 20,
     undoDelay: 800,
     disableSpellcheck: true,
@@ -171,7 +172,7 @@ var CodeMirror = (function(){
       return Number(match[1]) >= 3;
     else if (document.selection && window.ActiveXObject && (match = navigator.userAgent.match(/MSIE (\d+(?:\.\d*)?)\b/)))
       return Number(match[1]) >= 6;
-    else if (/Gecko/.test(navigator.userAgent) && (match = navigator.userAgent.match(/\/(\d+\.\d+)\.\d+/)))
+    else if (/gecko/i.test(navigator.userAgent) && (match = navigator.userAgent.match(/\/(\d+\.\d+)\.\d+/)))
       return Number(match[1]) >= 1.5;
     else
       return null;

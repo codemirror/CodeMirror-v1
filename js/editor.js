@@ -309,7 +309,8 @@ var Editor = (function(){
     this.doc = document;
     this.container = this.doc.body;
     this.win = window;
-    this.history = new History(this.container, this.options.undoDepth, this.options.undoDelay, this);
+    this.history = new History(this.container, this.options.undoDepth, this.options.undoDelay,
+                               this, options.onChange);
 
     if (!Editor.Parser)
       throw "No parser loaded.";

@@ -228,6 +228,10 @@
       <dt><code>undoDepth</code></dt><dd>Maximum length of the undo
       history. Default is 20.</dd>
 
+      <dt><code>onChange</code></dt><dd>An optional function of zero
+      arguments that gets called whenever the document is changed.
+      Happens at undo-commit time, it is not instantanious.</dd>
+
       <dt><code>undoDelay</code></dt><dd>When nothing is done in the
       editor for this amount of milliseconds, pending changes get
       added to the undo history. Setting this lower will give the undo

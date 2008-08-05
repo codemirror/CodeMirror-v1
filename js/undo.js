@@ -26,11 +26,11 @@
 // delay (of no input) after which it commits a set of changes, and,
 // unfortunately, the 'parent' window -- a window that is not in
 // designMode, and on which setTimeout works in every browser.
-function History(container, maxDepth, commitDelay, editor) {
+function History(container, maxDepth, commitDelay, editor, onChange) {
   this.container = container;
   this.maxDepth = maxDepth; this.commitDelay = commitDelay;
-  this.editor = editor;
-  this.parent = editor.parent;
+  this.editor = editor; this.parent = editor.parent;
+  this.onChange = onChange;
   // This line object represents the initial, empty editor.
   var initial = {text: "", from: null, to: null};
   // As the borders between lines are represented by BR elements, the
@@ -63,18 +63,22 @@ History.prototype = {
     // Make sure pending changes have been committed.
     this.commit();
 
-    if (this.history.length)
+    if (this.history.length) {
       // Take the top diff from the history, apply it, and store its
       // shadow in the redo history.
       this.redoHistory.push(this.updateTo(this.history.pop(), "applyChain"));
+      if (this.onChange) this.onChange();
+    }
   },
 
   // Redo the last undone change.
   redo: function() {
     this.commit();
-    if (this.redoHistory.length)
+    if (this.redoHistory.length) {
       // The inverse of undo, basically.
       this.addUndoLevel(this.updateTo(this.redoHistory.pop(), "applyChain"));
+      if (this.onChange) this.onChange();
+    }
   },
 
   // Push a changeset into the document.
@@ -121,10 +125,11 @@ History.prototype = {
     this.editor.highlightDirty(true);
     // Build set of chains.
     var chains = this.touchedChains(), self = this;
-    
+
     if (chains.length) {
       this.addUndoLevel(this.updateTo(chains, "linkChain"));
       this.redoHistory = [];
+      if (this.onChange) this.onChange();
     }
   },
 
@@ -288,11 +293,6 @@ History.prototype = {
     });
 
     return chains;
-  },
-
-  recordChange: function(shadows, chains) {
-    if (this.onChange)
-      this.onChange(shadows, chains);
   },
 
   // Find the 'shadow' of a given chain by following the links in the
