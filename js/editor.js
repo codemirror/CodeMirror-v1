@@ -1011,6 +1011,7 @@ var Editor = (function(){
           }
         }
       });
+      if (lineDirty) this.history.touch(from);
 
       // The function returns some status information that is used by
       // hightlightDirty to determine whether and where it has to
