@@ -172,8 +172,8 @@ var CodeMirror = (function(){
       return Number(match[1]) >= 3;
     else if (document.selection && window.ActiveXObject && (match = navigator.userAgent.match(/MSIE (\d+(?:\.\d*)?)\b/)))
       return Number(match[1]) >= 6;
-    else if (/gecko/i.test(navigator.userAgent) && (match = navigator.userAgent.match(/\/(\d+\.\d+)\.\d+/)))
-      return Number(match[1]) >= 1.5;
+    else if (match = navigator.userAgent.match(/gecko\/(\d{8})/i))
+      return Number(match[1]) >= 20050901;
     else
       return null;
   };
