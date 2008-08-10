@@ -58,6 +58,9 @@
         var result = string.slice(start, pos);
         start = pos;
         return result;
+      },
+      reset: function() {
+        pos = start;
       }
     }, base);
   };
@@ -71,7 +74,7 @@
     var peeked = null, accum = "";
 
     return update({
-      peek: function(){
+      peek: function() {
         if (!peeked) {
           try {peeked = this.step();}
           catch (e) {
@@ -81,13 +84,13 @@
         }
         return peeked;
       },
-      step: function(){
-        if (peeked){
+      step: function() {
+        if (peeked) {
           var temp = peeked;
           peeked = null;
           return temp;
         }
-        while (pos == current.length){
+        while (pos == current.length) {
           accum += current;
           current = ""; // In case source.next() throws
           pos = 0;
@@ -96,7 +99,7 @@
         return current.charAt(pos++);
 
       },
-      next: function(){
+      next: function() {
         try {return this.step();}
         catch (e) {
           if (e == StopIteration && accum.length > 0)
@@ -105,7 +108,7 @@
             throw e;
         }
       },
-      get: function(){
+      get: function() {
         var temp = accum;
         var realPos = peeked ? pos - 1 : pos;
         accum = "";
@@ -115,6 +118,12 @@
           pos = peeked ? 1 : 0;
         }
         return temp;
+      },
+      reset: function() {
+        current = accum + current;
+        accum = "";
+        pos = 0;
+        peeked = null;
       }
     }, base);
   };

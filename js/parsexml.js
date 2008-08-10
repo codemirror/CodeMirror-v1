@@ -6,7 +6,7 @@
  * {useHTMLKludges: false} as parserConfig option.
  */
 
-Editor.Parser = (function() {
+var XMLParser = Editor.Parser = (function() {
   var Kludges = {
     autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true,
                       "meta": true, "col": true, "frame": true, "base": true, "area": true},
@@ -234,6 +234,8 @@ Editor.Parser = (function() {
     }
 
     return {
+      indentation: function() {return indented;},
+
       next: function(){
         var token = tokens.next();
         if (token.style == "whitespace" && tokenNr == 0)

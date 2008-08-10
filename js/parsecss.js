@@ -1,6 +1,6 @@
 /* Simple parser for CSS */
 
-Editor.Parser = (function() {
+var CSSParser = Editor.Parser = (function() {
   var tokenizeCSS = (function() {
     function normal(source, setState) {
       var ch = source.next();
@@ -98,18 +98,19 @@ Editor.Parser = (function() {
     };
   })();
 
-  function indentCSS(inBraces, inRule) {
+  function indentCSS(inBraces, inRule, base) {
     return function(nextChars) {
-      if (!inBraces || /^\}/.test(nextChars)) return 0;
-      else if (inRule) return 4;
-      else return 2;
+      if (!inBraces || /^\}/.test(nextChars)) return base;
+      else if (inRule) return base + 4;
+      else return base + 2;
     };
   }
 
   // This is a very simplistic parser -- since CSS does not really
   // nest, it works acceptably well, but some nicer colouroing could
   // be provided with a more complicated parser.
-  function parseCSS(source) {
+  function parseCSS(source, basecolumn) {
+    basecolumn = basecolumn || 0;
     var tokens = tokenizeCSS(source);
     var inBraces = false, inRule = false;
 
@@ -123,7 +124,7 @@ Editor.Parser = (function() {
           token.style =  inRule ? "colorcode" : "identifier";
 
         if (content == "\n")
-          token.indentation = indentCSS(inBraces, inRule);
+          token.indentation = indentCSS(inBraces, inRule, basecolumn);
 
         if (content == "{")
           inBraces = true;

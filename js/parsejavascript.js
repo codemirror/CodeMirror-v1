@@ -7,7 +7,7 @@
  * See manual.html for more info about the parser interface.
  */
 
-Editor.Parser = (function() {
+var JSParser = Editor.Parser = (function() {
   // Token types that can be considered to be atoms.
   var atomicTypes = {"atom": true, "number": true, "variable": true, "string": true, "regexp": true};
   // Constructor for the lexical context objects.
@@ -45,7 +45,7 @@ Editor.Parser = (function() {
   }
 
   // The parser-iterator-producing function itself.
-  function parseJS(input) {
+  function parseJS(input, basecolumn) {
     // Wrap the input in a token stream
     var tokens = tokenizeJavaScript(input);
     // The parser state. cc is a stack of actions that have to be
@@ -59,7 +59,7 @@ Editor.Parser = (function() {
     // variables defined in that, and the scopes above it.
     var context = null;
     // The lexical scope, used mostly for indentation.
-    var lexical = new JSLexical(-2, 0, "block", false);
+    var lexical = new JSLexical((basecolumn || 0) - 2, 0, "block", false);
     // Current column, and the indentation at the start of the current
     // line. Used to create lexical scope objects.
     var column = 0;

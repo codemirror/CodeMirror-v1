@@ -71,7 +71,13 @@ var CodeMirror = (function(){
 
     if (typeof options.parserfile == "string")
       options.parserfile = [options.parserfile];
-    var html = ["<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"" + options.stylesheet + "\"/>"];
+    if (typeof options.stylesheet == "string")
+      options.stylesheet = [options.stylesheet];
+
+    var html = ["<html><head>"];
+    forEach(options.stylesheet, function(file) {
+      html.push("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + file + "\"/>");
+    });
     forEach(options.basefiles.concat(options.parserfile), function(file) {
       html.push("<script type=\"text/javascript\" src=\"" + options.path + file + "\"></script>");
     });
