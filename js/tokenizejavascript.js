@@ -27,21 +27,21 @@ var tokenizeJavaScript = (function() {
     }
     // keywords that take a parenthised expression, and then a
     // statement (if)
-    var keywordA = result("keyword a", "keyword");
+    var keywordA = result("keyword a", "js-keyword");
     // keywords that take just a statement (else)
-    var keywordB = result("keyword b", "keyword");
+    var keywordB = result("keyword b", "js-keyword");
     // keywords that optionally take an expression, and form a
     // statement (return)
-    var keywordC = result("keyword c", "keyword");
-    var operator = result("operator", "keyword");
-    var atom = result("atom", "atom");
+    var keywordC = result("keyword c", "js-keyword");
+    var operator = result("operator", "js-keyword");
+    var atom = result("atom", "js-atom");
     return {
       "if": keywordA, "switch": keywordA, "while": keywordA, "with": keywordA,
       "else": keywordB, "do": keywordB, "try": keywordB, "finally": keywordB,
       "return": keywordC, "break": keywordC, "continue": keywordC, "new": keywordC, "delete": keywordC, "throw": keywordC,
       "in": operator, "typeof": operator, "instanceof": operator,
-      "var": result("var", "keyword"), "function": result("function", "keyword"), "catch": result("catch", "keyword"),
-      "for": result("for", "keyword"), "case": result("case", "keyword"),
+      "var": result("var", "js-keyword"), "function": result("function", "js-keyword"), "catch": result("catch", "js-keyword"),
+      "for": result("for", "js-keyword"), "case": result("case", "js-keyword"),
       "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom, "Infinity": atom
     };
   }();
@@ -74,7 +74,7 @@ var tokenizeJavaScript = (function() {
     function readHexNumber(){
       source.next(); // skip the 'x'
       source.nextWhile(isHexDigit);
-      return {type: "number", style: "atom"};
+      return {type: "number", style: "js-atom"};
     }
 
     function readNumber() {
@@ -89,7 +89,7 @@ var tokenizeJavaScript = (function() {
           source.next();
         source.nextWhile(isDigit);
       }
-      return {type: "number", style: "atom"};
+      return {type: "number", style: "js-atom"};
     }
     // Read a word, look it up in keywords. If not found, it is a
     // variable, otherwise it is a keyword of the type found.
@@ -98,12 +98,12 @@ var tokenizeJavaScript = (function() {
       var word = source.get();
       var known = keywords.hasOwnProperty(word) && keywords.propertyIsEnumerable(word) && keywords[word];
       return known ? {type: known.type, style: known.style, content: word} :
-      {type: "variable", style: "variable", content: word};
+      {type: "variable", style: "js-variable", content: word};
     }
     function readRegexp() {
       nextUntilUnescaped(source, "/");
       source.nextWhile(matcher(/[gi]/));
-      return {type: "regexp", style: "string"};
+      return {type: "regexp", style: "js-string"};
     }
     // Mutli-line comments are tricky. We want to return the newlines
     // embedded in them as regular newline tokens, and then continue
@@ -124,11 +124,11 @@ var tokenizeJavaScript = (function() {
         maybeEnd = (next == "*");
       }
       setComment(newInComment);
-      return {type: "comment", style: "comment"};
+      return {type: "comment", style: "js-comment"};
     }
     function readOperator() {
       source.nextWhile(isOperatorChar);
-      return {type: "operator", style: "operator"};
+      return {type: "operator", style: "js-operator"};
     }
 
     // Fetch the next token. Dispatches on first character in the
@@ -137,10 +137,10 @@ var tokenizeJavaScript = (function() {
     if (inComment)
       return readMultilineComment(ch);
     else if (ch == "\"" || ch == "'")
-      return nextUntilUnescaped(source, ch, {type: "string", style: "string"});
+      return nextUntilUnescaped(source, ch, {type: "string", style: "js-string"});
     // with punctuation, the type of the token is the symbol itself
     else if (/[\[\]{}\(\),;\:\.]/.test(ch))
-      return {type: ch, style: "punctuation"};
+      return {type: ch, style: "js-punctuation"};
     else if (ch == "0" && (source.equals("x") || source.equals("X")))
       return readHexNumber();
     else if (isDigit(ch))
@@ -149,7 +149,7 @@ var tokenizeJavaScript = (function() {
       if (source.equals("*"))
       { source.next(); return readMultilineComment(ch); }
       else if (source.equals("/"))
-        return nextUntilUnescaped(source, null, {type: "comment", style: "comment"});
+        return nextUntilUnescaped(source, null, {type: "comment", style: "js-comment"});
       else if (regexp)
         return readRegexp();
       else

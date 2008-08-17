@@ -10,30 +10,30 @@
   margin: 0;
 }
 
-span.keyword {
+span.sp-keyword {
   color: #708;
 }
 
-span.prefixed {
+span.sp-prefixed {
   color: #5d1;
 }
 
-span.var {
+span.sp-var {
   color: #00c;
 }
 
-span.comment {
+span.sp-comment {
   color: #a70;
 }
 
-span.literal {
+span.sp-literal {
   color: #a22;
 }
 
-span.uri {
+span.sp-uri {
   color: #292;
 }
 
-span.operator {
+span.sp-operator {
   color: #088;
 }

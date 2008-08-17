@@ -116,7 +116,7 @@ var JSParser = Editor.Parser = (function() {
             token.style = marked;
           // Here we differentiate between local and global variables.
           else if (token.type == "variable" && inScope(token.content))
-            token.style = "localvariable";
+            token.style = "js-localvariable";
           return token;
         }
       }
@@ -176,7 +176,7 @@ var JSParser = Editor.Parser = (function() {
     // Register a variable in the current scope.
     function register(varname){
       if (context){
-        mark("variabledef");
+        mark("js-variabledef");
         context.vars[varname] = true;
       }
     }
@@ -263,11 +263,11 @@ var JSParser = Editor.Parser = (function() {
     // Property names need to have their style adjusted -- the
     // tokenizer think they are variables.
     function property(type){
-      if (type == "variable") {mark("property"); cont();}
+      if (type == "variable") {mark("js-property"); cont();}
     }
     // This parses a property and its value in an object literal.
     function objprop(type){
-      if (type == "variable") mark("property");
+      if (type == "variable") mark("js-property");
       if (atomicTypes.hasOwnProperty(type)) cont(expect(":"), expression);
     }
     // Parses a comma-separated list of the things that are recognized

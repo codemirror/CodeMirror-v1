@@ -278,32 +278,32 @@
     iterator, which has to be processed one step at a time. Look at this
     simplified version:</p>
 
-    <pre class="code"><span class="keyword">function</span> <span class="variable">traverseDOM</span>(<span class="variabledef">start</span>){
-  <span class="keyword">var</span> <span class="variabledef">cc</span> = <span class="keyword">function</span>(){<span class="variable">scanNode</span>(<span class="localvariable">start</span>, <span class="variable">stop</span>);};
-  <span class="keyword">function</span> <span class="variabledef">stop</span>(){
-    <span class="localvariable">cc</span> = <span class="localvariable">stop</span>;
-    <span class="keyword">throw</span> <span class="variable">StopIteration</span>;
+    <pre class="code"><span class="js-keyword">function</span> <span class="js-variable">traverseDOM</span>(<span class="js-variabledef">start</span>){
+  <span class="js-keyword">var</span> <span class="js-variabledef">cc</span> = <span class="js-keyword">function</span>(){<span class="js-variable">scanNode</span>(<span class="js-localvariable">start</span>, <span class="js-variable">stop</span>);};
+  <span class="js-keyword">function</span> <span class="js-variabledef">stop</span>(){
+    <span class="js-localvariable">cc</span> = <span class="js-localvariable">stop</span>;
+    <span class="js-keyword">throw</span> <span class="js-variable">StopIteration</span>;
   }
-  <span class="keyword">function</span> <span class="variabledef">yield</span>(<span class="variabledef">value</span>, <span class="variabledef">c</span>){
-    <span class="localvariable">cc</span> = <span class="localvariable">c</span>;
-    <span class="keyword">return</span> <span class="localvariable">value</span>;
-  }
-
-  <span class="keyword">function</span> <span class="variabledef">scanNode</span>(<span class="variabledef">node</span>, <span class="variabledef">c</span>){
-    <span class="keyword">if</span> (<span class="localvariable">node</span>.<span class="property">nextSibling</span>)
-      <span class="keyword">var</span> <span class="variabledef">nextc</span> = <span class="keyword">function</span>(){<span class="localvariable">scanNode</span>(<span class="localvariable">node</span>.<span class="property">nextSibling</span>, <span class="localvariable">c</span>);};
-    <span class="keyword">else</span>
-      <span class="keyword">var</span> <span class="variabledef">nextc</span> = <span class="localvariable">c</span>;
-
-    <span class="keyword">if</span> (<span class="comment">/* node is proper span element */</span>)
-      <span class="keyword">return</span> <span class="localvariable">yield</span>(<span class="localvariable">node</span>.<span class="property">firstChild</span>.<span class="property">nodeValue</span>, <span class="localvariable">nextc</span>);
-    <span class="keyword">else</span> <span class="keyword">if</span> (<span class="comment">/* node is proper br element */</span>)
-      <span class="keyword">return</span> <span class="localvariable">yield</span>(<span class="string">&quot;\n&quot;</span>, <span class="localvariable">nextc</span>);
-    <span class="keyword">else</span>
-      <span class="comment">/* flatten node, yield its textual content */</span>;
+  <span class="js-keyword">function</span> <span class="js-variabledef">yield</span>(<span class="js-variabledef">value</span>, <span class="js-variabledef">c</span>){
+    <span class="js-localvariable">cc</span> = <span class="js-localvariable">c</span>;
+    <span class="js-keyword">return</span> <span class="js-localvariable">value</span>;
   }
 
-  <span class="keyword">return</span> {<span class="property">next</span>: <span class="keyword">function</span>(){<span class="keyword">return</span> <span class="localvariable">cc</span>();}};
+  <span class="js-keyword">function</span> <span class="js-variabledef">scanNode</span>(<span class="js-variabledef">node</span>, <span class="js-variabledef">c</span>){
+    <span class="js-keyword">if</span> (<span class="js-localvariable">node</span>.<span class="js-property">nextSibling</span>)
+      <span class="js-keyword">var</span> <span class="js-variabledef">nextc</span> = <span class="js-keyword">function</span>(){<span class="js-localvariable">scanNode</span>(<span class="js-localvariable">node</span>.<span class="js-property">nextSibling</span>, <span class="js-localvariable">c</span>);};
+    <span class="js-keyword">else</span>
+      <span class="js-keyword">var</span> <span class="js-variabledef">nextc</span> = <span class="js-localvariable">c</span>;
+
+    <span class="js-keyword">if</span> (<span class="js-comment">/* node is proper span element */</span>)
+      <span class="js-keyword">return</span> <span class="js-localvariable">yield</span>(<span class="js-localvariable">node</span>.<span class="js-property">firstChild</span>.<span class="js-property">nodeValue</span>, <span class="js-localvariable">nextc</span>);
+    <span class="js-keyword">else</span> <span class="js-keyword">if</span> (<span class="js-comment">/* node is proper br element */</span>)
+      <span class="js-keyword">return</span> <span class="js-localvariable">yield</span>(<span class="js-string">&quot;\n&quot;</span>, <span class="js-localvariable">nextc</span>);
+    <span class="js-keyword">else</span>
+      <span class="js-comment">/* flatten node, yield its textual content */</span>;
+  }
+
+  <span class="js-keyword">return</span> {<span class="js-property">next</span>: <span class="js-keyword">function</span>(){<span class="js-keyword">return</span> <span class="js-localvariable">cc</span>();}};
 }</pre>
 
     <p>The variable <code>c</code> stands for 'continuation', and <code>cc</code> for 'current
@@ -388,19 +388,19 @@
     minilanguage, they act on tokens, and decide what kind of new actions
     should be pushed onto the stack. Here are some examples:</p>
 
-<pre class="code"><span class="keyword">function</span> <span class="variable">expression</span>(<span class="variabledef">type</span>){
-  <span class="keyword">if</span> (<span class="localvariable">type</span> in <span class="variable">atomicTypes</span>) <span class="variable">cont</span>(<span class="variable">maybeoperator</span>);
-  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="localvariable">type</span> == <span class="string">&quot;function&quot;</span>) <span class="variable">cont</span>(<span class="variable">functiondef</span>);
-  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="localvariable">type</span> == <span class="string">&quot;(&quot;</span>) <span class="variable">cont</span>(<span class="variable">pushlex</span>(<span class="string">&quot;list&quot;</span>), <span class="variable">expression</span>, <span class="variable">expect</span>(<span class="string">&quot;)&quot;</span>), <span class="variable">poplex</span>);
-  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="localvariable">type</span> == <span class="string">&quot;operator&quot;</span>) <span class="variable">cont</span>(<span class="variable">expression</span>);
-  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="localvariable">type</span> == <span class="string">&quot;[&quot;</span>) <span class="variable">cont</span>(<span class="variable">pushlex</span>(<span class="string">&quot;list&quot;</span>), <span class="variable">commasep</span>(<span class="variable">expression</span>), <span class="variable">expect</span>(<span class="string">&quot;]&quot;</span>), <span class="variable">poplex</span>);
-  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="localvariable">type</span> == <span class="string">&quot;{&quot;</span>) <span class="variable">cont</span>(<span class="variable">pushlex</span>(<span class="string">&quot;list&quot;</span>), <span class="variable">commasep</span>(<span class="variable">objprop</span>), <span class="variable">expect</span>(<span class="string">&quot;}&quot;</span>), <span class="variable">poplex</span>);
-  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="localvariable">type</span> == <span class="string">&quot;keyword c&quot;</span>) <span class="variable">cont</span>(<span class="variable">expression</span>);
+<pre class="code"><span class="js-keyword">function</span> <span class="js-variable">expression</span>(<span class="js-variabledef">type</span>){
+  <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> in <span class="js-variable">atomicTypes</span>) <span class="js-variable">cont</span>(<span class="js-variable">maybeoperator</span>);
+  <span class="js-keyword">else</span> <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> == <span class="js-string">&quot;function&quot;</span>) <span class="js-variable">cont</span>(<span class="js-variable">functiondef</span>);
+  <span class="js-keyword">else</span> <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> == <span class="js-string">&quot;(&quot;</span>) <span class="js-variable">cont</span>(<span class="js-variable">pushlex</span>(<span class="js-string">&quot;list&quot;</span>), <span class="js-variable">expression</span>, <span class="js-variable">expect</span>(<span class="js-string">&quot;)&quot;</span>), <span class="js-variable">poplex</span>);
+  <span class="js-keyword">else</span> <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> == <span class="js-string">&quot;operator&quot;</span>) <span class="js-variable">cont</span>(<span class="js-variable">expression</span>);
+  <span class="js-keyword">else</span> <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> == <span class="js-string">&quot;[&quot;</span>) <span class="js-variable">cont</span>(<span class="js-variable">pushlex</span>(<span class="js-string">&quot;list&quot;</span>), <span class="js-variable">commasep</span>(<span class="js-variable">expression</span>), <span class="js-variable">expect</span>(<span class="js-string">&quot;]&quot;</span>), <span class="js-variable">poplex</span>);
+  <span class="js-keyword">else</span> <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> == <span class="js-string">&quot;{&quot;</span>) <span class="js-variable">cont</span>(<span class="js-variable">pushlex</span>(<span class="js-string">&quot;list&quot;</span>), <span class="js-variable">commasep</span>(<span class="js-variable">objprop</span>), <span class="js-variable">expect</span>(<span class="js-string">&quot;}&quot;</span>), <span class="js-variable">poplex</span>);
+  <span class="js-keyword">else</span> <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> == <span class="js-string">&quot;keyword c&quot;</span>) <span class="js-variable">cont</span>(<span class="js-variable">expression</span>);
 }
 
-<span class="keyword">function</span> <span class="variable">block</span>(<span class="variabledef">type</span>){
-  <span class="keyword">if</span> (<span class="localvariable">type</span> == <span class="string">&quot;}&quot;</span>) <span class="variable">cont</span>();
-  <span class="keyword">else</span> <span class="variable">pass</span>(<span class="variable">statement</span>, <span class="variable">block</span>);
+<span class="js-keyword">function</span> <span class="js-variable">block</span>(<span class="js-variabledef">type</span>){
+  <span class="js-keyword">if</span> (<span class="js-localvariable">type</span> == <span class="js-string">&quot;}&quot;</span>) <span class="js-variable">cont</span>();
+  <span class="js-keyword">else</span> <span class="js-variable">pass</span>(<span class="js-variable">statement</span>, <span class="js-variable">block</span>);
 }</pre>
 
     <p>The function <code>cont</code> (for continue), will push the actions it is given
@@ -436,15 +436,15 @@
     <code>copy</code>, which is local to the parser function, produces
     a new closure, with copies of all the relevant variables:</p>
 
-<pre class="code"><span class="keyword">function</span> <span class="variable">copy</span>(){
-  <span class="keyword">var</span> <span class="variabledef">_context</span> = <span class="variable">context</span>, <span class="variabledef">_lexical</span> = <span class="variable">lexical</span>, <span class="variabledef">_actions</span> = <span class="variable">copyArray</span>(<span class="variable">actions</span>);
+<pre class="code"><span class="js-keyword">function</span> <span class="js-variable">copy</span>(){
+  <span class="js-keyword">var</span> <span class="js-variabledef">_context</span> = <span class="js-variable">context</span>, <span class="js-variabledef">_lexical</span> = <span class="js-variable">lexical</span>, <span class="js-variabledef">_actions</span> = <span class="js-variable">copyArray</span>(<span class="js-variable">actions</span>);
 
-  <span class="keyword">return</span> <span class="keyword">function</span>(<span class="variabledef">_tokens</span>){
-    <span class="variable">context</span> = <span class="localvariable">_context</span>;
-    <span class="variable">lexical</span> = <span class="localvariable">_lexical</span>;
-    <span class="variable">actions</span> = <span class="variable">copyArray</span>(<span class="localvariable">_actions</span>);
-    <span class="variable">tokens</span> = <span class="localvariable">_tokens</span>;
-    <span class="keyword">return</span> <span class="variable">parser</span>;
+  <span class="js-keyword">return</span> <span class="js-keyword">function</span>(<span class="js-variabledef">_tokens</span>){
+    <span class="js-variable">context</span> = <span class="js-localvariable">_context</span>;
+    <span class="js-variable">lexical</span> = <span class="js-localvariable">_lexical</span>;
+    <span class="js-variable">actions</span> = <span class="js-variable">copyArray</span>(<span class="js-localvariable">_actions</span>);
+    <span class="js-variable">tokens</span> = <span class="js-localvariable">_tokens</span>;
+    <span class="js-keyword">return</span> <span class="js-variable">parser</span>;
   };
 }</pre>
 

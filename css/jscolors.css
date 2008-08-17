@@ -6,42 +6,42 @@
   color: black;
 }
 
+pre.code, .editbox {
+  color: #666666;
+}
+
 .editbox p {
   margin: 0;
 }
 
-span.keyword {
+span.js-keyword {
   color: #770088;
 }
 
-span.atom {
+span.js-atom {
   color: #228811;
 }
 
-span.variable {
+span.js-variable {
   color: black;
 }
 
-span.variabledef {
+span.js-variabledef {
   color: #0000FF;
 }
 
-span.localvariable {
+span.js-localvariable {
   color: #004499;
 }
 
-span.property {
+span.js-property {
   color: black;
 }
 
-span.comment {
+span.js-comment {
   color: #AA7700;
 }
 
-span.string {
+span.js-string {
   color: #AA2222;
-}
-
-pre.code, .editbox {
-  color: #666666;
 }

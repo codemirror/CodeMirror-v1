@@ -10,42 +10,42 @@
   margin: 0;
 }
 
-span.tagname {
+span.xml-tagname {
   color: #A0B;
 }
 
-span.attribute {
+span.xml-attribute {
   color: #281;
 }
 
-span.punctuation {
+span.xml-punctuation {
   color: black;
 }
 
-span.attname {
+span.xml-attname {
   color: #00F;
 }
 
-span.comment {
+span.xml-comment {
   color: #A70;
 }
 
-span.cdata {
+span.xml-cdata {
   color: #48A;
 }
 
-span.processing {
+span.xml-processing {
   color: #999;
 }
 
-span.entity {
+span.xml-entity {
   color: #A22;
 }
 
-span.error {
+span.xml-error {
   color: #F00;
 }
 
-span.text {
+span.xml-text {
   color: black;
 }

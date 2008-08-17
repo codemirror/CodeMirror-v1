@@ -27,7 +27,7 @@ var HTMLMixedParser = Editor.Parser = (function() {
       var token = htmlParser.next();
       if (token.content == "<")
         inTag = true;
-      else if (token.style == "tagname" && inTag === true)
+      else if (token.style == "xml-tagname" && inTag === true)
         inTag = token.content.toLowerCase();
       else if (token.content == ">") {
         if (inTag == "script")

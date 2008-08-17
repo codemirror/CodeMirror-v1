@@ -14,46 +14,46 @@ Editor.Parser = (function() {
       var ch = source.next();
       if (ch == "$" || ch == "?") {
         source.nextWhile(matcher(/[\w\d]/));
-        return "var";
+        return "sp-var";
       }
       else if (ch == "<" && !source.applies(matcher(/[\s\u00a0=]/))) {
         source.nextWhile(matcher(/[^\s\u00a0>]/));
         if (source.equals(">")) source.next();
-        return "uri";
+        return "sp-uri";
       }
       else if (ch == "\"" || ch == "'") {
         setState(inLiteral(ch));
         return null;
       }
       else if (/[{}\(\),\.;\[\]]/.test(ch)) {
-        return "punc";
+        return "sp-punc";
       }
       else if (ch == "#") {
         while (!source.endOfLine()) source.next();
-        return "comment";
+        return "sp-comment";
       }
       else if (operatorChars.test(ch)) {
         source.nextWhile(matcher(operatorChars));
-        return "operator";
+        return "sp-operator";
       }
       else if (ch == ":") {
         source.nextWhile(matcher(/[\w\d\._\-]/));
-        return "prefixed";
+        return "sp-prefixed";
       }
       else {
-        source.nextWhile(matcher(/[_\.\w\d]/));
+        source.nextWhile(matcher(/[_\w\d]/));
         if (source.equals(":")) {
           source.next();
-          source.nextWhile(matcher(/[\w\d\._\-]/));
-          return "prefixed";
+          source.nextWhile(matcher(/[\w\d_\-]/));
+          return "sp-prefixed";
         }
         var word = source.get(), type;
         if (ops.test(word))
-          type = "operator";
+          type = "sp-operator";
         else if (keywords.test(word))
-          type = "keyword";
+          type = "sp-keyword";
         else
-          type = "word";
+          type = "sp-word";
         return {style: type, content: word};
       }
     }
@@ -69,7 +69,7 @@ Editor.Parser = (function() {
           }
           escaped = ch == "\\";
         }
-        return "literal";
+        return "sp-literal";
       };
     }
 
@@ -118,7 +118,7 @@ Editor.Parser = (function() {
         else if (type == "whitespace" && col == 0) {
           indent = width;
         }
-        else if (type != "comment" && context && context.align == null) {
+        else if (type != "sp-comment" && context && context.align == null) {
           context.align = true;
         }
 
@@ -136,7 +136,7 @@ Editor.Parser = (function() {
         else if (content == "." && context && context.type == "pattern") {
           popContext();
         }
-        else if ((type == "word" || type == "prefixed" || type == "uri" || type == "var" || type == "literal") &&
+        else if ((type == "sp-word" || type == "sp-prefixed" || type == "sp-uri" || type == "sp-var" || type == "sp-literal") &&
                  context && /[\{\[]/.test(context.type)) {
           pushContext("pattern", width);
         }

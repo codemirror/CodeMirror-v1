@@ -6,42 +6,42 @@
   color: black;
 }
 
+pre.code, .editbox {
+  color: #666666;
+}
+
 .editbox p {
   margin: 0;
 }
 
-span.at {
+span.css-at {
   color: #770088;
 }
 
-span.unit {
+span.css-unit {
   color: #228811;
 }
 
-span.value {
+span.css-value {
   color: #770088;
 }
 
-span.identifier {
+span.css-identifier {
   color: black;
 }
 
-span.important {
+span.css-important {
   color: #0000FF;
 }
 
-span.colorcode {
+span.css-colorcode {
   color: #004499;
 }
 
-span.comment {
+span.css-comment {
   color: #AA7700;
 }
 
-span.string {
+span.css-string {
   color: #AA2222;
-}
-
-pre.code, .editbox {
-  color: #666666;
 }
