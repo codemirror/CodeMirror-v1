@@ -78,10 +78,12 @@ var Editor = (function(){
     function pointAt(node){
       var parent = node.parentNode;
       var next = node.nextSibling;
-      if (next)
-        return function(newnode){parent.insertBefore(newnode, next);};
-      else
-        return function(newnode){parent.appendChild(newnode);};
+      return function(newnode) {
+        if (next)
+          parent.insertBefore(newnode, next);
+        else
+          parent.appendChild(newnode);
+      };
     }
     var point = null;
 

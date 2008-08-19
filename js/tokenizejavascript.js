@@ -114,7 +114,7 @@ var tokenizeJavaScript = (function() {
       var newInComment = true;
       var maybeEnd = (start == "*");
       while(true){
-        if (source.equals("\n"))
+        if (source.endOfLine())
           break;
         var next = source.next();
         if (next == "/" && maybeEnd){
