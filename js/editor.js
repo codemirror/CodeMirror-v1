@@ -28,6 +28,8 @@ var Editor = (function(){
     return splitSpaces(string.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
   }
 
+  var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
+
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
   function simplifyDOM(root) {
@@ -526,6 +528,9 @@ var Editor = (function(){
     // Mark the node at the cursor dirty when a non-safe key is
     // released.
     keyUp: function(event) {
+      if (internetExplorer)
+        this.container.createTextRange().execCommand("unlink");
+
       if (!isSafeKey(event.keyCode))
         this.markCursorDirty();
     },
