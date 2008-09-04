@@ -298,9 +298,9 @@ var Editor = (function(){
 
     replace: function(string) {
       if (this.atOccurrence) {
-        this.editor.replaceRange(this.atOccurrence.from, this.atOccurrence.to, string);
-        this.line = this.atOccurrence.from.node;
-        this.offset = this.atOccurrence.from.offset;
+        var end = this.editor.replaceRange(this.atOccurrence.from, this.atOccurrence.to, string);
+        this.line = end.node;
+        this.offset = end.offset;
         this.atOccurrence = false;
       }
     }
