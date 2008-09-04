@@ -81,10 +81,7 @@ var Editor = (function(){
       var parent = node.parentNode;
       var next = node.nextSibling;
       return function(newnode) {
-        if (next)
-          parent.insertBefore(newnode, next);
-        else
-          parent.appendChild(newnode);
+        parent.insertBefore(newnode, next);
       };
     }
     var point = null;
@@ -582,7 +579,7 @@ var Editor = (function(){
           if (start)
             insertAfter(whiteSpace, start);
           else
-            insertAtStart(whiteSpace, this.container);
+            this.container.insertBefore(whiteSpace, this.container.firstChild);
         }
       }
       return whiteSpace;

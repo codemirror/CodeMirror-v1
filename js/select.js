@@ -393,6 +393,7 @@ var select = {};
       var range = selectionRange(window);
       if (!range) return;
 
+      range.deleteContents();
       range.insertNode(node);
       range.setEndAfter(node);
       range.collapse(false);
