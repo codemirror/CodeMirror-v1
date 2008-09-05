@@ -93,11 +93,11 @@ History.prototype = {
       chain.push({from: from, to: end, text: lines[i]});
       from = end;
     }
-    this.pushChains([chain]);
+    this.pushChains([chain], from == null && to == null);
   },
 
-  pushChains: function(chains) {
-    this.commit();
+  pushChains: function(chains, doNotHighlight) {
+    this.commit(doNotHighlight);
     this.addUndoLevel(this.updateTo(chains, "applyChain"));
     this.redoHistory = [];
   },
@@ -105,7 +105,6 @@ History.prototype = {
   // Clear the undo history, make the current document the start
   // position.
   reset: function() {
-    this.commit();
     this.history = []; this.redoHistory = [];
   },
 
@@ -129,10 +128,10 @@ History.prototype = {
 
   // Check whether the touched nodes hold any changes, if so, commit
   // them.
-  commit: function() {
+  commit: function(doNotHighlight) {
     this.parent.clearTimeout(this.commitTimeout);
     // Make sure there are no pending dirty nodes.
-    this.editor.highlightDirty(true);
+    if (!doNotHighlight) this.editor.highlightDirty(true);
     // Build set of chains.
     var chains = this.touchedChains(), self = this;
 
