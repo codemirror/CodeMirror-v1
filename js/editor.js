@@ -782,8 +782,9 @@ var Editor = (function(){
     scheduleHighlight: function() {
       // Timeouts are routed through the parent window, because on
       // some browsers designMode windows do not fire timeouts.
+      var self = this;
       this.parent.clearTimeout(this.highlightTimeout);
-      this.highlightTimeout = this.parent.setTimeout(method(this, "highlightDirty"), this.options.passDelay);
+      this.highlightTimeout = this.parent.setTimeout(function(){self.highlightDirty();}, this.options.passDelay);
     },
 
     // Fetch one dirty node, and remove it from the dirty set.
@@ -805,8 +806,8 @@ var Editor = (function(){
     // left, and information about the place where it stopped. If
     // there are dirty nodes left after this function has spent all
     // its lines, it shedules another highlight to finish the job.
-    highlightDirty: function(all) {
-      var lines = all ? Infinity : this.options.linesPerPass;
+    highlightDirty: function(force) {
+      var lines = force ? Infinity : this.options.linesPerPass;
       var sel = select.markSelection(this.win);
       var start;
       while (lines > 0 && (start = this.getDirtyNode())){
@@ -820,6 +821,7 @@ var Editor = (function(){
       select.selectMarked(sel);
       if (start)
         this.scheduleHighlight();
+      return this.dirty.length == 0;
     },
 
     // Creates a function that, when called through a timeout, will

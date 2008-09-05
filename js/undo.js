@@ -49,13 +49,17 @@ function History(container, maxDepth, commitDelay, editor, onChange) {
 }
 
 History.prototype = {
+  // Schedule a commit (if no other touches come in for commitDelay
+  // milliseconds).
+  scheduleCommit: function() {
+    this.parent.clearTimeout(this.commitTimeout);
+    this.commitTimeout = this.parent.setTimeout(method(this, "tryCommit"), this.commitDelay);
+  },
+
   // Mark a node as touched. Null is a valid argument.
   touch: function(node) {
     this.setTouched(node);
-    // Schedule a commit (if no other touches come in for commitDelay
-    // milliseconds).
-    this.parent.clearTimeout(this.commitTimeout);
-    this.commitTimeout = this.parent.setTimeout(method(this, "commit"), this.commitDelay);
+    this.scheduleCommit();
   },
 
   // Undo the last change.
@@ -115,6 +119,12 @@ History.prototype = {
 
   nodeBefore: function(br) {
     return this.before(br).from;
+  },
+
+  // Commit unless there are pending dirty nodes.
+  tryCommit: function() {
+    if (this.editor.highlightDirty()) this.commit();
+    else this.scheduleCommit();
   },
 
   // Check whether the touched nodes hold any changes, if so, commit
