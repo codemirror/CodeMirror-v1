@@ -945,7 +945,7 @@ var Editor = (function(){
         }
       };
 
-      var lineDirty = false, lineHasNodes = false;;
+      var lineDirty = false, lineNodes = 0;
 
       // This forEach loops over the tokens from the parsed stream, and
       // at the same time uses the parts object to proceed through the
@@ -970,11 +970,12 @@ var Editor = (function(){
           part.parserFromHere = parsed.copy();
           part.indentation = token.indentation;
           part.dirty = false;
-          // A clean line means we are done. Throwing a StopIteration is
-          // the way to break out of a MochiKit forEach loop.
-          if ((lines !== undefined && --lines <= 0) || (!lineDirty && lineHasNodes && !cleanLines))
+          // A clean line with more than one node means we are done.
+          // Throwing a StopIteration is the way to break out of a
+          // MochiKit forEach loop.
+          if ((lines !== undefined && --lines <= 0) || (!lineDirty && lineNodes > 1 && !cleanLines))
             throw StopIteration;
-          lineDirty = false; lineHasNodes = false;
+          lineDirty = false; lineNodes = 0;
           parts.next();
         }
         else {
@@ -982,7 +983,7 @@ var Editor = (function(){
             throw "Parser out of sync. Expected SPAN.";
           if (part.dirty)
             lineDirty = true;
-          lineHasNodes = true;
+          lineNodes++;
 
           // If the part matches the token, we can leave it alone.
           if (correctPart(token, part)){
