@@ -877,7 +877,7 @@ var Editor = (function(){
       // Check whether a part (<span> node) and the corresponding token
       // match.
       function correctPart(token, part){
-        return !part.reduced && part.currentText == token.value && hasClass(part, token.style);
+        return !part.reduced && part.currentText == token.value && part.className == "part " + token.style;
       }
       // Shorten the text associated with a part by chopping off
       // characters from the front. Note that only the currentText
