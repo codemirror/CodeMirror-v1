@@ -56,8 +56,8 @@ var tokenizeJavaScript = (function() {
   // we are inside of a multi-line comment and whether the next token
   // could be a regular expression).
   function jsTokenState(inComment, regexp) {
-    var newInComment = inComment;
     return function(source, setState) {
+      var newInComment = inComment;
       var type = jsToken(inComment, regexp, source, function(c) {newInComment = c;});
       var newRegexp = type.type == "operator" || type.type == "keyword c" || type.type.match(/^[\[{}\(,;:]$/);
       if (newRegexp != regexp || newInComment != inComment)
@@ -113,7 +113,7 @@ var tokenizeJavaScript = (function() {
     function readMultilineComment(start){
       var newInComment = true;
       var maybeEnd = (start == "*");
-      while(true){
+      while (true) {
         if (source.endOfLine())
           break;
         var next = source.next();
