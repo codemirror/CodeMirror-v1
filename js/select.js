@@ -73,10 +73,8 @@ var select = {};
           done = true;
         } catch(e) {}
       }
-      if (!done) {
-        range1.moveToBookmark(sel.bookmark);
-      }
-      range1.select();
+      if (!done) done = range1.moveToBookmark(sel.bookmark);
+      if (done) range1.select();
     };
 
 
