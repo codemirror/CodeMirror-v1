@@ -109,6 +109,7 @@ var select = {};
         removeElement(temp);
         return result;
       }
+      return false;
     };
 
     // Place the cursor after this.start. This is only useful when
