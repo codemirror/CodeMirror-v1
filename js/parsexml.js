@@ -103,19 +103,19 @@ var XMLParser = Editor.Parser = (function() {
 
     function inBlock(style, terminator) {
       return function(source, setState) {
-        var rest = terminator;
+        var matches = [];
         while (!source.endOfLine()) {
-          var ch = source.next();
-          if (ch == rest.charAt(0)) {
-            rest = rest.slice(1);
-            if (rest.length == 0) {
-              setState(inText);
-              break;
+          var ch = source.next(), newMatches = [];
+          if (ch == terminator.charAt(0))
+            matches.push(terminator);
+          for (var i = 0; i < matches.length; i++) {
+            var match = matches[i];
+            if (match.charAt(0) == ch) {
+              if (match.length == 1) {setState(inText); break;}
+              else newMatches.push(match.slice(1));
             }
           }
-          else {
-            rest = terminator;
-          }
+          matches = newMatches;
         }
         return style;
       };
