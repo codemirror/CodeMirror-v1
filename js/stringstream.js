@@ -31,6 +31,15 @@
     endOfLine: function() {
       var next = this.peek();
       return next == null || next == "\n";
+    },
+    matches: function(string, caseSensitive) {
+      for (var i = 0; i < string.length; i++) {
+        var ch = this.peek();
+        if (!ch || string.charAt(i) != (caseSensitive ? ch : ch.toLowerCase()))
+          return false;
+        this.next();
+      }
+      return true;
     }
   };
 

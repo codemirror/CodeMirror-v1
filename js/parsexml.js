@@ -25,13 +25,15 @@ var XMLParser = Editor.Parser = (function() {
         if (source.equals("!")) {
           source.next();
           if (source.equals("[")) {
-            source.next();
-            
-            setState(inBlock("cdata", "]]>"));
-            return null;
+            if (source.matches("[CDATA[", true)) {
+              setState(inBlock("xml-cdata", "]]>"));
+              return null;
+            }
+            else {
+              return "xml-text";
+            }
           }
-          else if (source.equals("-")) {
-            source.next();
+          else if (source.matches("--", true)) {
             setState(inBlock("xml-comment", "-->"));
             return null;
           }
@@ -153,7 +155,7 @@ var XMLParser = Editor.Parser = (function() {
     function expect(text) {
       return function(style, content) {
         if (content == text) cont();
-        else mark("error") || cont(arguments.callee);
+        else mark("xml-error") || cont(arguments.callee);
       };
     }
 

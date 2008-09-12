@@ -4,17 +4,8 @@ var HTMLMixedParser = Editor.Parser = (function() {
   XMLParser.configure({useHTMLKludges: true});
 
   function stringAhead(stream, string) {
-    function matchString() {
-      for (var i = 0; i < string.length; i++) {
-        var ch = stream.peek();
-        if (!ch || string.charAt(i) != ch.toLowerCase()) return false;
-        stream.next();
-      }
-      return true;
-    }
-
     stream.nextWhile(matcher(/[\s\u00a0]/));
-    var found =  matchString();
+    var found = stream.matches(string, false);
     stream.reset();
     return found;
   }
