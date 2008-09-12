@@ -43,7 +43,8 @@ var CodeMirror = (function(){
     width: "100%",
     height: "300px",
     autoMatchParens: false,
-    parserConfig: null
+    parserConfig: null,
+    dumbTabs: false
   });
 
   function CodeMirror(place, options) {

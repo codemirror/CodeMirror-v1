@@ -611,14 +611,19 @@ var Editor = (function(){
     // re-indented, when nothing is selected, the line with the cursor
     // is re-indented.
     handleTab: function() {
-      var start = select.selectionTopNode(this.container, true),
-          end = select.selectionTopNode(this.container, false);
-      if (start === false || end === false) return;
+      if (this.options.dumbTabs) {
+        select.insertTabAtCursor(this.win);
+      }
+      else {
+        var start = select.selectionTopNode(this.container, true),
+            end = select.selectionTopNode(this.container, false);
+        if (start === false || end === false) return;
 
-      if (start == end)
-        this.indentAtCursor();
-      else
-        this.indentRegion(start, end);
+        if (start == end)
+          this.indentAtCursor();
+        else
+          this.indentRegion(start, end);
+      }
     },
 
     // Delay (or initiate) the next paren blink event.

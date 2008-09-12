@@ -30,6 +30,8 @@ var select = {};
   // Used to prevent restoring a selection when we do not need to.
   var documentChanged = false;
 
+  var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
+
   // Most functions are defined in two ways, one for the IE selection
   // model, one for the W3C one.
   if (ie_selection) {
@@ -136,6 +138,10 @@ var select = {};
     // do widely different things when pressing enter in designMode.
     select.insertNewlineAtCursor = function(window) {
       insertAtCursor(window, "<br/>");
+    };
+
+    select.insertTabAtCursor = function(window) {
+      insertAtCursor(window, fourSpaces);
     };
 
     // Get the BR node at the start of the line on which the cursor
@@ -402,6 +408,10 @@ var select = {};
 
     select.insertNewlineAtCursor = function(window) {
       insertNodeAtCursor(window, window.document.createElement("BR"));
+    };
+
+    select.insertTabAtCursor = function(window) {
+      insertNodeAtCursor(window, window.document.createTextNode(fourSpaces));
     };
 
     select.cursorPos = function(container, start) {
