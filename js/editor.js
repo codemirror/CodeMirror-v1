@@ -640,7 +640,7 @@ var Editor = (function(){
       // Clear the event property.
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
       this.parenEvent = null;
-      
+
       // Extract a 'paren' from a piece of text.
       function paren(node) {
         if (node.currentText) {
@@ -658,7 +658,7 @@ var Editor = (function(){
       if (!cursor || !(ch = paren(cursor))) return;
       // We only look for tokens with the same className.
       var className = cursor.className, dir = forward(ch), match = matching[ch];
-      
+
       // Since parts of the document might not have been properly
       // highlighted, and it is hard to know in advance which part we
       // have to scan, we just try, and when we find dirty nodes we
