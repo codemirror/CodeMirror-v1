@@ -129,7 +129,7 @@ var CSSParser = Editor.Parser = (function() {
         if (content == "{")
           inBraces = true;
         else if (content == "}")
-          inBraces = false;
+          inBraces = inRule = false;
         else if (inBraces && content == ";")
           inRule = false;
         else if (inBraces && style != "css-comment" && style != "whitespace")
