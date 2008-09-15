@@ -796,10 +796,14 @@ var Editor = (function(){
     getDirtyNode: function() {
       while (this.dirty.length > 0) {
         var found = this.dirty.pop();
-        // If the node has been coloured in the meantime, or is no
-        // longer in the document, it should not be returned.
-        if ((found.dirty || found.nodeType == 3) && found.parentNode)
-          return found;
+        // IE8 sometimes throws an unexplainable 'invalid argument'
+        // exception for found.parentNode
+        try {
+          // If the node has been coloured in the meantime, or is no
+          // longer in the document, it should not be returned.
+          if ((found.dirty || found.nodeType == 3) && found.parentNode)
+            return found;
+        } catch (e) {}
       }
       return null;
     },
