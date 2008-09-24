@@ -910,7 +910,7 @@ var Editor = (function(){
       // parser from the start of the frame, otherwise a partial parse
       // is resumed.
       var traversal = traverseDOM(from ? from.nextSibling : container.firstChild),
-          stream = multiStringStream(traversal),
+          stream = stringStream(traversal),
           parsed = from ? from.parserFromHere(stream) : Editor.Parser.make(stream);
 
       // parts is an interface to make it possible to 'delay' fetching
