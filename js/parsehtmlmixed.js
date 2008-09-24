@@ -38,8 +38,8 @@ var HTMLMixedParser = Editor.Parser = (function() {
           return top();
         }
         var token = localParser.next();
-        var lt = token.value.lastIndexOf("<"), sz = token.value.length - lt;
-        if (lt != -1 && token.value.slice(lt).toLowerCase() == tag.slice(0, sz) && stringAhead(stream, tag.slice(sz))) {
+        var lt = token.value.lastIndexOf("<"), sz = Math.min(token.value.length - lt, tag.length);
+        if (lt != -1 && token.value.slice(lt, lt + sz).toLowerCase() == tag.slice(0, sz) && stringAhead(stream, tag.slice(sz))) {
           stream.push(token.value.slice(lt));
           token.value = token.value.slice(0, lt);
         }
