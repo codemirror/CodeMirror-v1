@@ -95,6 +95,7 @@ var Editor = (function(){
     function insertPart(part){
       var text = "\n";
       if (part.nodeType == 3) {
+        select.moveSelection();
         text = part.nodeValue;
         var span = owner.createElement("SPAN");
         span.className = "part";
@@ -384,8 +385,9 @@ var Editor = (function(){
       if (!this.container.firstChild)
         return "";
 
-      var accum = [];
+      var accum = [], sel = select.markSelection(this.win);
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
+      select.selectMarked(sel);
       return cleanText(accum.join(""));
     },
 
@@ -948,7 +950,7 @@ var Editor = (function(){
             this.remove();
             part = this.get();
             // Adjust selection information, if any. See select.js for details.
-            select.replaceSelection(old.firstChild, part.firstChild || part, 0, 0);
+            select.moveSelection(old.firstChild, part.firstChild || part, 0, 0);
           }
           return part;
         }
@@ -1013,7 +1015,7 @@ var Editor = (function(){
             while (tokensize > 0) {
               part = parts.get();
               var partsize = part.currentText.length;
-              select.replaceSelection(part.firstChild, newPart.firstChild, tokensize, offset);
+              select.moveSelection(part.firstChild, newPart.firstChild, tokensize, offset);
               if (partsize > tokensize){
                 shortenPart(part, tokensize);
                 tokensize = 0;

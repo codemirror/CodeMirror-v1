@@ -79,10 +79,9 @@ var select = {};
       if (done) range1.select();
     };
 
-
     // See W3C model for the actual role of this function. Here it
     // just sets a flag indicating the selection should be restored.
-    select.replaceSelection = function(){
+    select.moveSelection = function(){
       documentChanged = true;
     };
 
@@ -243,7 +242,7 @@ var select = {};
       normalize(result.start);
       normalize(result.end);
       // Make the links back to the selection object (see
-      // replaceSelection).
+      // moveSelection).
       if (result.start.node)
         result.start.node.selectStart = result.start;
       if (result.end.node)
@@ -295,8 +294,10 @@ var select = {};
     // the new object, and the given length is not the whole length of
     // the new node (part of it might have been used to replace
     // another node).
-    select.replaceSelection = function(oldNode, newNode, length, offset) {
+    select.moveSelection = function(oldNode, newNode, length, offset) {
       documentChanged = true;
+      if (oldNode == undefined) return;
+
       function replace(which) {
         var selObj = oldNode["select" + which];
         if (selObj) {
