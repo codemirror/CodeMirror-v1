@@ -106,7 +106,7 @@
     CodeMirror will load in a bunch of extra files when an editor is
     created (the parser script, among others). To be able to do this,
     it has to know where to find them. These are all the JavaScript
-    files that are part of CodeMirror:</p>
+    files that are part of CodeMirror itself:</p>
 
     <dl>
       <dt><a href="js/codemirror.js"><code>codemirror.js</code></a></dt>
@@ -127,19 +127,8 @@
       <dt><a href="js/select.js"><code>select.js</code></a></dt> <dd>Some
       helper utilities for working with selected text and cursor
       positions.</dd>
-      <dt><a
-      href="js/tokenizejavascript.js"><code>tokenizejavascript.js</code></a></dt>
-      <dd>A JavaScript tokeniser. Only included when selected as part
-      of the <code>parserfile</code> option.</dd>
-      <dt><a
-      href="js/parsejavascript.js"><code>parsejavascript.js</code></a></dt>
-      <dd>The JavaScript parser.</dd>
-      <dt><a href="js/parsexml.js"><code>parsexml.js</code></a></dt>
-      <dd>A parser for XML, with some optional kludges that make it
-      work rather well for HTML. Some details are in the file
-      itself.</dd>
-      <dt><a href="js/parsecss.js"><code>parsecss.js</code></a></dt>
-      <dd>Simple parser for cascading style sheet files.</dd>
+      <dt><a href="js/tokenize.js"><code>tokenize.js</code></a></dt>
+      <dd>Helper framework for writing tokenisers.</dd>
     </dl>
 
     <p>Most of these are rather full of comments, which can be useful
@@ -147,6 +136,10 @@
     of bandwidth in a production system. Take a look at the
     description of the <code>basefiles</code> option below if you want
     to concatenate and minimise the library.</p>
+
+    <p>Apart from there, there are files that implement the various
+    parsers. These all start with either <code>parse</code> or
+    <code>tokenize</code>.</p>
 
     <h2>Configuration</h2>
 
@@ -191,9 +184,9 @@
       <dt><code>basefiles</code></dt><dd>An array of strings naming
       the files containing the base CodeMirror functionality. Defaults
       to <code>["util.js", "stringstream.js", "select.js", "undo.js",
-      "editor.js"]</code>, but if you put them all into a single file
-      to reduce latency, or add some functionality, you might have to
-      adjust that.</dd>
+      "editor.js", "tokenize.js"]</code>, but if you put them all into
+      a single file to reduce latency, or add some functionality, you
+      might have to adjust that.</dd>
       
       <dt><code>linesPerPass</code></dt><dd>Specifies the maximum
       amount of lines that the highlighter tries to colour in one
