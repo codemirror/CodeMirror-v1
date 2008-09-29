@@ -51,7 +51,7 @@ MirrorFrame.prototype = {
     // prompting replace.
     var from = prompt("Enter search string:", ""), to;
     if (from) to = prompt("What should it be replaced with?", "");
-    if (!to) return;
+    if (to == null) return;
 
     var cursor = this.mirror.getSearchCursor(from, false);
     while (cursor.findNext())
