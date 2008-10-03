@@ -181,6 +181,8 @@ var CodeMirror = (function(){
       return Number(match[1]) >= 6;
     else if (match = navigator.userAgent.match(/gecko\/(\d{8})/i))
       return Number(match[1]) >= 20050901;
+    else if (/Chrome\//.test(navigator.userAgent))
+      return true;
     else
       return null;
   };
