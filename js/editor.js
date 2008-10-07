@@ -847,7 +847,8 @@ var Editor = (function(){
         var sel = select.markSelection(self.win);
         var result = self.highlight(pos, linesPer, true);
         select.selectMarked(sel);
-        pos = result ? (result.node && result.node.nextSibling) : null;
+        var newPos = result ? (result.node && result.node.nextSibling) : null;
+        pos = (pos == newPos) ? null : newPos;
         self.delayScanning();
       };
     },
