@@ -957,7 +957,7 @@ var Editor = (function(){
         }
       };
 
-      var lineDirty = false, lineNodes = 0;
+      var lineDirty = false, prevLineDirty = true, lineNodes = 0;
 
       // This forEach loops over the tokens from the parsed stream, and
       // at the same time uses the parts object to proceed through the
@@ -985,9 +985,9 @@ var Editor = (function(){
           // A clean line with more than one node means we are done.
           // Throwing a StopIteration is the way to break out of a
           // MochiKit forEach loop.
-          if ((lines !== undefined && --lines <= 0) || (!lineDirty && lineNodes > 1 && !cleanLines))
+          if ((lines !== undefined && --lines <= 0) || (!lineDirty && !prevLineDirty && lineNodes > 1 && !cleanLines))
             throw StopIteration;
-          lineDirty = false; lineNodes = 0;
+          prevLineDirty = lineDirty; lineDirty = false; lineNodes = 0;
           parts.next();
         }
         else {
