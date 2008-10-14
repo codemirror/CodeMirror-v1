@@ -367,9 +367,9 @@
     the string stream, and produce a token object.</p>
 
     <p>Token objects represent a single significant piece of the text
-    that is being edited. It must have a <code>value</code> property
-    holding the text it stands for, and a <code>style</code> property
-    with the CSS class that should be used to colour this element.
+    that is being edited. A token object must have a <code>value</code> 
+    property holding the text it stands for, and a <code>style</code> 
+    property with the CSS class that should be used to colour this element.
     This can be anything, except that any whitespace at the start of a
     line should <em>always</em> have class <code>"whitespace"</code>:
     The editor must be able to recognize these when it indents lines.

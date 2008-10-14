@@ -232,6 +232,7 @@ var JSParser = Editor.Parser = (function() {
       else if (type == "for") cont(pushlex("form"), expect("("), pushlex(")"), forspec1, expect(")"), poplex, statement, poplex);
       else if (type == "variable") cont(pushlex("stat"), maybelabel);
       else if (type == "case") cont(expression, expect(":"));
+      else if (type == "default") cont(expect(":"));
       else if (type == "catch") cont(pushlex("form"), pushcontext, expect("("), funarg, expect(")"), statement, poplex, popcontext);
       else pass(pushlex("stat"), expression, expect(";"), poplex);
     }

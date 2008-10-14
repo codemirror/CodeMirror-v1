@@ -41,7 +41,8 @@ var tokenizeJavaScript = (function() {
       "return": keywordC, "break": keywordC, "continue": keywordC, "new": keywordC, "delete": keywordC, "throw": keywordC,
       "in": operator, "typeof": operator, "instanceof": operator,
       "var": result("var", "js-keyword"), "function": result("function", "js-keyword"), "catch": result("catch", "js-keyword"),
-      "for": result("for", "js-keyword"), "case": result("case", "js-keyword"),
+      "for": result("for", "js-keyword"), 
+      "case": result("case", "js-keyword"), "default": result("default", "js-keyword"),
       "true": atom, "false": atom, "null": atom, "undefined": atom, "NaN": atom, "Infinity": atom
     };
   }();
