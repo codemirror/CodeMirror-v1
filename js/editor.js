@@ -322,7 +322,9 @@ var Editor = (function(){
     if (!options.textWrapping)
       this.container.style.whiteSpace = "pre";
 
-    select.setCursorPos(this.container, {node: null, offset: 0});
+    if (!options.readOnly) {
+      select.setCursorPos(this.container, {node: null, offset: 0});
+    }
 
     this.dirty = [];
     if (options.content)
@@ -819,7 +821,7 @@ var Editor = (function(){
     // its lines, it shedules another highlight to finish the job.
     highlightDirty: function(force) {
       var lines = force ? Infinity : this.options.linesPerPass;
-      var sel = select.markSelection(this.win);
+      var sel = this.options.readOnly ? null : select.markSelection(this.win);
       var start;
       while (lines > 0 && (start = this.getDirtyNode())){
         var result = this.highlight(start, lines);
@@ -829,7 +831,7 @@ var Editor = (function(){
             this.addDirtyNode(result.node);
         }
       }
-      select.selectMarked(sel);
+      if (!this.options.readOnly) select.selectMarked(sel);
       if (start)
         this.scheduleHighlight();
       return this.dirty.length == 0;
