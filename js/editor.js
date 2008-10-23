@@ -636,6 +636,16 @@ var Editor = (function(){
       this.parenEvent = this.parent.setTimeout(method(this, "blinkParens"), 300);
     },
 
+    isNearParsedNode: function(node) {
+      var distance = 0;
+      while (node && (!node.parserFromHere || node.dirty)) {
+        distance += (node.textContent || node.innerText || "-").length;
+        if (distance > 800) return false;
+        node = node.previousSibling;
+      }
+      return true;
+    },
+
     // Take the token before the cursor. If it contains a character in
     // '()[]{}', search for the matching paren/brace/bracket, and
     // highlight them in green for a moment, or red if no proper match
@@ -657,8 +667,10 @@ var Editor = (function(){
         return /[\(\[\{]/.test(ch);
       }
 
+      var ch, self = this, cursor = select.selectionTopNode(this.container, true);
+      if (!cursor || !isNearParsedNode(cursor)) return;
       this.highlightAtCursor();
-      var cursor = select.selectionTopNode(this.container, true), ch, self = this;
+      cursor = select.selectionTopNode(this.container, true);
       if (!cursor || !(ch = paren(cursor))) return;
       // We only look for tokens with the same className.
       var className = cursor.className, dir = forward(ch), match = matching[ch];
