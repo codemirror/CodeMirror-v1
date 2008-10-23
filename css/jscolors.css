@@ -14,6 +14,14 @@ pre.code, .editbox {
   margin: 0;
 }
 
+span.js-punctuation {
+  color: #666666;
+}
+
+span.js-operator {
+  color: #666666;
+}
+
 span.js-keyword {
   color: #770088;
 }
