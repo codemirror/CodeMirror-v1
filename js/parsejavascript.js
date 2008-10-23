@@ -105,8 +105,8 @@ var JSParser = Editor.Parser = (function() {
         lexical.align = true;
 
       // Execute actions until one 'consumes' the token and we can
-      // return it. Marked is used to 
-      while(true){
+      // return it.
+      while(true) {
         consume = marked = false;
         // Take and execute the topmost action.
         cc.pop()(token.type, token.content);
@@ -164,8 +164,7 @@ var JSParser = Editor.Parser = (function() {
       marked = style;
     }
 
-    // Push a new scope. Will automatically link the the current
-    // scope.
+    // Push a new scope. Will automatically link the current scope.
     function pushcontext(){
       context = {prev: context, vars: {"this": true, "arguments": true}};
     }
@@ -262,7 +261,7 @@ var JSParser = Editor.Parser = (function() {
       else pass(maybeoperator, expect(";"), poplex);
     }
     // Property names need to have their style adjusted -- the
-    // tokenizer think they are variables.
+    // tokenizer thinks they are variables.
     function property(type){
       if (type == "variable") {mark("js-property"); cont();}
     }
