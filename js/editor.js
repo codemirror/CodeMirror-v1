@@ -668,7 +668,7 @@ var Editor = (function(){
       }
 
       var ch, self = this, cursor = select.selectionTopNode(this.container, true);
-      if (!cursor || !isNearParsedNode(cursor)) return;
+      if (!cursor || !this.isNearParsedNode(cursor)) return;
       this.highlightAtCursor();
       cursor = select.selectionTopNode(this.container, true);
       if (!cursor || !(ch = paren(cursor))) return;
