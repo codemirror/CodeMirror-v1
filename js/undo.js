@@ -313,7 +313,10 @@ History.prototype = {
       if (!nextNode || nextNode == end)
         break;
       else
-        next = nextNode.historyAfter;
+        next = nextNode.historyAfter || this.before(end);
+      // (The this.before(end) is a hack -- FF sometimes removes
+      // properties from BR nodes, in which case the best we can hope
+      // for is to not break.)
     }
     return shadows;
   },
