@@ -48,7 +48,7 @@ var tokenizeJavaScript = (function() {
   }();
 
   // Some helper regexp matchers.
-  var isOperatorChar = matcher(/[\+\-\*\&\%\/=<>!\?]/);
+  var isOperatorChar = matcher(/[+\-*&%\/=<>!?|]/);
   var isDigit = matcher(/[0-9]/);
   var isHexDigit = matcher(/[0-9A-Fa-f]/);
   var isWordChar = matcher(/[\w\$_]/);
