@@ -250,9 +250,9 @@ var JSParser = Editor.Parser = (function() {
     // is found.
     function maybeoperator(type){
       if (type == "operator") cont(expression);
-      else if (type == "(") cont(pushlex(")"), expression, commasep(expression), expect(")"), poplex);
+      else if (type == "(") cont(pushlex(")"), expression, commasep(expression), expect(")"), poplex, maybeoperator);
       else if (type == ".") cont(property, maybeoperator);
-      else if (type == "[") cont(pushlex("]"), expression, expect("]"), poplex);
+      else if (type == "[") cont(pushlex("]"), expression, expect("]"), poplex, maybeoperator);
     }
     // When a statement starts with a variable name, it might be a
     // label. If no colon follows, it's a regular statement.
