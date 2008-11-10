@@ -48,10 +48,18 @@
   // the resulting stream is fed to the parser.
   window.stringStream = function(source){
     source = iter(source);
-    var current = "", pos = 0;
-    var peeked = null, accum = "";
+    // String that's currently being iterated over.
+    var current = "";
+    // Position in that string.
+    var pos = 0;
+    // Holds a character if something has been peeked.
+    var peeked = null;
+    // Accumulator for strings that have been iterated over but not
+    // get()-ed yet.
+    var accum = "";
 
     return update({
+      // Return the next character in the stream.
       peek: function() {
         if (!peeked) {
           try {peeked = this.step();}
@@ -62,12 +70,17 @@
         }
         return peeked;
       },
+      // Internal function. Advance the stream by one character,
+      // return that character. Throws StopIteration when at end of
+      // stream.
       step: function() {
         if (peeked) {
           var temp = peeked;
           peeked = null;
           return temp;
         }
+        // source.next() can return empty strings, so loop until we
+        // have new characters
         while (pos == current.length) {
           accum += current;
           current = ""; // In case source.next() throws
@@ -75,8 +88,9 @@
           current = source.next();
         }
         return current.charAt(pos++);
-
       },
+      // Get the next character, throw StopIteration if at end, check
+      // for unused content.
       next: function() {
         try {return this.step();}
         catch (e) {
@@ -86,6 +100,8 @@
             throw e;
         }
       },
+      // Return the characters iterated over since the last call to
+      // .get().
       get: function() {
         var temp = accum;
         var realPos = peeked ? pos - 1 : pos;
@@ -97,12 +113,14 @@
         }
         return temp;
       },
+      // Reset to the state from the last call to .get().
       reset: function() {
         current = accum + current;
         accum = "";
         pos = 0;
         peeked = null;
       },
+      // Push a string back into the stream.
       push: function(str) {
         current = current.slice(0, pos) + str + current.slice(pos);
       }

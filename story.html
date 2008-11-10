@@ -270,13 +270,14 @@
     tokenizing this text, parsing the tokens, and finally adjusting the
     DOM nodes to reflect the structure of the code.</p>
 
-    <p>The first two, I put into a single generator. It scans the DOM tree,
-    fixing anything that is not a simple top-level <code>span</code> or <code>br</code>, and it
-    produces the text content of the nodes (or a newline in case of a
-    <code>br</code>) as its output &#x2015; each time it called, it yields a string.
-    Continuation passing style was a good way to model this process in an
-    iterator, which has to be processed one step at a time. Look at this
-    simplified version:</p>
+    <p>The first two, I put into a single generator. It scans the DOM
+    tree, fixing anything that is not a simple top-level
+    <code>span</code> or <code>br</code>, and it produces the text
+    content of the nodes (or a newline in case of a <code>br</code>)
+    as its output &#x2015; each time it is called, it yields a string.
+    Continuation passing style was a good way to model this process in
+    an iterator, which has to be processed one step at a time. Look at
+    this simplified version:</p>
 
     <pre class="code"><span class="js-keyword">function</span> <span class="js-variable">traverseDOM</span>(<span class="js-variabledef">start</span>){
   <span class="js-keyword">var</span> <span class="js-variabledef">cc</span> = <span class="js-keyword">function</span>(){<span class="js-variable">scanNode</span>(<span class="js-localvariable">start</span>, <span class="js-variable">stop</span>);};
