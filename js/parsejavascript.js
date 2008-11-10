@@ -132,7 +132,7 @@ var JSParser = Editor.Parser = (function() {
     function copy(){
       var _context = context, _lexical = lexical, _cc = cc.concat([]), _tokenState = tokens.state;
   
-      return function(input){
+      return function copyParser(input){
         context = _context;
         lexical = _lexical;
         cc = _cc.concat([]); // copies the array
@@ -210,7 +210,7 @@ var JSParser = Editor.Parser = (function() {
     // Creates an action that discards tokens until it finds one of
     // the given type.
     function expect(wanted){
-      return function(type){
+      return function expecting(type){
         if (type == wanted) cont();
         else cont(arguments.callee);
       };
@@ -276,7 +276,7 @@ var JSParser = Editor.Parser = (function() {
       function proceed(type) {
         if (type == ",") cont(what, proceed);
       };
-      return function() {
+      return function commaSeparated() {
         pass(what, proceed);
       };
     }
