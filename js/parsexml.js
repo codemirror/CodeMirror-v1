@@ -43,8 +43,9 @@ var XMLParser = Editor.Parser = (function() {
         }
         else if (source.equals("?")) {
           source.next();
+          source.nextWhile(matcher(/[\w\._\-]/));
           setState(inBlock("xml-processing", "?>"));
-          return null;
+          return "xml-processing";
         }
         else {
           if (source.equals("/")) source.next();
