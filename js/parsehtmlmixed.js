@@ -3,13 +3,6 @@ var HTMLMixedParser = Editor.Parser = (function() {
     throw new Error("CSS, JS, and XML parsers must be loaded for HTML mixed mode to work.");
   XMLParser.configure({useHTMLKludges: true});
 
-  function stringAhead(stream, string) {
-    stream.nextWhile(matcher(/[\s\u00a0]/));
-    var found = stream.matches(string, false);
-    stream.reset();
-    return found;
-  }
-
   function parseMixed(stream) {
     var htmlParser = XMLParser.make(stream), localParser = null, inTag = false;
     var iter = {next: top, copy: copy};
@@ -32,14 +25,15 @@ var HTMLMixedParser = Editor.Parser = (function() {
     function local(parser, tag) {
       localParser = parser.make(stream, htmlParser.indentation() + 2);
       return function() {
-        if (stringAhead(stream, tag)) {
+        if (stream.lookAhead(tag, false, true, true)) {
           localParser = null;
           iter.next = top;
           return top();
         }
         var token = localParser.next();
         var lt = token.value.lastIndexOf("<"), sz = Math.min(token.value.length - lt, tag.length);
-        if (lt != -1 && token.value.slice(lt, lt + sz).toLowerCase() == tag.slice(0, sz) && stringAhead(stream, tag.slice(sz))) {
+        if (lt != -1 && token.value.slice(lt, lt + sz).toLowerCase() == tag.slice(0, sz) &&
+            stream.lookAhead(tag.slice(sz), false, false, true)) {
           stream.push(token.value.slice(lt));
           token.value = token.value.slice(0, lt);
         }

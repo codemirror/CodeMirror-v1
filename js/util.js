@@ -5,13 +5,6 @@ function method(obj, name) {
   return function() {obj[name].apply(obj, arguments);};
 }
 
-// Write properties from an object into another object.
-function update(obj, from) {
-  for (var name in from)
-    obj[name] = from[name];
-  return obj;
-}
-
 // The value used to signal the end of a sequence in iterators.
 var StopIteration = {toString: function() {return "StopIteration"}};
 
@@ -23,7 +16,7 @@ function iter(seq) {
   else return {
     next: function() {
       if (i >= seq.length) throw StopIteration;
-      else return seq[++i];
+      else return seq[i++];
     }
   };
 }

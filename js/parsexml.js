@@ -25,7 +25,7 @@ var XMLParser = Editor.Parser = (function() {
         if (source.equals("!")) {
           source.next();
           if (source.equals("[")) {
-            if (source.matches("[CDATA[", true)) {
+            if (source.lookAhead("[CDATA[", true)) {
               setState(inBlock("xml-cdata", "]]>"));
               return null;
             }
@@ -33,7 +33,7 @@ var XMLParser = Editor.Parser = (function() {
               return "xml-text";
             }
           }
-          else if (source.matches("--", true)) {
+          else if (source.lookAhead("--", true)) {
             setState(inBlock("xml-comment", "-->"));
             return null;
           }
