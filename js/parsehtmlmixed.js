@@ -23,13 +23,15 @@ var HTMLMixedParser = Editor.Parser = (function() {
       return token;
     }
     function local(parser, tag) {
-      localParser = parser.make(stream, htmlParser.indentation() + 2);
+      var baseIndent = htmlParser.indentation();
+      localParser = parser.make(stream, baseIndent + 2);
       return function() {
-        if (stream.lookAhead(tag, false, true, true)) {
+        if (stream.lookAhead(tag, false, false, true)) {
           localParser = null;
           iter.next = top;
           return top();
         }
+
         var token = localParser.next();
         var lt = token.value.lastIndexOf("<"), sz = Math.min(token.value.length - lt, tag.length);
         if (lt != -1 && token.value.slice(lt, lt + sz).toLowerCase() == tag.slice(0, sz) &&
@@ -37,6 +39,17 @@ var HTMLMixedParser = Editor.Parser = (function() {
           stream.push(token.value.slice(lt));
           token.value = token.value.slice(0, lt);
         }
+
+        if (token.indentation) {
+          var oldIndent = token.indentation;
+          token.indentation = function(chars) {
+            if (chars == "</")
+              return baseIndent;
+            else
+              return oldIndent(chars);
+          }
+        }
+
         return token;
       };
     }
