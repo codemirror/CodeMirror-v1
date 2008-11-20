@@ -85,7 +85,7 @@ var CSSParser = Editor.Parser = (function() {
           var ch = source.next();
           if (ch == quote && !escaped)
             break;
-          escaped = ch == "\\";
+          escaped = !escaped && ch == "\\";
         }
         if (!escaped)
           setState(normal);

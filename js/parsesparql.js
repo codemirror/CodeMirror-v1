@@ -67,7 +67,7 @@ Editor.Parser = (function() {
             setState(normal);
             break;
           }
-          escaped = ch == "\\";
+          escaped = !escaped && ch == "\\";
         }
         return "sp-literal";
       };

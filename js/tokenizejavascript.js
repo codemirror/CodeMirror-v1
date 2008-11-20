@@ -6,11 +6,11 @@ var tokenizeJavaScript = (function() {
   function nextUntilUnescaped(source, end) {
     var escaped = false;
     var next;
-    while(!source.endOfLine()){
+    while (!source.endOfLine()) {
       var next = source.next();
       if (next == end && !escaped)
         return false;
-      escaped = next == "\\";
+      escaped = !escaped && next == "\\";
     }
     return escaped;
   }
