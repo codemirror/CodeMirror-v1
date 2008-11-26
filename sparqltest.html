@@ -11,17 +11,18 @@ highlighter.</p>
 
 <div class="border">
 <textarea id="code" cols="120" rows="30">
-PREFIX a:      &lt;http://www.w3.org/2000/10/annotation-ns#>
-PREFIX dc:     &lt;http://purl.org/dc/elements/1.1/>
-PREFIX foaf:   &lt;http://xmlns.com/foaf/0.1/>
+PREFIX a: &lt;http://www.w3.org/2000/10/annotation-ns#>
+PREFIX dc: &lt;http://purl.org/dc/elements/1.1/>
+PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/>
 
 # Comment!
 
 SELECT ?given ?family
 WHERE {
-  ?annot  a:annotates  &lt;http://www.w3.org/TR/rdf-sparql-query/> .
-  ?annot  dc:creator   ?c .
-  OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .
+  ?annot a:annotates &lt;http://www.w3.org/TR/rdf-sparql-query/> .
+  ?annot dc:creator ?c .
+  OPTIONAL {?c foaf:given ?given ;
+               foaf:family ?family } .
   FILTER isBlank(?c)
 }
 </textarea>

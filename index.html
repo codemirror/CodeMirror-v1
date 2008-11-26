@@ -28,15 +28,7 @@ taken care of for you, meaning the cursor will be placed at the right
 position when you press enter, and it is possible to re-indent blocks
 of code automatically.</p>
 
-<p>The program has, so far, been integrated in my <a
-href="http://eloquentjavascript.net">interactive book</a> on
-JavaScript, several small sites, and a <a
-href="http://code.google.com/p/rainbow4firebug/">Firebug add-on</a>.
-Though I can not guarantee that it works in all situations on all <a
-href="#supported">supported</a> browsers, it has proven itself quite
-stable and usable.</p>
-
-<p>To get a look at CodeMirror, see the testpages for the various
+<p>To get a look at CodeMirror, see the test pages for the various
 parsers...</p>
 
 <ul>
@@ -45,6 +37,16 @@ parsers...</p>
   <li><a href="csstest.html">CSS</a></li>
   <li><a href="sparqltest.html">SPARQL</a></li>
   <li><a href="mixedtest.html">HTML mixed-mode</a></li>
+</ul>
+
+<p>Or take a look at some real-world uses of the system...</p>
+
+<ul>
+  <li><a href="http://code.google.com/p/rainbow4firebug/">Rainbow for Firebug</a></li>
+  <li><a href="http://dev.freebaseapps.com/">Freebase's Acre IDE</a></li>
+  <li><a href="http://kml-samples.googlecode.com/svn/trunk/interactive/index.html">Google Earth KML sampler</a></li>
+  <li><a href="http://eloquentjavascript.net/chapter1.html">Eloquent JavaScript's console</a></li>
+  <li><a href="http://billmill.org/static/canvastutorial/index.html">A cool tutorial about the &lt;canvas> element</a></li>
 </ul>
 
 <h2>Releases</h2>
@@ -96,7 +98,7 @@ the JavaScript has been moved into the editable frame, meaning
 CodeMirror no longer pollutes your namespace, and can coexist with
 Dojo and other frameworks.</p>
 
-<h2>Supported browsers</h2>
+<h2 id="supported">Supported browsers</h2>
 
 <p>At this time, the following browsers are supported:</p>
 
@@ -129,7 +131,7 @@ the repository:</p>
 CodeMirror &#x2015; it makes it easy to record your patches and share them
 with me. To see the repository online, visit the <a
 href="http://marijn.haverbeke.nl/darcsweb.cgi?r=CodeMirror">CodeMirror
-darcsweb</a></p>
+darcsweb</a>.</p>
 
 <h2>Support</h2>
 
@@ -141,13 +143,17 @@ href="mailto:marijnh@gmail.com">Marijn Haverbeke</a>.</p>
 
 <h2>Documentation</h2>
 
-<p>Due to limitations of browsers (and my taste for weird hacks) the
-implementation of CodeMirror is rather complicated. There is a big <a
-href="story.html">document</a> that informally describes its
-internals, and a <a href="manual.html">manual</a> that explains simple
-use. For detailed information, you can try looking at the comments in
-the <a
-href="http://marijn.haverbeke.nl/darcsweb.cgi?r=CodeMirror;a=tree">code</a>.</p>
+<ul>
+  <li>The <a href="manual.html">manual</a> is all most users will need
+  to read (or skim).</li>
+  <li>If you're interested in working on the code, <a
+  href="story.html">this document</a> about CodeMirror's architecture
+  will be useful.</li>
+  <li>The <a
+  href="http://marijn.haverbeke.nl/darcsweb.cgi?r=CodeMirror;a=tree">source
+  code</a> is, for the most part, rather well commented, so if all
+  else fails, you can try reading it.</li>
+</ul>
 
   </body>
 </html>
