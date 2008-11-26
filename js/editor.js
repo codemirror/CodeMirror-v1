@@ -25,7 +25,7 @@ var Editor = (function(){
     else return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
   }
   function asEditorLines(string) {
-    return splitSpaces(string.replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
+    return splitSpaces(string.replace(/\t/g, "  ").replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
   }
 
   var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
