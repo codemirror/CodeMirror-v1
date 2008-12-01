@@ -746,20 +746,24 @@ var Editor = (function(){
     // Indent all lines whose start falls inside of the current
     // selection.
     indentRegion: function(current, end) {
-      var sel = select.markSelection(this.win), hl = this.highlight(current, 1);
-      if (!current)
+      var sel = select.markSelection(this.win);
+      if (!current) {
+        this.highlight(current, 1);
         this.indentLineAfter(current);
-      else
+      }
+      else {
         current = startOfLine(current.previousSibling);
+      }
       end = startOfLine(end);
 
       while (true) {
+        var hl = this.highlight(current, 1);
         var next = hl ? hl.node : null;
 
         while (current != next)
           current = current ? current.nextSibling : this.container.firstChild;
         if (next) {
-          hl = this.highlight(current, 1);
+          this.highlight(current, 1);
           this.indentLineAfter(next);
         }
         if (current == end)
