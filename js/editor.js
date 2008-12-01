@@ -311,7 +311,7 @@ var Editor = (function(){
     this.doc = document;
     this.container = this.doc.body;
     this.win = window;
-    this.history = new History(this.container, this.options.undoDepth, this.options.undoDelay,
+    this.history = new History(this.container, options.undoDepth, options.undoDelay,
                                this, options.onChange);
 
     if (!Editor.Parser)
@@ -746,7 +746,7 @@ var Editor = (function(){
     // Indent all lines whose start falls inside of the current
     // selection.
     indentRegion: function(current, end) {
-      var sel = select.markSelection(this.win);
+      var sel = select.markSelection(this.win), hl = this.highlight(current, 1);
       if (!current)
         this.indentLineAfter(current);
       else
@@ -754,13 +754,14 @@ var Editor = (function(){
       end = startOfLine(end);
 
       while (true) {
-        var result = this.highlight(current, 1);
-        var next = result ? result.node : null;
+        var next = hl ? hl.node : null;
 
         while (current != next)
           current = current ? current.nextSibling : this.container.firstChild;
-        if (next)
+        if (next) {
+          hl = this.highlight(current, 1);
           this.indentLineAfter(next);
+        }
         if (current == end)
           break;
       }
