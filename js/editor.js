@@ -355,9 +355,9 @@ var Editor = (function(){
       }
       catch(e) {
         var focusEvent = addEventHandler(document, "focus", function() {
-          removeEventHandler(focusEvent);
+          focusEvent();
           setEditable();
-        });
+        }, true);
       }
 
       addEventHandler(document, "keydown", method(this, "keyDown"));

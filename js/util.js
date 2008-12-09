@@ -108,20 +108,16 @@ function normalizeEvent(event) {
 }
 
 // Portably register event handlers.
-function addEventHandler(node, type, handler) {
+function addEventHandler(node, type, handler, removeFunc) {
   function wrapHandler(event) {
     handler(normalizeEvent(event || window.event));
   }
   if (typeof node.addEventListener == "function") {
     node.addEventListener(type, wrapHandler, false);
-    return function() { node.removeEventListener(type, wrapHandler, false); };
+    if (removeFunc) return function() {node.removeEventListener(type, wrapHandler, false);};
   }
   else {
     node.attachEvent("on" + type, wrapHandler);
-    return function() { node.detachEvent("on" + type, wrapHandler); };
+    if (removeFunc) return function() {node.detachEvent("on" + type, wrapHandler);};
   }
-}
-
-function removeEventHandler(handler) {
-  handler();
 }
