@@ -555,8 +555,9 @@ var Editor = (function(){
 
       // Ask the lexical context for the correct indentation, and
       // compute how much this differs from the current indentation.
-      var curIndent = whiteSpace ? whiteSpace.currentText.length : 0;
-      var newIndent = start ? start.indentation(nextChars, curIndent, direction) : 0;
+      var newIndent = 0, curIndent = whiteSpace ? whiteSpace.currentText.length : 0;
+      if (start) newIndent = start.indentation(nextChars, curIndent, direction);
+      else if (Editor.Parser.firstIndentation) newIndent = Editor.Parser.firstIndentation(nextChars, curIndent, direction);
       var indentDiff = newIndent - curIndent;
 
       // If there is too much, this is just a matter of shrinking a span.
