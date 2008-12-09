@@ -21,8 +21,8 @@ var Editor = (function(){
   }
 
   function splitSpaces(string) {
-    if (string == " ") return nbsp;
-    else return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
+    if (string.charAt(0) == " ") string = nbsp + string.slice(1);
+    return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
   }
   function asEditorLines(string) {
     return splitSpaces(string.replace(/\t/g, "  ").replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
