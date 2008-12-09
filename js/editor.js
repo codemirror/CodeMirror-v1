@@ -934,7 +934,7 @@ var Editor = (function(){
           var styles = token.style.split(" ");
           for (var i = 0; i < styles.length; i++) {
             var act = actMap[styles[i]];
-            if (act) act(part, token);
+            if (act) act(part, token, self);
           }
         }
         return part;
