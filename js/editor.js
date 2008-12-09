@@ -492,7 +492,7 @@ var Editor = (function(){
         event.stop();
       }
       else if (event.keyCode == 9) { // tab
-        this.handleTab();
+        this.handleTab(!event.ctrlKey && !event.shiftKey);
         event.stop();
       }
       else if (event.ctrlKey) {
@@ -541,7 +541,7 @@ var Editor = (function(){
     // line. If given a <br> element, this must have been highlighted
     // so that it has an indentation method. Returns the whitespace
     // element that has been modified or created (if any).
-    indentLineAfter: function(start) {
+    indentLineAfter: function(start, direction) {
       // whiteSpace is the whitespace span at the start of the line,
       // or null if there is no such node.
       var whiteSpace = start ? start.nextSibling : this.container.firstChild;
@@ -555,17 +555,18 @@ var Editor = (function(){
 
       // Ask the lexical context for the correct indentation, and
       // compute how much this differs from the current indentation.
-      var indent = start ? start.indentation(nextChars) : 0;
-      var indentDiff = indent - (whiteSpace ? whiteSpace.currentText.length : 0);
+      var curIndent = whiteSpace ? whiteSpace.currentText.length : 0;
+      var newIndent = start ? start.indentation(nextChars, curIndent, direction) : 0;
+      var indentDiff = newIndent - curIndent;
 
       // If there is too much, this is just a matter of shrinking a span.
       if (indentDiff < 0) {
-        if (indent == 0) {
+        if (newIndent == 0) {
           removeElement(whiteSpace);
           whiteSpace = null;
         }
         else {
-          whiteSpace.currentText = safeWhiteSpace(indent);
+          whiteSpace.currentText = safeWhiteSpace(newIndent);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
       }
@@ -573,14 +574,14 @@ var Editor = (function(){
       else if (indentDiff > 0) {
         // If there is whitespace, we grow it.
         if (whiteSpace) {
-          whiteSpace.currentText = safeWhiteSpace(indent);
+          whiteSpace.currentText = safeWhiteSpace(newIndent);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
         // Otherwise, we have to add a new whitespace node.
         else {
           whiteSpace = this.doc.createElement("SPAN");
           whiteSpace.className = "part whitespace";
-          whiteSpace.appendChild(this.doc.createTextNode(safeWhiteSpace(indent)));
+          whiteSpace.appendChild(this.doc.createTextNode(safeWhiteSpace(newIndent)));
           if (start)
             insertAfter(whiteSpace, start);
           else
@@ -615,7 +616,7 @@ var Editor = (function(){
     // When tab is pressed with text selected, the whole selection is
     // re-indented, when nothing is selected, the line with the cursor
     // is re-indented.
-    handleTab: function() {
+    handleTab: function(direction) {
       if (this.options.dumbTabs) {
         select.insertTabAtCursor(this.win);
       }
@@ -625,9 +626,9 @@ var Editor = (function(){
         if (start === false || end === false) return;
 
         if (start == end)
-          this.indentAtCursor();
+          this.indentAtCursor(direction);
         else
-          this.indentRegion(start, end);
+          this.indentRegion(start, end, direction);
       }
     },
 
@@ -724,7 +725,7 @@ var Editor = (function(){
 
     // Adjust the amount of whitespace at the start of the line that
     // the cursor is on so that it is indented properly.
-    indentAtCursor: function() {
+    indentAtCursor: function(direction) {
       if (!this.container.firstChild) return;
       // The line has to have up-to-date lexical information, so we
       // highlight it first.
@@ -735,7 +736,7 @@ var Editor = (function(){
       if (cursor === false)
         return;
       var lineStart = startOfLine(cursor);
-      var whiteSpace = this.indentLineAfter(lineStart);
+      var whiteSpace = this.indentLineAfter(lineStart, direction);
       if (cursor == lineStart && whiteSpace)
           cursor = whiteSpace;
       // This means the indentation has probably messed up the cursor.
@@ -745,11 +746,11 @@ var Editor = (function(){
 
     // Indent all lines whose start falls inside of the current
     // selection.
-    indentRegion: function(current, end) {
+    indentRegion: function(current, end, direction) {
       var sel = select.markSelection(this.win);
       if (!current) {
         this.highlight(current, 1);
-        this.indentLineAfter(current);
+        this.indentLineAfter(current, direction);
       }
       else {
         current = startOfLine(current.previousSibling);
@@ -764,7 +765,7 @@ var Editor = (function(){
           current = current ? current.nextSibling : this.container.firstChild;
         if (next) {
           this.highlight(current, 1);
-          this.indentLineAfter(next);
+          this.indentLineAfter(next, direction);
         }
         if (current == end)
           break;
