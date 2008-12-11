@@ -102,10 +102,6 @@ var CodeMirror = (function(){
     focus: function() {
       this.win.focus();
     },
-    jumpToChar: function(start, end) {
-      this.editor.jumpToChar(start, end);
-      this.focus();
-    },
     jumpToLine: function(line) {
       this.editor.jumpToLine(line);
       this.focus();
