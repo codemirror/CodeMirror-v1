@@ -28,7 +28,6 @@ var select = {};
   }
 
   // Used to prevent restoring a selection when we do not need to.
-  var documentChanged = false;
   var currentSelection = null;
 
   var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
@@ -46,26 +45,28 @@ var select = {};
       start.collapse(true);
       end.collapse(false);
 
-      documentChanged = false;
       var body = win.document.body;
       // And we better hope no fool gave this window a padding or a
       // margin, or all these computations will be in vain.
-      return {start: {x: start.boundingLeft + body.scrollLeft - 1,
-                      y: start.boundingTop + body.scrollTop},
-              end: {x: end.boundingLeft + body.scrollLeft - 1,
-                    y: end.boundingTop + body.scrollTop},
-              window: win,
-              bookmark: bookmark};
+      currentSelection = {
+        start: {x: start.boundingLeft + body.scrollLeft - 1,
+                y: start.boundingTop + body.scrollTop},
+        end: {x: end.boundingLeft + body.scrollLeft - 1,
+              y: end.boundingTop + body.scrollTop},
+        window: win,
+        bookmark: bookmark,
+        changed: false
+      };
     };
 
     // Restore a stored selection.
-    select.selectMarked = function(sel) {
-      if (!sel || !documentChanged)
-        return;
+    select.selectMarked = function() {
+      var sel = currentSelection;
+      if (!sel || !sel.changed) return;
 
-      documentChanged = false;
-      var range1 = sel.window.document.body.createTextRange(), range2 = range1.duplicate();
-      var done = false;
+      var range1 = sel.window.document.body.createTextRange(),
+          range2 = range1.duplicate(),
+          done = false;
       if (sel.start.y >= 0 && sel.end.y < sel.window.document.body.clientHeight) {
         // This can fail for various hard-to-handle reasons, so we
         // fall back to moveToBookmark when it throws.
@@ -83,7 +84,7 @@ var select = {};
     // See W3C model for the actual role of this function. Here it
     // just sets a flag indicating the selection should be restored.
     select.moveSelection = function(){
-      documentChanged = true;
+      if (currentSelection) currentSelection.changed = true;
     };
 
     // Get the top-level node that one end of the cursor is inside or
@@ -206,7 +207,7 @@ var select = {};
   else {
     // This is used to fix an issue with getting the scroll position
     // in Opera.
-    var opera_scroll = !window.scrollX && !window.scrollY;
+    var opera_scroll = window.scrollX == null;
 
     // Store start and end nodes, and offsets within these, and refer
     // back to the selection object from those nodes, so that this
@@ -268,8 +269,8 @@ var select = {};
 
       // Have to restore the scroll position of the frame in Opera.
       if (opera_scroll) {
-        win.document.body.scrollLeft = sel.scrollX;
-        win.document.body.scrollTop = sel.scrollY;
+        win.document.body.scrollLeft = currentSelection.scrollX;
+        win.document.body.scrollTop = currentSelection.scrollY;
       }
       setPoint(currentSelection.end, "End");
       setPoint(currentSelection.start, "Start");
