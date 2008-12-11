@@ -29,6 +29,7 @@ var select = {};
 
   // Used to prevent restoring a selection when we do not need to.
   var documentChanged = false;
+  var currentSelection = null;
 
   var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
 
@@ -212,17 +213,19 @@ var select = {};
     // object can be updated when the nodes are replaced before the
     // selection is restored.
     select.markSelection = function (win) {
-      documentChanged = false;
       var selection = win.getSelection();
       if (!selection || selection.rangeCount == 0)
-        return null;
+        return (currentSelection = null);
       var range = selection.getRangeAt(0);
 
-      var result = {start: {node: range.startContainer, offset: range.startOffset},
-                    end: {node: range.endContainer, offset: range.endOffset},
-                    window: win,
-                    scrollX: opera_scroll && win.document.body.scrollLeft,
-                    scrollY: opera_scroll && win.document.body.scrollTop};
+      currentSelection = {
+        start: {node: range.startContainer, offset: range.startOffset},
+        end: {node: range.endContainer, offset: range.endOffset},
+        window: win,
+        scrollX: opera_scroll && win.document.body.scrollLeft,
+        scrollY: opera_scroll && win.document.body.scrollTop,
+        changed: false
+      };
 
       // We want the nodes right at the cursor, not one of their
       // ancestors with a suitable offset. This goes down the DOM tree
@@ -241,28 +244,16 @@ var select = {};
         }
       }
 
-      normalize(result.start);
-      normalize(result.end);
-      // Make the links back to the selection object (see
-      // moveSelection).
-      if (result.start.node)
-        result.start.node.selectStart = result.start;
-      if (result.end.node)
-        result.end.node.selectEnd = result.end;
-
-      return result;
+      normalize(currentSelection.start);
+      normalize(currentSelection.end);
     };
 
-    select.selectMarked = function (sel) {
-      if (!sel || !documentChanged)
-        return;
-      var win = sel.window;
-      var range = win.document.createRange();
+    select.selectMarked = function () {
+      if (!currentSelection || !currentSelection.changed) return;
+      var win = currentSelection.window, range = win.document.createRange();
 
       function setPoint(point, which) {
         if (point.node) {
-          // Remove the link back to the selection.
-          delete point.node["select" + which];
           // Some magic to generalize the setting of the start and end
           // of a range.
           if (point.offset == 0)
@@ -276,12 +267,12 @@ var select = {};
       }
 
       // Have to restore the scroll position of the frame in Opera.
-      if (opera_scroll){
-        sel.window.document.body.scrollLeft = sel.scrollX;
-        sel.window.document.body.scrollTop = sel.scrollY;
+      if (opera_scroll) {
+        win.document.body.scrollLeft = sel.scrollX;
+        win.document.body.scrollTop = sel.scrollY;
       }
-      setPoint(sel.end, "End");
-      setPoint(sel.start, "Start");
+      setPoint(currentSelection.end, "End");
+      setPoint(currentSelection.start, "Start");
       selectRange(range, win);
     };
 
@@ -297,25 +288,22 @@ var select = {};
     // the new node (part of it might have been used to replace
     // another node).
     select.moveSelection = function(oldNode, newNode, length, offset) {
-      documentChanged = true;
+      currentSelection.changed = true;
       if (oldNode == undefined) return;
 
-      function replace(which) {
-        var selObj = oldNode["select" + which];
-        if (selObj) {
-          if (selObj.offset > length) {
-            selObj.offset -= length;
+      function replace(point) {
+        if (oldNode == point.node) {
+          if (length && point.offset > length) {
+            point.offset -= length;
           }
           else {
-            newNode["select" + which] = selObj;
-            delete oldNode["select" + which];
-            selObj.node = newNode;
-            selObj.offset += (offset || 0);
+            point.node = newNode;
+            point.offset += (offset || 0);
           }
         }
       }
-      replace("Start");
-      replace("End");
+      replace(currentSelection.start);
+      replace(currentSelection.end);
     };
 
     // Helper for selecting a range object.

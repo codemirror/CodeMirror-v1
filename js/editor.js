@@ -389,9 +389,10 @@ var Editor = (function(){
       if (!this.container.firstChild)
         return "";
 
-      var accum = [], sel = select.markSelection(this.win);
+      var accum = [];
+      select.markSelection(this.win);
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
-      select.selectMarked(sel);
+      select.selectMarked();
       return cleanText(accum.join(""));
     },
 
@@ -602,7 +603,7 @@ var Editor = (function(){
       // *inside* a highlighted line.
       if (to.nextSibling) to = to.nextSibling;
 
-      var sel = select.markSelection(this.win);
+      select.markSelection(this.win);
       var toIsText = to.nodeType == 3;
       if (!toIsText) to.dirty = true;
 
@@ -612,7 +613,7 @@ var Editor = (function(){
         if (result) pos = result.node;
         if (!result || result.left) break;
       }
-      select.selectMarked(sel);
+      select.selectMarked();
     },
 
     // When tab is pressed with text selected, the whole selection is
@@ -749,7 +750,7 @@ var Editor = (function(){
     // Indent all lines whose start falls inside of the current
     // selection.
     indentRegion: function(current, end, direction) {
-      var sel = select.markSelection(this.win);
+      select.markSelection(this.win);
       if (!current) {
         this.highlight(current, 1);
         this.indentLineAfter(current, direction);
@@ -772,7 +773,7 @@ var Editor = (function(){
         if (current == end)
           break;
       }
-      select.selectMarked(sel);
+      select.selectMarked();
     },
 
     // Find the node that the cursor is in, mark it as dirty, and make
@@ -844,7 +845,7 @@ var Editor = (function(){
     // its lines, it shedules another highlight to finish the job.
     highlightDirty: function(force) {
       var lines = force ? Infinity : this.options.linesPerPass;
-      var sel = this.options.readOnly ? null : select.markSelection(this.win);
+      if (!this.options.readOnly) select.markSelection(this.win);
       var start;
       while (lines > 0 && (start = this.getDirtyNode())){
         var result = this.highlight(start, lines);
@@ -854,7 +855,7 @@ var Editor = (function(){
             this.addDirtyNode(result.node);
         }
       }
-      if (!this.options.readOnly) select.selectMarked(sel);
+      if (!this.options.readOnly) select.selectMarked();
       if (start)
         this.scheduleHighlight();
       return this.dirty.length == 0;
@@ -869,9 +870,9 @@ var Editor = (function(){
         // well, we start over.
         if (pos && pos.parentNode != self.container)
           pos = null;
-        var sel = select.markSelection(self.win);
+        select.markSelection(self.win);
         var result = self.highlight(pos, linesPer, true);
-        select.selectMarked(sel);
+        select.selectMarked();
         var newPos = result ? (result.node && result.node.nextSibling) : null;
         pos = (pos == newPos) ? null : newPos;
         self.delayScanning();
