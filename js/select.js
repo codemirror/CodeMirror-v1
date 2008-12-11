@@ -32,59 +32,130 @@ var select = {};
 
   var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
 
+  // This is called by the code in editor.js whenever it is replacing
+  // a text node. The function sees whether the given oldNode is part
+  // of the current selection, and updates this selection if it is.
+  // Because nodes are often only partially replaced, the length of
+  // the part that gets replaced has to be taken into account -- the
+  // selection might stay in the oldNode if the newNode is smaller
+  // than the selection's offset. The offset argument is needed in
+  // case the selection does move to the new object, and the given
+  // length is not the whole length of the new node (part of it might
+  // have been used to replace another node).
+  select.moveSelection = function(oldNode, newNode, length, offset) {
+    if (!currentSelection) return;
+    currentSelection.changed = true;
+    if (!oldNode) return;
+
+    function replace(point) {
+      if (oldNode == point.node) {
+        if (length && point.offset > length) {
+          point.offset -= length;
+        }
+        else {
+          point.node = newNode;
+          point.offset += (offset || 0);
+        }
+      }
+    }
+    replace(currentSelection.start);
+    replace(currentSelection.end);
+  };
+
   // Most functions are defined in two ways, one for the IE selection
   // model, one for the W3C one.
   if (ie_selection) {
-    // Store the current selection in such a way that it can be
-    // restored after we manipulated the DOM tree. For IE, we store
-    // pixel coordinates.
-    select.markSelection = function (win) {
-      var selection = win.document.selection;
-      var start = selection.createRange(), end = start.duplicate();
-      var bookmark = start.getBookmark();
-      start.collapse(true);
-      end.collapse(false);
+    function selectionNode(win, start) {
+      var range = win.document.selection.createRange();
+      range.collapse(start);
 
-      var body = win.document.body;
-      // And we better hope no fool gave this window a padding or a
-      // margin, or all these computations will be in vain.
-      currentSelection = {
-        start: {x: start.boundingLeft + body.scrollLeft - 1,
-                y: start.boundingTop + body.scrollTop},
-        end: {x: end.boundingLeft + body.scrollLeft - 1,
-              y: end.boundingTop + body.scrollTop},
-        window: win,
-        bookmark: bookmark,
-        changed: false
-      };
-    };
-
-    // Restore a stored selection.
-    select.selectMarked = function() {
-      var sel = currentSelection;
-      if (!sel || !sel.changed) return;
-
-      var range1 = sel.window.document.body.createTextRange(),
-          range2 = range1.duplicate(),
-          done = false;
-      if (sel.start.y >= 0 && sel.end.y < sel.window.document.body.clientHeight) {
-        // This can fail for various hard-to-handle reasons, so we
-        // fall back to moveToBookmark when it throws.
-        try {
-          range1.moveToPoint(sel.start.x, sel.start.y);
-          range2.moveToPoint(sel.end.x, sel.end.y);
-          range1.setEndPoint("EndToStart", range2);
-          done = true;
-        } catch(e) {}
+      function text(node) {
+        if (node.nodeType == 3) return node.nodeValue;
+        else if (node.nodeName == "BR") return "\r\n";
+        else return node.innerText || "";
       }
-      if (!done) done = range1.moveToBookmark(sel.bookmark);
-      if (done) range1.select();
+
+      function nodeAfter(node) {
+        var found = null;
+        while (!found && node) {
+          found = node.nextSibling;
+          node = node.parentNode;
+        }
+        return nodeAtStartOf(found);
+      }
+
+      function nodeAtStartOf(node) {
+        while (node && node.firstChild) node = node.firstChild;
+        return {node: node, offset: 0};
+      }
+
+      var containing = range.parentElement();
+      var range2 = range.duplicate();
+
+      function skipToSelected(node) {
+        while (node) {
+          if (node.nodeType == 3) return {node: node, offset: 0};
+          range2.moveToElementText(node);
+          if (range.compareEndPoints("StartToStart", range2) < 1)
+            return nodeAtStartOf(node);
+          node = node.nextSibling;
+        }
+        return nodeAfter(containing);
+      }
+
+      range2.moveToElementText(containing);
+      range2.setEndPoint("EndToEnd", range);
+      var offset = range2.text.length, children = containing.childNodes;
+      if (offset == 0) return skipToSelected(containing.firstChild);
+
+      for (var i = 0; i < children.length; i++) {
+        var ch = children[i], size = text(ch).length;
+        if (size > offset) return {node: ch, offset: offset};
+        else offset -= size;
+
+        if (offset == 0) {
+          if (i == children.length - 1) return nodeAfter(containing);
+          else return skipToSelected(children[i + 1]);
+        }
+      }
+      throw "This should definitely never happen.";
+    }
+
+    select.markSelection = function(win) {
+      var start = selectionNode(win, true), end = selectionNode(win, false);
+      if (!start || !end) return null;
+      currentSelection = {start: start, end: end, window: win, changed: false};
     };
 
-    // See W3C model for the actual role of this function. Here it
-    // just sets a flag indicating the selection should be restored.
-    select.moveSelection = function(){
-      if (currentSelection) currentSelection.changed = true;
+    select.selectMarked = function() {
+      if (!currentSelection || !currentSelection.changed) return;
+
+      function makeRange(point) {
+        var range = currentSelection.window.document.body.createTextRange();
+        var node = point.node;
+        if (!node) {
+          range.moveToElementText(win.document.body);
+          range.collapse(false);
+        }
+        else if (node.nodeType == 3) {
+          range.moveToElementText(node.parentNode);
+          var offset = point.offset;
+          while (node.previousSibling) {
+            node = node.previousSibling;
+            offset += node.innerText.length;
+          }
+          range.move("character", offset);
+        }
+        else {
+          range.moveToElementText(node);
+          range.collapse(true);
+        }
+        return range;
+      }
+
+      var start = makeRange(currentSelection.start), end = makeRange(currentSelection.end);
+      start.setEndPoint("StartToEnd", end);
+      start.select();
     };
 
     // Get the top-level node that one end of the cursor is inside or
@@ -275,36 +346,6 @@ var select = {};
       setPoint(currentSelection.end, "End");
       setPoint(currentSelection.start, "Start");
       selectRange(range, win);
-    };
-
-    // This is called by the code in codemirror.js whenever it is
-    // replacing a part of the DOM tree. The function sees whether the
-    // given oldNode is part of the current selection, and updates
-    // this selection if it is. Because nodes are often only partially
-    // replaced, the length of the part that gets replaced has to be
-    // taken into account -- the selection might stay in the oldNode
-    // if the newNode is smaller than the selection's offset. The
-    // offset argument is needed in case the selection does move to
-    // the new object, and the given length is not the whole length of
-    // the new node (part of it might have been used to replace
-    // another node).
-    select.moveSelection = function(oldNode, newNode, length, offset) {
-      currentSelection.changed = true;
-      if (oldNode == undefined) return;
-
-      function replace(point) {
-        if (oldNode == point.node) {
-          if (length && point.offset > length) {
-            point.offset -= length;
-          }
-          else {
-            point.node = newNode;
-            point.offset += (offset || 0);
-          }
-        }
-      }
-      replace(currentSelection.start);
-      replace(currentSelection.end);
     };
 
     // Helper for selecting a range object.
