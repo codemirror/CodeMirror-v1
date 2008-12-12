@@ -123,11 +123,12 @@ var select = {};
     }
 
     select.markSelection = function(win) {
+      currentSelection = null;
       var sel = win.document.selection;
-      if (!sel) return null;
+      if (!sel) return;
       var start = selectionNode(win, true),
           end = sel.createRange().text == "" ? start : selectionNode(win, false);
-      if (!start || !end) return null;
+      if (!start || !end) return;
       currentSelection = {start: start, end: end, window: win, changed: false};
     };
 
