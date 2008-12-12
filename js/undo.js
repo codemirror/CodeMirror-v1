@@ -358,8 +358,9 @@ History.prototype = {
       if (i > 0)
         insert(line.from);
       // Add the text.
-      var textNode = this.container.ownerDocument.createTextNode(line.text);
-      insert(textNode);
+      var node = this.container.ownerDocument.createElement("SPAN");
+      node.appendChild(this.container.ownerDocument.createTextNode(line.text));
+      insert(node);
       // See if the cursor was on this line. Put it back, adjusting
       // for changed line length, if it was.
       if (cursor && cursor.node == line.from) {
