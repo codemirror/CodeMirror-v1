@@ -314,6 +314,7 @@ var Editor = (function(){
     this.win = window;
     this.history = new History(this.container, options.undoDepth, options.undoDelay,
                                this, options.onChange);
+    var self = this;
 
     if (!Editor.Parser)
       throw "No parser loaded.";
@@ -364,9 +365,10 @@ var Editor = (function(){
       addEventHandler(document, "keydown", method(this, "keyDown"));
       addEventHandler(document, "keypress", method(this, "keyPress"));
       addEventHandler(document, "keyup", method(this, "keyUp"));
-      addEventHandler(document.body, "paste", method(this, "markCursorDirty"));
-      addEventHandler(document.body, "cut", method(this, "markCursorDirty"));
-      addEventHandler(document.body, "mouseup", method(this, "markCursorDirty"));
+      function cursorActivity() {self.cursorActivity(false);}
+      addEventHandler(document.body, "paste", cursorActivity);
+      addEventHandler(document.body, "cut", cursorActivity);
+      addEventHandler(document.body, "mouseup", cursorActivity);
       if (this.options.autoMatchParens)
         addEventHandler(document.body, "click", method(this, "scheduleParenBlink"));
     }
@@ -532,11 +534,7 @@ var Editor = (function(){
     // Mark the node at the cursor dirty when a non-safe key is
     // released.
     keyUp: function(event) {
-      if (internetExplorer)
-        this.container.createTextRange().execCommand("unlink");
-
-      if (!isSafeKey(event.keyCode))
-        this.markCursorDirty();
+      this.cursorActivity(isSafeKey(event.keyCode));
     },
 
     // Indent the line following a given <br>, or null for the first
@@ -778,11 +776,20 @@ var Editor = (function(){
 
     // Find the node that the cursor is in, mark it as dirty, and make
     // sure a highlight pass is scheduled.
-    markCursorDirty: function() {
-      var cursor = select.selectionTopNode(this.container, false);
-      if (cursor !== false && this.container.firstChild) {
-        this.scheduleHighlight();
-        this.addDirtyNode(cursor || this.container.firstChild);
+    cursorActivity: function(safe) {
+      if (internetExplorer)
+        this.container.createTextRange().execCommand("unlink");
+
+      var activity = Editor.Parser.cursorActivity;
+      if (!safe || activity) {
+        var cursor = select.selectionTopNode(this.container, false);
+        if (cursor === false || !this.container.firstChild) return;
+        cursor = cursor || this.container.firstChild;
+        if (activity) activity(cursor);
+        if (!safe) {
+          this.scheduleHighlight();
+          this.addDirtyNode(cursor);
+        }
       }
     },
 
