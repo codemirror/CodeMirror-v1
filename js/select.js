@@ -147,7 +147,7 @@ var select = {};
           var offset = point.offset;
           while (node.previousSibling) {
             node = node.previousSibling;
-            offset += node.innerText.length;
+            offset += (node.innerText || "").length;
           }
           range.move("character", offset);
         }
