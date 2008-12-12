@@ -90,6 +90,7 @@ var select = {};
       }
 
       var containing = range.parentElement();
+      if (!isAncestor(win.document.body, containing)) return null;
       var range2 = range.duplicate();
 
       function skipToSelected(node) {
