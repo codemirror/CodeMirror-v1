@@ -122,7 +122,10 @@ var select = {};
     }
 
     select.markSelection = function(win) {
-      var start = selectionNode(win, true), end = selectionNode(win, false);
+      var sel = win.document.selection;
+      if (!sel) return null;
+      var start = selectionNode(win, true),
+          end = sel.createRange().text == "" ? start : selectionNode(win, false);
       if (!start || !end) return null;
       currentSelection = {start: start, end: end, window: win, changed: false};
     };
@@ -530,4 +533,4 @@ var select = {};
         win.scrollTo(0, y);
     };
   }
-}());
+})();
