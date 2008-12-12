@@ -101,6 +101,8 @@ var CodeMirror = (function(){
     },
     focus: function() {
       this.win.focus();
+      if (this.editor.selectionSnapshot) // IE hack
+        this.win.select.selectCoords(this.win, this.editor.selectionSnapshot);
     },
     jumpToLine: function(line) {
       this.editor.jumpToLine(line);
@@ -115,10 +117,9 @@ var CodeMirror = (function(){
     reindent: function() {
       this.editor.reindent();
     },
-    replaceSelection: function(text, focus) {
-      var result = this.editor.replaceSelection(text);
-      if (focus) this.focus();
-      return result;
+    replaceSelection: function(text) {
+      this.focus();
+      this.editor.replaceSelection(text);
     },
     replaceChars: function(text, start, end) {
       this.editor.replaceChars(text, start, end);

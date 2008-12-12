@@ -278,6 +278,35 @@ var select = {};
       if (!selection) return null;
       selection.createRange().scrollIntoView();
     };
+
+    // Some hacks for storing and re-storing the selection when the editor loses and regains focus.
+    select.selectionCoords = function (win) {
+      var selection = win.document.selection;
+      if (!selection) return null;
+      var start = selection.createRange(), end = start.duplicate();
+      start.collapse(true);
+      end.collapse(false);
+
+      var body = win.document.body;
+      return {start: {x: start.boundingLeft + body.scrollLeft - 1,
+                      y: start.boundingTop + body.scrollTop},
+              end: {x: end.boundingLeft + body.scrollLeft - 1,
+                    y: end.boundingTop + body.scrollTop}};
+    };
+
+    // Restore a stored selection.
+    select.selectCoords = function(win, coords) {
+      if (!coords) return;
+
+      var range1 = win.document.body.createTextRange(), range2 = range1.duplicate();
+      // This can fail for various hard-to-handle reasons.
+      try {
+        range1.moveToPoint(coords.start.x, coords.start.y);
+        range2.moveToPoint(coords.end.x, coords.end.y);
+        range1.setEndPoint("EndToStart", range2);
+        range1.select();
+      } catch(e) {alert(e.message);}
+    };
   }
   // W3C model
   else {

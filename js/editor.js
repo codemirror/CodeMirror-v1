@@ -365,10 +365,12 @@ var Editor = (function(){
       addEventHandler(document, "keydown", method(this, "keyDown"));
       addEventHandler(document, "keypress", method(this, "keyPress"));
       addEventHandler(document, "keyup", method(this, "keyUp"));
+
       function cursorActivity() {self.cursorActivity(false);}
       addEventHandler(document.body, "paste", cursorActivity);
       addEventHandler(document.body, "cut", cursorActivity);
       addEventHandler(document.body, "mouseup", cursorActivity);
+
       if (this.options.autoMatchParens)
         addEventHandler(document.body, "click", method(this, "scheduleParenBlink"));
     }
@@ -448,11 +450,10 @@ var Editor = (function(){
       this.history.commit();
       var start = select.cursorPos(this.container, true),
           end = select.cursorPos(this.container, false);
-      if (!start || !end) return false;
+      if (!start || !end) return;
 
       end = this.replaceRange(start, end, text);
       select.setCursorPos(this.container, start, end);
-      return true;
     },
 
     replaceRange: function(from, to, text) {
@@ -777,8 +778,10 @@ var Editor = (function(){
     // Find the node that the cursor is in, mark it as dirty, and make
     // sure a highlight pass is scheduled.
     cursorActivity: function(safe) {
-      if (internetExplorer)
+      if (internetExplorer) {
         this.container.createTextRange().execCommand("unlink");
+        this.selectionSnapshot = select.selectionCoords(this.win);
+      }
 
       var activity = Editor.Parser.cursorActivity;
       if (!safe || activity) {
