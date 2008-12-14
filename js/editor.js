@@ -9,21 +9,6 @@ var Editor = (function(){
   // when converting them to flat text.
   var newlineElements = {"P": true, "DIV": true, "LI": true};
 
-  // Create a set of white-space characters that will not be collapsed
-  // by the browser, but will not break text-wrapping either.
-  function safeWhiteSpace(n) {
-    var buffer = [], nb = true;
-    for (; n > 0; n--) {
-      buffer.push((nb || n == 1) ? nbsp : " ");
-      nb = !nb;
-    }
-    return buffer.join("");
-  }
-
-  function splitSpaces(string) {
-    if (string.charAt(0) == " ") string = nbsp + string.slice(1);
-    return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
-  }
   function asEditorLines(string) {
     return splitSpaces(string.replace(/\t/g, "  ").replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
   }
