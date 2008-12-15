@@ -120,6 +120,7 @@ var CodeMirror = (function(){
     replaceSelection: function(text) {
       this.focus();
       this.editor.replaceSelection(text);
+      return true;
     },
     replaceChars: function(text, start, end) {
       this.editor.replaceChars(text, start, end);
