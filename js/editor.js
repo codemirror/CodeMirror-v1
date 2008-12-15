@@ -122,7 +122,8 @@ var Editor = (function(){
 
     // Check whether a node is a normalized <span> element.
     function partNode(node){
-      if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3){
+      if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3 &&
+          /\bpart\b/.test(node.className)) {
         node.currentText = node.firstChild.nodeValue;
         return true;
       }
