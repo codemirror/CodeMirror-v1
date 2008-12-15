@@ -69,12 +69,6 @@ var select = {};
       var range = win.document.selection.createRange();
       range.collapse(start);
 
-      function text(node) {
-        if (node.nodeType == 3) return node.nodeValue;
-        else if (node.nodeName == "BR") return "\r\n";
-        else return node.innerText || "";
-      }
-
       function nodeAfter(node) {
         var found = null;
         while (!found && node) {
@@ -91,35 +85,30 @@ var select = {};
 
       var containing = range.parentElement();
       if (!isAncestor(win.document.body, containing)) return null;
-      var range2 = range.duplicate();
+      if (!containing.firstChild) return nodeAtStartOf(containing);
 
-      function skipToSelected(node) {
-        while (node) {
-          if (node.nodeType == 3) return {node: node, offset: 0};
-          range2.moveToElementText(node);
-          if (range.compareEndPoints("StartToStart", range2) < 1)
-            return nodeAtStartOf(node);
-          node = node.nextSibling;
+      var working = range.duplicate();
+      working.moveToElementText(containing);
+      working.collapse(true);
+      for (var cur = containing.firstChild; cur; cur = cur.nextSibling) {
+        if (cur.nodeType == 3) {
+          var size = cur.nodeValue.length;
+          working.move("character", size);
         }
-        return nodeAfter(containing);
-      }
-
-      range2.moveToElementText(containing);
-      range2.setEndPoint("EndToEnd", range);
-      var offset = range2.text.length, children = containing.childNodes;
-      if (offset == 0) return skipToSelected(containing.firstChild);
-
-      for (var i = 0; i < children.length; i++) {
-        var ch = children[i], size = text(ch).length;
-        if (size > offset) return {node: ch, offset: offset};
-        else offset -= size;
-
-        if (offset == 0) {
-          if (i == children.length - 1) return nodeAfter(containing);
-          else return skipToSelected(children[i + 1]);
+        else {
+          working.moveToElementText(cur);
+          working.collapse(false);
         }
+
+        var dir = range.compareEndPoints("StartToStart", working);
+        if (dir == 0) return nodeAfter(cur);
+        if (dir == 1) continue;
+        if (cur.nodeType != 3) return nodeAtStartOf(cur);
+
+        working.setEndPoint("StartToEnd", range);
+        return {node: cur, offset: size - working.text.length};
       }
-      throw "This should definitely never happen.";
+      return nodeAfter(containing);
     }
 
     select.markSelection = function(win) {
