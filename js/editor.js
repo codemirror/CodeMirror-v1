@@ -485,7 +485,7 @@ var Editor = (function(){
         this.handleTab(!event.ctrlKey && !event.shiftKey);
         event.stop();
       }
-      else if (event.ctrlKey) {
+      else if (event.ctrlKey || event.metaKey) {
         if (event.keyCode == 90 || event.keyCode == 8) { // Z, backspace
           this.history.undo();
           event.stop();
