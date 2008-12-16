@@ -42,6 +42,9 @@ var select = {};
   // case the selection does move to the new object, and the given
   // length is not the whole length of the new node (part of it might
   // have been used to replace another node).
+  // When oldNode is null, this function just marks the selection as
+  // changed (meaning the DOM tree changed). When length is null, the
+  // function moves the selection to the start of newNode.
   select.moveSelection = function(oldNode, newNode, length, offset) {
     if (!currentSelection) return;
     currentSelection.changed = true;
@@ -49,7 +52,11 @@ var select = {};
 
     function replace(point) {
       if (oldNode == point.node) {
-        if (length && point.offset > length) {
+        if (length == null) {
+          point.node = newNode;
+          point.offset = 0;
+        }
+        else if (length && point.offset > length) {
           point.offset -= length;
         }
         else {

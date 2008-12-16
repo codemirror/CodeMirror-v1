@@ -548,6 +548,8 @@ var Editor = (function(){
 
       // If there is too much, this is just a matter of shrinking a span.
       if (indentDiff < 0) {
+        if (firstText)
+          select.moveSelection(whiteSpace.firstChild, firstText);
         if (newIndent == 0) {
           removeElement(whiteSpace);
           whiteSpace = null;
