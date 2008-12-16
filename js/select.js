@@ -32,6 +32,10 @@ var select = {};
 
   var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
 
+  select.snapshotChanged = function() {
+    if (currentSelection) currentSelection.changed = true;
+  };
+
   // This is called by the code in editor.js whenever it is replacing
   // a text node. The function sees whether the given oldNode is part
   // of the current selection, and updates this selection if it is.
@@ -42,31 +46,38 @@ var select = {};
   // case the selection does move to the new object, and the given
   // length is not the whole length of the new node (part of it might
   // have been used to replace another node).
-  // When oldNode is null, this function just marks the selection as
-  // changed (meaning the DOM tree changed). When length is null, the
-  // function moves the selection to the start of newNode.
-  select.moveSelection = function(oldNode, newNode, length, offset) {
+  select.snapshotReplaceNode = function(from, to, length, offset) {
     if (!currentSelection) return;
     currentSelection.changed = true;
-    if (!oldNode) return;
 
     function replace(point) {
-      if (oldNode == point.node) {
-        if (length == null) {
-          point.node = newNode;
-          point.offset = 0;
-        }
-        else if (length && point.offset > length) {
+      if (from == point.node) {
+        if (length && point.offset > length) {
           point.offset -= length;
         }
         else {
-          point.node = newNode;
+          point.node = to;
           point.offset += (offset || 0);
         }
       }
     }
     replace(currentSelection.start);
     replace(currentSelection.end);
+  };
+
+  select.snapshotMove = function(from, to, distance, relative, ifAtStart) {
+    if (!currentSelection) return;
+    currentSelection.changed = true;
+
+    function move(point) {
+      if (from == point.node && (!ifAtStart || point.offset == 0)) {
+        point.node = to;
+        if (relative) point.offset = Math.max(0, point.offset + distance);
+        else point.offset = distance;
+      }
+    }
+    move(currentSelection.start);
+    move(currentSelection.end);
   };
 
   // Most functions are defined in two ways, one for the IE selection
@@ -197,6 +208,11 @@ var select = {};
       range.moveToElementText(node || container);
       range.collapse(!node);
       range.select();
+    };
+
+    select.somethingSelected = function(win) {
+      var sel = win.document.selection;
+      return sel && (sel.createRange().text != "");
     };
 
     function insertAtCursor(window, html) {
@@ -457,7 +473,12 @@ var select = {};
       selectRange(range, win);
     };
 
-    insertNodeAtCursor = function(window, node) {
+    select.somethingSelected = function(win) {
+      var range = selectionRange(win);
+      return range && !range.collapsed;
+    };
+
+    function insertNodeAtCursor(window, node) {
       var range = selectionRange(window);
       if (!range) return;
 

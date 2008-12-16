@@ -80,7 +80,7 @@ var Editor = (function(){
     function insertPart(part){
       var text = "\n";
       if (part.nodeType == 3) {
-        select.moveSelection();
+        select.snapshotChanged();
         text = part.nodeValue;
         var span = owner.createElement("SPAN");
         span.className = "part";
@@ -548,13 +548,13 @@ var Editor = (function(){
 
       // If there is too much, this is just a matter of shrinking a span.
       if (indentDiff < 0) {
-        if (firstText)
-          select.moveSelection(whiteSpace.firstChild, firstText);
         if (newIndent == 0) {
+          if (firstText) select.snapshotMove(whiteSpace.firstChild, firstText.firstChild, 0);
           removeElement(whiteSpace);
           whiteSpace = null;
         }
         else {
+          select.snapshotMove(whiteSpace.firstChild, whiteSpace.firstChild, indentDiff, true);
           whiteSpace.currentText = safeWhiteSpace(newIndent);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
@@ -576,6 +576,7 @@ var Editor = (function(){
           else
             this.container.insertBefore(whiteSpace, this.container.firstChild);
         }
+        if (firstText) select.snapshotMove(firstText.firstChild, whiteSpace.firstChild, 0, false, true);
       }
       return whiteSpace;
     },
@@ -609,15 +610,14 @@ var Editor = (function(){
       if (this.options.dumbTabs) {
         select.insertTabAtCursor(this.win);
       }
+      else if (!select.somethingSelected(this.win)) {
+        this.indentAtCursor(direction);
+      }
       else {
         var start = select.selectionTopNode(this.container, true),
             end = select.selectionTopNode(this.container, false);
         if (start === false || end === false) return;
-
-        if (start == end)
-          this.indentAtCursor(direction);
-        else
-          this.indentRegion(start, end, direction);
+        this.indentRegion(start, end, direction);
       }
     },
 
@@ -980,7 +980,7 @@ var Editor = (function(){
             this.remove();
             part = this.get();
             // Adjust selection information, if any. See select.js for details.
-            select.moveSelection(old.firstChild, part.firstChild || part, 0, 0);
+            select.snapshotMove(old.firstChild, part.firstChild || part, 0);
           }
           return part;
         }
@@ -1045,7 +1045,7 @@ var Editor = (function(){
             while (tokensize > 0) {
               part = parts.get();
               var partsize = part.currentText.length;
-              select.moveSelection(part.firstChild, newPart.firstChild, tokensize, offset);
+              select.snapshotReplaceNode(part.firstChild, newPart.firstChild, tokensize, offset);
               if (partsize > tokensize){
                 shortenPart(part, tokensize);
                 tokensize = 0;
