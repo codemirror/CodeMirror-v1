@@ -735,6 +735,7 @@ var Editor = (function(){
     // selection.
     indentRegion: function(current, end, direction) {
       select.markSelection(this.win);
+      current = startOfLine(current);
       if (!current) {
         this.highlight(current, 1);
         this.indentLineAfter(current, direction);
@@ -744,7 +745,7 @@ var Editor = (function(){
       }
       end = startOfLine(end);
 
-      while (true) {
+      while (current != end) {
         var hl = this.highlight(current, 1);
         var next = hl ? hl.node : null;
 
@@ -754,8 +755,6 @@ var Editor = (function(){
           this.highlight(current, 1);
           this.indentLineAfter(next, direction);
         }
-        if (current == end)
-          break;
       }
       select.selectMarked();
     },
