@@ -576,7 +576,7 @@ var Editor = (function(){
           else
             this.container.insertBefore(whiteSpace, this.container.firstChild);
         }
-        if (firstText) select.snapshotMove(firstText.firstChild, whiteSpace.firstChild, 0, false, true);
+        if (firstText) select.snapshotMove(firstText.firstChild, whiteSpace.firstChild, curIndent, false, true);
       }
       return whiteSpace;
     },
