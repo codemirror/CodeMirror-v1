@@ -581,6 +581,7 @@ var Editor = (function(){
         }
         if (firstText) select.snapshotMove(firstText.firstChild, whiteSpace.firstChild, curIndent, false, true);
       }
+      if (indentDiff != 0) this.addDirtyNode(start);
       return whiteSpace;
     },
 
