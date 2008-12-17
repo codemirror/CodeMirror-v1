@@ -155,8 +155,11 @@ var Editor = (function(){
   // Search backwards through the top-level nodes until the next BR or
   // the start of the frame.
   function startOfLine(node) {
-    while (node && node.nodeName != "BR")
-      node = node.previousSibling;
+    while (node && node.nodeName != "BR") node = node.previousSibling;
+    return node;
+  }
+  function endOfLine(node) {
+    while (node && node.nodeName != "BR") node = node.nextSibling;
     return node;
   }
 
@@ -738,26 +741,14 @@ var Editor = (function(){
     indentRegion: function(current, end, direction) {
       select.markSelection(this.win);
       current = startOfLine(current);
-      if (!current) {
-        this.highlight(current, 1);
-        this.indentLineAfter(current, direction);
-      }
-      else {
-        current = startOfLine(current.previousSibling);
-      }
-      end = startOfLine(end);
+      end = endOfLine(end);
 
-      while (current != end) {
+      do {
+        this.highlight(current);
         var hl = this.highlight(current, 1);
-        var next = hl ? hl.node : null;
-
-        while (current != next)
-          current = current ? current.nextSibling : this.container.firstChild;
-        if (next) {
-          this.highlight(current, 1);
-          this.indentLineAfter(next, direction);
-        }
-      }
+        this.indentLineAfter(current, direction);
+        current = hl ? hl.node : null;
+      } while (current != end);
       select.selectMarked();
     },
 
@@ -896,10 +887,15 @@ var Editor = (function(){
     // a 'clean' line (no dirty nodes), it will stop, except when
     // 'cleanLines' is true.
     highlight: function(from, lines, cleanLines){
-      var container = this.container, self = this, actMap = Editor.Parser.activeStyleMap;
+      var container = this.container, self = this, actMap = Editor.Parser.activeStyleMap, origFrom = from;
 
       if (!container.firstChild)
         return;
+      // lines given as null means 'make sure this BR node has up to date parser information'
+      if (lines == null) {
+        if (!from) return;
+        else from = from.previousSibling;
+      }
       // Backtrack to the first node before from that has a partial
       // parse stored.
       while (from && (!from.parserFromHere || from.dirty))
@@ -975,7 +971,7 @@ var Editor = (function(){
           // Allow empty nodes when they are alone on a line, needed
           // for the FF cursor bug workaround (see select.js,
           // insertNewlineAtCursor).
-          while (part && part.nodeName == "SPAN" && part.currentText == ""){
+          while (part && part.nodeName == "SPAN" && part.currentText == "") {
             var old = part;
             this.remove();
             part = this.get();
@@ -1011,6 +1007,10 @@ var Editor = (function(){
           part.parserFromHere = parsed.copy();
           part.indentation = token.indentation;
           part.dirty = false;
+
+          // No line argument passed means 'go at least until this node'.
+          if (lines == null && part == origFrom) throw StopIteration;
+
           // A clean line with more than one node means we are done.
           // Throwing a StopIteration is the way to break out of a
           // MochiKit forEach loop.
