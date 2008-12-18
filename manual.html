@@ -392,6 +392,25 @@
       editor is given a <code>parserConfig</code> option, it will be
       called with the value of that option.</dd>
 
+      <dt><code>cursorActivity(node)</code></dt><dd>A function that is
+      called every time the cursor moves, with the top-level node that
+      the cursor is inside or next to as an argument. Optional.</dd>
+
+      <dt><code>firstIndentation(chars, current,
+      direction)</code></dt><dd>An optional function that is used to
+      determine the proper indentation of the first line of a
+      document. When not provided, <code>0</code> is used.</dd>
+
+      <dt><code>activeStyleMap</code></dt><dd>This (optional) property
+      can be used to call functions on the DOM nodes for the tokens
+      right after they are created. It contains an object whose
+      property names are styles (as used by the tokens) and whose
+      property values hold functions that should be called on nodes
+      with that style. The functions are given three arguments: the
+      node, the token that it is based on, and the editor instance
+      that is creating the nodes. A common use is adding event
+      handlers to certain nodes.</dd>
+
     </dl>
 
     <p>When the <code>make</code> method is called with a string
@@ -403,18 +422,25 @@
     the string stream, and produce a token object.</p>
 
     <p>Token objects represent a single significant piece of the text
-    that is being edited. A token object must have a <code>value</code>
-    property holding the text it stands for, and a <code>style</code>
-    property with the CSS class that should be used to colour this element.
-    This can be anything, except that any whitespace at the start of a
-    line should <em>always</em> have class <code>"whitespace"</code>:
-    The editor must be able to recognize these when it indents lines.
-    Furthermore, each newline character <em>must</em> have its own
-    separate token, which has an <code>indentation</code> property
-    holding a function that can be used to determine the proper
-    indentation level for the next line. This function optionally
-    takes the text in the first token of the next line as an argument,
-    which it can use to adjust the indentation level.</p>
+    that is being edited. A token object must have a
+    <code>value</code> property holding the text it stands for, and a
+    <code>style</code> property with the CSS class that should be used
+    to colour this element. This can be anything, except that any
+    whitespace at the start of a line should <em>always</em> have
+    class <code>"whitespace"</code>: The editor must be able to
+    recognize these when it indents lines. Furthermore, each newline
+    character <em>must</em> have its own separate token, which has an
+    <code>indentation</code> property holding a function that can be
+    used to determine the proper indentation level for the next line.
+    This function optionally takes the text in the first token of the
+    next line, the current indentation of the line, and the
+    'direction' of the indentation as arguments, which it can use to
+    adjust the indentation level. The direction argument is only
+    useful for modes in which lines do not have a fixed indentation,
+    and can be modified by multiple tab presses. It is
+    <code>null</code> for 'default' indentations (like what happens
+    when the user presses enter), <code>true</code> for regular tab
+    presses, and <code>false</code> for control-tab or shift-tab.</p>
 
     <p>So far this should be pretty easy. The hard part is that this
     iterator must also have a <code>copy</code> method. This method,
