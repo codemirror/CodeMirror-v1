@@ -465,7 +465,6 @@ var Editor = (function(){
       }
 
       var lines = asEditorLines(content), doc = this.container.ownerDocument;
-      parent.console.log(lines);
       for (var i = 0; i < lines.length; i++) {
         var node = doc.createElement("SPAN");
         node.appendChild(doc.createTextNode(lines[i]));
