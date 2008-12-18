@@ -93,12 +93,11 @@ var CodeMirror = (function(){
   }
 
   CodeMirror.prototype = {
-    getCode: function() {
-      return this.editor.getCode();
-    },
-    setCode: function(code) {
-      this.editor.importCode(code);
-    },
+    getCode: function() {return this.editor.getCode();},
+    setCode: function(code) {this.editor.importCode(code);},
+    selection: function() {return this.editor.selectedText();},
+    reindent: function() {this.editor.reindent();},
+
     focus: function() {
       this.win.focus();
       if (this.editor.selectionSnapshot) // IE hack
@@ -110,12 +109,6 @@ var CodeMirror = (function(){
     },
     currentLine: function() {
       return this.editor.currentLine();
-    },
-    selection: function() {
-      return this.editor.selectedText();
-    },
-    reindent: function() {
-      this.editor.reindent();
     },
     replaceSelection: function(text) {
       this.focus();
