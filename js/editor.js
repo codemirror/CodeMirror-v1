@@ -440,6 +440,7 @@ var Editor = (function(){
                         {node: line, offset: this.history.textAfter(line).length},
                         content);
       this.addDirtyNode(line);
+      this.scheduleHighlight();
     },
 
     insertIntoLine: function(line, position, content) {
@@ -473,6 +474,7 @@ var Editor = (function(){
         this.container.insertBefore(node, before);
       }
       this.addDirtyNode(line);
+      this.scheduleHighlight();
     },
 
     // Move the cursor to the start of a specific line (counting from 1).
