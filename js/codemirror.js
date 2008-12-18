@@ -135,7 +135,7 @@ var CodeMirror = (function(){
     }
   };
 
-  CodeMirror.InvalidLineHandle = {toString: function(){return "InvalidLineHandle";}};
+  CodeMirror.InvalidLineHandle = {toString: function(){return "CodeMirror.InvalidLineHandle";}};
 
   CodeMirror.replace = function(element) {
     if (typeof element == "string")

@@ -417,7 +417,7 @@ var Editor = (function(){
 
     selectLines: function(startLine, startOffset, endLine, endOffset) {
       this.checkLine(startLine);
-      var start = {node: startLine, offset: startOffset}, end = start;
+      var start = {node: startLine, offset: startOffset}, end = null;
       if (endOffset !== undefined) {
         this.checkLine(endLine);
         end = {node: endLine, offset: endOffset};

@@ -322,7 +322,48 @@
       programmatically changing it in any way except for calling
       <code>replace</code> on the cursor itself, might cause a cursor
       object to skip back to the beginning of the document.</dd>
+    </dl>
 
+    <p>For detailed interaction with the content of the editor,
+    CodeMirror exposes a line-oriented interface, which allows you to
+    inspect and manipulate the document line by line. Line handles
+    should be considered opaque (they are in fact the <code>BR</code>
+    nodes at the start of the line), except that the value
+    <code>false</code> (but <em>not</em> <code>null</code>) always
+    denotes an invalid value. Since changing the document might cause
+    some line handles to become invalid, every function that takes
+    them as argument can throw
+    <code>CodeMirror.InvalidLineHandle</code>. These are the relevant
+    methods:</p>
+
+    <dl>
+      <dt><code>lineAtCursor(start)</code> &#8594;
+      handle</dt><dd>Retrieve the line that the cursor is on.</dd>
+      <dt><code>firstLine()</code> &#8594; handle</dt><dd>Get the
+      first line of the document.</dd>
+      <dt><code>nextLine(line)</code> &#8594; handle</dt><dd>Get the
+      line after the given one, or <code>false</code> if that was the
+      last line.</dd>
+      <dt><code>prevLine(line)</code> &#8594; handle</dt><dd>Find the
+      line before the given one, return <code>false</code> if that was
+      the first line.</dd>
+      <dt><code>prevLine(line)</code> &#8594; handle</dt><dd>Find the
+      line before the given one, return <code>false</code> if that was
+      the first line.</dd>
+      <dt><code>lineContent(line)</code> &#8594;
+      string</dt><dd>Retrieve the content of the line.</dd>
+      <dt><code>setLineContent(line, string)</code></dt><dd>Replace
+      the content of the line with the given string.</dd>
+      <dt><code>selectLines(startLine, startOffset, endLine,
+      endOffset)</code></dt><dd>Move the selection to a specific
+      point. <code>endLine</code> and <code>endOffset</code> can be
+      omitted to just place the cursor somewhere without selecting any
+      text.</dd>
+      <dt><code>insertIntoLine(line, position,
+      text)</code></dt><dd>Insert a piece of text into a line.
+      <code>position</code> can be an integer, specifying the position
+      in the line where the text should be inserted, or the string
+      <code>"end"</code>, for the end of the line.</dd>
     </dl>
 
     <h2>Writing a parser</h2>
