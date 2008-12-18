@@ -106,7 +106,7 @@ var CodeMirror = (function(){
     },
     jumpToLine: function(line) {
       this.editor.jumpToLine(line);
-      this.focus();
+      this.win.focus();
     },
     currentLine: function() {
       return this.editor.currentLine();
@@ -127,8 +127,22 @@ var CodeMirror = (function(){
     },
     getSearchCursor: function(string, fromCursor) {
       return this.editor.getSearchCursor(string, fromCursor);
+    },
+
+    lineAtCursor: function(start) {return this.editor.lineAtCursor(start);},
+    firstLine: function() {return this.editor.firstLine();},
+    nextLine: function(line) {return this.editor.nextLine(line);},
+    prevLine: function(line) {return this.editor.prevLine(line);},
+    lineContent: function(line) {return this.editor.lineContent(line);},
+    setLineContent: function(line, content) {this.editor.lineContent(line, content);},
+    insertIntoLine: function(line, position, content) {this.editor.insertIntoLine(line, position, content);},
+    selectLines: function(startLine, startOffset, endLine, endOffset) {
+      this.win.focus();
+      this.editor.selectLines(startLine, startOffset, endLine, endOffset);
     }
   };
+
+  CodeMirror.InvalidLineHandle = {toString: function(){return "InvalidLineHandle";}};
 
   CodeMirror.replace = function(element) {
     if (typeof element == "string")

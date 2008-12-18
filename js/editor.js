@@ -158,7 +158,8 @@ var Editor = (function(){
     while (node && node.nodeName != "BR") node = node.previousSibling;
     return node;
   }
-  function endOfLine(node) {
+  function endOfLine(node, container) {
+    if (!node) node = container.firstChild;
     while (node && node.nodeName != "BR") node = node.nextSibling;
     return node;
   }
@@ -386,6 +387,93 @@ var Editor = (function(){
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
       select.selectMarked();
       return cleanText(accum.join(""));
+    },
+
+    checkLine: function(node) {
+      if (node === false || !(node == null || node.parentNode == this.container))
+        throw parent.CodeMirror.InvalidLineHandle;
+    },
+
+    lineAtCursor: function(start) {
+      if (start == null) start = true;
+      return startOfLine(select.selectionTopNode(this.container, start));
+    },
+
+    firstLine: function() {
+      return null;
+    },
+
+    nextLine: function(line) {
+      this.checkLine(line);
+      var end = endOfLine(line ? line.nextSibling : this.container.firstChild, this.container);
+      return end || false;
+    },
+
+    prevLine: function(line) {
+      this.checkLine(line);
+      if (line == null) return false;
+      return startOfLine(line.previousSibling);
+    },
+
+    selectLines: function(startLine, startOffset, endLine, endOffset) {
+      this.checkLine(startLine);
+      var start = {node: startLine, offset: startOffset}, end = start;
+      if (endOffset !== undefined) {
+        this.checkLine(endLine);
+        end = {node: endLine, offset: endOffset};
+      }
+      select.setCursorPos(this.container, start, end);
+    },
+
+    lineContent: function(line) {
+      this.checkLine(line);
+      var accum = [];
+      for (line = line ? line.nextSibling : this.container.firstChild;
+           line && line.nodeName != "BR"; line = line.nextSibling)
+        accum.push(line.innerText || line.textContent || line.nodeValue || "");
+      return cleanText(accum.join(""));
+    },
+
+    setLineContent: function(line, content) {
+      this.history.commit();
+      this.replaceRange({node: line, offset: 0},
+                        {node: line, offset: this.history.textAfter(line).length},
+                        content);
+      this.addDirtyNode(line);
+    },
+
+    insertIntoLine: function(line, position, content) {
+      var before = null;
+      if (position == "end") {
+        before = endOfLine(line ? line.nextSibling : this.container.firstChild, this.container);
+      }
+      else {
+        for (var cur = line ? line.nextSibling : this.container.firstChild; cur; cur = cur.nextSibling) {
+          if (position == 0) {
+            before = cur;
+            break;
+          }
+          var text = (cur.innerText || cur.textContent || cur.nodeValue || "");
+          if (text.length > position) {
+            before = cur.nextSibling;
+            content = text.slice(0, position) + content + text.slice(position);
+            removeElement(cur);
+            break;
+          }
+          position -= text.length;
+        }
+      }
+
+      var lines = asEditorLines(content), doc = this.container.ownerDocument;
+      parent.console.log(lines);
+      for (var i = 0; i < lines.length; i++) {
+        var node = doc.createElement("SPAN");
+        node.appendChild(doc.createTextNode(lines[i]));
+        node.className = "part";
+        if (i > 0) this.container.insertBefore(doc.createElement("BR"), before);
+        this.container.insertBefore(node, before);
+      }
+      this.addDirtyNode(line);
     },
 
     // Move the cursor to the start of a specific line (counting from 1).
@@ -742,7 +830,7 @@ var Editor = (function(){
     indentRegion: function(current, end, direction) {
       select.markSelection(this.win);
       current = startOfLine(current);
-      end = endOfLine(end);
+      end = endOfLine(end, this.container);
 
       do {
         this.highlight(current);
