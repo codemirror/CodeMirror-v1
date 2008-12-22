@@ -993,7 +993,6 @@ var Editor = (function(){
         part.className = "part " + token.style;
         part.appendChild(self.doc.createTextNode(token.value));
         part.currentText = token.value;
-        if (active) active(part, token, self);
         return part;
       }
 
@@ -1100,6 +1099,7 @@ var Editor = (function(){
             // Insert the correct part.
             var newPart = tokenPart(token);
             container.insertBefore(newPart, part);
+            if (active) active(newPart, token, self);
             var tokensize = token.value.length;
             var offset = 0;
             // Eat up parts until the text for this token has been
