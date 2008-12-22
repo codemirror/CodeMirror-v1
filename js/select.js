@@ -8,7 +8,7 @@
 var select = {};
 
 (function() {
-  var ie_selection = document.selection && document.selection.createRangeCollection;
+  select.ie_selection = document.selection && document.selection.createRangeCollection;
 
   // Find the 'top-level' (defined as 'a direct child of the node
   // passed as the top argument') node that the given node is
@@ -82,7 +82,7 @@ var select = {};
 
   // Most functions are defined in two ways, one for the IE selection
   // model, one for the W3C one.
-  if (ie_selection) {
+  if (select.ie_selection) {
     function selectionNode(win, start) {
       var range = win.document.selection.createRange();
       range.collapse(start);

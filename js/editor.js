@@ -313,9 +313,8 @@ var Editor = (function(){
     if (!options.textWrapping)
       this.container.style.whiteSpace = "pre";
 
-    if (!options.readOnly) {
+    if (!options.readOnly)
       select.setCursorPos(this.container, {node: null, offset: 0});
-    }
 
     this.dirty = [];
     if (options.content)

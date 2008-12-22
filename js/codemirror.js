@@ -117,7 +117,10 @@ var CodeMirror = (function(){
       return this.editor.getSearchCursor(string, fromCursor);
     },
 
-    lineAtCursor: function(start) {return this.editor.lineAtCursor(start);},
+    lineAtCursor: function(start) {
+      if (this.win.select.ie_selection) this.focus();
+      return this.editor.lineAtCursor(start);
+    },
     firstLine: function() {return this.editor.firstLine();},
     lastLine: function() {return this.editor.lastLine();},
     nextLine: function(line) {return this.editor.nextLine(line);},
