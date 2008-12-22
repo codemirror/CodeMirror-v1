@@ -126,7 +126,7 @@ var CodeMirror = (function(){
     nextLine: function(line) {return this.editor.nextLine(line);},
     prevLine: function(line) {return this.editor.prevLine(line);},
     lineContent: function(line) {return this.editor.lineContent(line);},
-    setLineContent: function(line, content) {this.editor.lineContent(line, content);},
+    setLineContent: function(line, content) {this.editor.setLineContent(line, content);},
     insertIntoLine: function(line, position, content) {this.editor.insertIntoLine(line, position, content);},
     selectLines: function(startLine, startOffset, endLine, endOffset) {
       this.win.focus();
