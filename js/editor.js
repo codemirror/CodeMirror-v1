@@ -829,7 +829,7 @@ var Editor = (function(){
         this.selectionSnapshot = select.selectionCoords(this.win);
       }
 
-      var activity = Editor.Parser.cursorActivity;
+      var activity = this.options.cursorActivity;
       if (!safe || activity) {
         var cursor = select.selectionTopNode(this.container, false);
         if (cursor === false || !this.container.firstChild) return;
@@ -956,7 +956,7 @@ var Editor = (function(){
     // a 'clean' line (no dirty nodes), it will stop, except when
     // 'cleanLines' is true.
     highlight: function(from, lines, cleanLines){
-      var container = this.container, self = this, actMap = Editor.Parser.activeStyleMap, origFrom = from;
+      var container = this.container, self = this, actMap = this.options.activeStyleMap, origFrom = from;
 
       if (!container.firstChild)
         return;
