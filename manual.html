@@ -255,6 +255,19 @@
       will be called (without arguments) after the editor has finished
       initialising.</dd>
       
+      <dt><code>cursorActivity</code></dt><dd>A function that is
+      called every time the cursor moves, with the top-level node that
+      the cursor is inside or next to as an argument. Can be used to
+      have some controls react to the context of the cursor.</dd>
+
+      <dt><code>activeTokens</code></dt><dd>Can be set to a function
+      that will be called with <code>(spanNode, tokenObject,
+      editor)</code> arguments whenever a new token node is being
+      added to the document. Can be used to do things like add event
+      handlers to nodes. Should <em>not</em> change the DOM structure
+      of the node (so no turning the span into a link), since this
+      will greatly confuse the editor.</dd>
+
       <dt><code>parserConfig</code></dt><dd>A value that is passed
       along to the parser to configure it. What this value may look
       like depends on the parser used.</dd>
@@ -398,25 +411,10 @@
       editor is given a <code>parserConfig</code> option, it will be
       called with the value of that option.</dd>
 
-      <dt><code>cursorActivity(node)</code></dt><dd>A function that is
-      called every time the cursor moves, with the top-level node that
-      the cursor is inside or next to as an argument. Optional.</dd>
-
       <dt><code>firstIndentation(chars, current,
       direction)</code></dt><dd>An optional function that is used to
       determine the proper indentation of the first line of a
       document. When not provided, <code>0</code> is used.</dd>
-
-      <dt><code>activeStyleMap</code></dt><dd>This (optional) property
-      can be used to call functions on the DOM nodes for the tokens
-      right after they are created. It contains an object whose
-      property names are styles (as used by the tokens) and whose
-      property values hold functions that should be called on nodes
-      with that style. The functions are given three arguments: the
-      node, the token that it is based on, and the editor instance
-      that is creating the nodes. A common use is adding event
-      handlers to certain nodes.</dd>
-
     </dl>
 
     <p>When the <code>make</code> method is called with a string
