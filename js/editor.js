@@ -403,6 +403,11 @@ var Editor = (function(){
       return null;
     },
 
+    lastLine: function() {
+      if (this.container.lastChild) return startOfLine(this.container.lastChild);
+      else return null;
+    },
+
     nextLine: function(line) {
       this.checkLine(line);
       var end = endOfLine(line ? line.nextSibling : this.container.firstChild, this.container);
@@ -475,32 +480,6 @@ var Editor = (function(){
       }
       this.addDirtyNode(line);
       this.scheduleHighlight();
-    },
-
-    // Move the cursor to the start of a specific line (counting from 1).
-    jumpToLine: function(line) {
-      if (line <= 1 || !this.container.firstChild) {
-        select.focusAfterNode(null, this.container);
-      }
-      else {
-        var pos = this.container.firstChild;
-        while (true) {
-          if (pos.nodeName == "BR") line--;
-          if (line <= 1 || !pos.nextSibling) break;
-          pos = pos.nextSibling;
-        }
-        select.focusAfterNode(pos, this.container);
-      }
-      select.scrollToCursor(this.container);
-    },
-
-    // Find the line that the cursor is currently on.
-    currentLine: function() {
-      var pos = select.cursorPos(this.container, true), line = 1;
-      if (!pos) return 1;
-      for (cursor = pos.node; cursor; cursor = cursor.previousSibling)
-        if (cursor.nodeName == "BR") line++;
-      return line;
     },
 
     // Retrieve the selected text.

@@ -103,13 +103,6 @@ var CodeMirror = (function(){
       if (this.editor.selectionSnapshot) // IE hack
         this.win.select.selectCoords(this.win, this.editor.selectionSnapshot);
     },
-    jumpToLine: function(line) {
-      this.editor.jumpToLine(line);
-      this.win.focus();
-    },
-    currentLine: function() {
-      return this.editor.currentLine();
-    },
     replaceSelection: function(text) {
       this.focus();
       this.editor.replaceSelection(text);
@@ -124,6 +117,7 @@ var CodeMirror = (function(){
 
     lineAtCursor: function(start) {return this.editor.lineAtCursor(start);},
     firstLine: function() {return this.editor.firstLine();},
+    lastLine: function() {return this.editor.lastLine();},
     nextLine: function(line) {return this.editor.nextLine(line);},
     prevLine: function(line) {return this.editor.prevLine(line);},
     lineContent: function(line) {return this.editor.lineContent(line);},
@@ -132,6 +126,29 @@ var CodeMirror = (function(){
     selectLines: function(startLine, startOffset, endLine, endOffset) {
       this.win.focus();
       this.editor.selectLines(startLine, startOffset, endLine, endOffset);
+    },
+    nthLine: function(n) {
+      var line = this.firstLine();
+      for (; n > 1 && line !== false; n--)
+        line = this.nextLine(line);
+      return line;
+    },
+    lineNumber: function(line) {
+      var num = 0;
+      while (line !== false) {
+        num++;
+        line = this.prevLine(line);
+      }
+      return num;
+    },
+
+    // Old number-based line interface
+    jumpToLine: function(n) {
+      this.selectLines(this.nthLine(n), 0);
+      this.win.focus();
+    },
+    currentLine: function() {
+      return this.lineNumber(this.lineAtCursor());
     }
   };
 

@@ -341,12 +341,18 @@
       handle</dt><dd>Retrieve the line that the cursor is on.</dd>
       <dt><code>firstLine()</code> &#8594; handle</dt><dd>Get the
       first line of the document.</dd>
+      <dt><code>lastLine()</code> &#8594; handle</dt><dd>The
+      last line.</dd>
       <dt><code>nextLine(line)</code> &#8594; handle</dt><dd>Get the
       line after the given one, or <code>false</code> if that was the
       last line.</dd>
       <dt><code>prevLine(line)</code> &#8594; handle</dt><dd>Find the
       line before the given one, return <code>false</code> if that was
       the first line.</dd>
+      <dt><code>nthLine(number)</code> &#8594; handle</dt><dd>Find the
+      Nth line of the document. Note that the first line counts as
+      one, not zero. Returns <code>false</code> if there is no such
+      line.</dd>
       <dt><code>prevLine(line)</code> &#8594; handle</dt><dd>Find the
       line before the given one, return <code>false</code> if that was
       the first line.</dd>
