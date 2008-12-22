@@ -44,7 +44,9 @@ var CodeMirror = (function(){
     height: "300px",
     autoMatchParens: false,
     parserConfig: null,
-    dumbTabs: false
+    dumbTabs: false,
+    activeTokens: null,
+    cursorActivity: null
   });
 
   function CodeMirror(place, options) {

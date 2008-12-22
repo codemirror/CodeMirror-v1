@@ -956,7 +956,7 @@ var Editor = (function(){
     // a 'clean' line (no dirty nodes), it will stop, except when
     // 'cleanLines' is true.
     highlight: function(from, lines, cleanLines){
-      var container = this.container, self = this, actMap = this.options.activeStyleMap, origFrom = from;
+      var container = this.container, self = this, active = this.options.activeTokens, origFrom = from;
 
       if (!container.firstChild)
         return;
@@ -993,13 +993,7 @@ var Editor = (function(){
         part.className = "part " + token.style;
         part.appendChild(self.doc.createTextNode(token.value));
         part.currentText = token.value;
-        if (actMap) {
-          var styles = token.style.split(" ");
-          for (var i = 0; i < styles.length; i++) {
-            var act = actMap[styles[i]];
-            if (act) act(part, token, self);
-          }
-        }
+        if (active) active(part, token, self);
         return part;
       }
 
