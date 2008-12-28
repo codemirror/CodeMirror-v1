@@ -110,7 +110,7 @@ var Editor = (function(){
       if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3 &&
           /\bpart\b/.test(node.className)) {
         node.currentText = node.firstChild.nodeValue;
-        return true;
+        return !/[\n\t\r]/.test(node.currentText);
       }
       return false;
     }
