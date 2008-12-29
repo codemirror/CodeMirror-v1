@@ -32,7 +32,17 @@ function setWhiteSpaceModel(collapsing) {
     function(string) {return string;};
 }
 
-var editorID = Math.round(Math.random() * 100000) + 1;
+function makePartSpan(value, doc) {
+  var text = value;
+  if (value.nodeType == 3) text = value.nodeValue;
+  else value = doc.createTextNode(text);
+
+  var span = doc.createElement("SPAN");
+  span.isPart = true;
+  span.appendChild(value);
+  span.currentText = text;
+  return span;
+}
 
 var Editor = (function(){
   // The HTML elements whose content should be suffixed by a newline
@@ -111,12 +121,8 @@ var Editor = (function(){
       var text = "\n";
       if (part.nodeType == 3) {
         select.snapshotChanged();
-        text = part.nodeValue;
-        var span = owner.createElement("SPAN");
-        span.editorID = editorID;
-        span.appendChild(part);
-        part = span;
-        part.currentText = text;
+        part = makePartSpan(part, owner);
+        text = part.currentText;
       }
       part.dirty = true;
       nodeQueue.push(part);
@@ -137,8 +143,7 @@ var Editor = (function(){
 
     // Check whether a node is a normalized <span> element.
     function partNode(node){
-      if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3 &&
-          node.editorID == editorID) {
+      if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3 && node.isPart) {
         node.currentText = node.firstChild.nodeValue;
         return !/[\n\t\r]/.test(node.currentText);
       }
@@ -502,11 +507,8 @@ var Editor = (function(){
 
       var lines = asEditorLines(content), doc = this.container.ownerDocument;
       for (var i = 0; i < lines.length; i++) {
-        var node = doc.createElement("SPAN");
-        node.appendChild(doc.createTextNode(lines[i]));
-        node.editorID = editorID;
         if (i > 0) this.container.insertBefore(doc.createElement("BR"), before);
-        this.container.insertBefore(node, before);
+        this.container.insertBefore(makePartSpan(lines[i], doc), before);
       }
       this.addDirtyNode(line);
       this.scheduleHighlight();
@@ -669,14 +671,10 @@ var Editor = (function(){
         }
         // Otherwise, we have to add a new whitespace node.
         else {
-          whiteSpace = this.doc.createElement("SPAN");
+          whiteSpace = makePartSpan(safeWhiteSpace(newIndent), this.doc);
           whiteSpace.className = "whitespace";
-          whiteSpace.editorID = editorID;
-          whiteSpace.appendChild(this.doc.createTextNode(safeWhiteSpace(newIndent)));
-          if (start)
-            insertAfter(whiteSpace, start);
-          else
-            this.container.insertBefore(whiteSpace, this.container.firstChild);
+          if (start) insertAfter(whiteSpace, start);
+          else this.container.insertBefore(whiteSpace, this.container.firstChild);
         }
         if (firstText) select.snapshotMove(firstText.firstChild, whiteSpace.firstChild, curIndent, false, true);
       }
@@ -1020,11 +1018,8 @@ var Editor = (function(){
       }
       // Create a part corresponding to a given token.
       function tokenPart(token){
-        var part = self.doc.createElement("SPAN");
+        var part = makePartSpan(token.value, self.doc);
         part.className = token.style;
-        part.editorID = editorID;
-        part.appendChild(self.doc.createTextNode(token.value));
-        part.currentText = token.value;
         return part;
       }
 
