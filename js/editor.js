@@ -4,6 +4,8 @@
  * plain sequences of <span> and <br> elements
  */
 
+var editorID = Math.round(Math.random() * 100000) + 1;
+
 var Editor = (function(){
   // The HTML elements whose content should be suffixed by a newline
   // when converting them to flat text.
@@ -83,7 +85,7 @@ var Editor = (function(){
         select.snapshotChanged();
         text = part.nodeValue;
         var span = owner.createElement("SPAN");
-        span.className = "part";
+        span.editorID = editorID;
         span.appendChild(part);
         part = span;
         part.currentText = text;
@@ -108,7 +110,7 @@ var Editor = (function(){
     // Check whether a node is a normalized <span> element.
     function partNode(node){
       if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3 &&
-          /\bpart\b/.test(node.className)) {
+          node.editorID = editorID) {
         node.currentText = node.firstChild.nodeValue;
         return !/[\n\t\r]/.test(node.currentText);
       }
@@ -473,7 +475,7 @@ var Editor = (function(){
       for (var i = 0; i < lines.length; i++) {
         var node = doc.createElement("SPAN");
         node.appendChild(doc.createTextNode(lines[i]));
-        node.className = "part";
+        node.editorID = editorID;
         if (i > 0) this.container.insertBefore(doc.createElement("BR"), before);
         this.container.insertBefore(node, before);
       }
@@ -639,7 +641,8 @@ var Editor = (function(){
         // Otherwise, we have to add a new whitespace node.
         else {
           whiteSpace = this.doc.createElement("SPAN");
-          whiteSpace.className = "part whitespace";
+          whiteSpace.className = "whitespace";
+          whiteSpace.editorID = editorID;
           whiteSpace.appendChild(this.doc.createTextNode(safeWhiteSpace(newIndent)));
           if (start)
             insertAfter(whiteSpace, start);
@@ -975,7 +978,7 @@ var Editor = (function(){
       // Check whether a part (<span> node) and the corresponding token
       // match.
       function correctPart(token, part){
-        return !part.reduced && part.currentText == token.value && part.className == "part " + token.style;
+        return !part.reduced && part.currentText == token.value && part.className == token.style;
       }
       // Shorten the text associated with a part by chopping off
       // characters from the front. Note that only the currentText
@@ -989,7 +992,8 @@ var Editor = (function(){
       // Create a part corresponding to a given token.
       function tokenPart(token){
         var part = self.doc.createElement("SPAN");
-        part.className = "part " + token.style;
+        part.className = token.style;
+        part.editorID = editorID;
         part.appendChild(self.doc.createTextNode(token.value));
         part.currentText = token.value;
         return part;
