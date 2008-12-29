@@ -429,9 +429,11 @@ var Editor = (function(){
         throw parent.CodeMirror.InvalidLineHandle;
     },
 
-    lineAtCursor: function(start) {
+    cursorPosition: function(start) {
       if (start == null) start = true;
-      return startOfLine(select.selectionTopNode(this.container, start));
+      var pos = select.cursorPos(this.container, start);
+      if (pos) return {line: pos.node, character: pos.offset};
+      else return {line: null, character: 0};
     },
 
     firstLine: function() {

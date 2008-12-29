@@ -36,3 +36,7 @@ pre.code {
   padding: .4em;
   font-family: courier, monospace;
 }
+
+.warn {
+  color: #C00;
+}

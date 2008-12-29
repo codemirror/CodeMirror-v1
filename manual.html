@@ -303,10 +303,12 @@
 
       <dt><code>currentLine()</code> &#8594;
       <code>number</code></dt><dd>Returns the line on which the cursor
-      is currently sitting.</dd>
+      is currently sitting. <span class="warn">(Deprecated, see the
+      line-based interface below)</span></dd>
 
       <dt><code>jumpToLine(number)</code></dt><dd>Moves the cursor to
-      the start of the given line.</dd>
+      the start of the given line. <span
+      class="warn">(Deprecated)</span></dd>
 
       <dt><code>selection()</code> &#8594;
       <code>string</code></dt><dd>Returns the text that is currently
@@ -350,8 +352,9 @@
     methods:</p>
 
     <dl>
-      <dt><code>lineAtCursor(start)</code> &#8594;
-      handle</dt><dd>Retrieve the line that the cursor is on.</dd>
+      <dt><code>cursorPosition(start)</code> &#8594;
+      object</dt><dd>Retrieve a {line, character} object representing
+      the cursor position.</dd>
       <dt><code>firstLine()</code> &#8594; handle</dt><dd>Get the
       first line of the document.</dd>
       <dt><code>lastLine()</code> &#8594; handle</dt><dd>The

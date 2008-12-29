@@ -117,9 +117,9 @@ var CodeMirror = (function(){
       return this.editor.getSearchCursor(string, fromCursor);
     },
 
-    lineAtCursor: function(start) {
+    cursorPosition: function(start) {
       if (this.win.select.ie_selection) this.focus();
-      return this.editor.lineAtCursor(start);
+      return this.editor.cursorPosition(start);
     },
     firstLine: function() {return this.editor.firstLine();},
     lastLine: function() {return this.editor.lastLine();},
@@ -153,7 +153,7 @@ var CodeMirror = (function(){
       this.win.focus();
     },
     currentLine: function() {
-      return this.lineNumber(this.lineAtCursor());
+      return this.lineNumber(this.cursorPosition().line);
     }
   };
 
