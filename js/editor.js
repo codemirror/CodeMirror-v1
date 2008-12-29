@@ -4,6 +4,34 @@
  * plain sequences of <span> and <br> elements
  */
 
+var safeWhiteSpace, splitSpaces;
+function setWhiteSpaceModel(collapsing) {
+  safeWhiteSpace = collapsing ?
+    // Make sure a string does not contain two consecutive 'collapseable'
+    // whitespace characters.
+    function(n) {
+      var buffer = [], nb = true;
+      for (; n > 0; n--) {
+        buffer.push((nb || n == 1) ? nbsp : " ");
+        nb = !nb;
+      }
+      return buffer.join("");
+    } :
+    function(n) {
+      var buffer = [];
+      for (; n > 0; n--) buffer.push(" ");
+      return buffer.join("");
+    };
+  splitSpaces = collapsing ?
+    // Create a set of white-space characters that will not be collapsed
+    // by the browser, but will not break text-wrapping either.
+    function(string) {
+      if (string.charAt(0) == " ") string = nbsp + string.slice(1);
+      return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
+    } :
+    function(string) {return string;};
+}
+
 var editorID = Math.round(Math.random() * 100000) + 1;
 
 var Editor = (function(){
@@ -314,6 +342,7 @@ var Editor = (function(){
 
     if (!options.textWrapping)
       this.container.style.whiteSpace = "pre";
+    setWhiteSpaceModel(options.textWrapping);
 
     if (!options.readOnly)
       select.setCursorPos(this.container, {node: null, offset: 0});

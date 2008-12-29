@@ -121,21 +121,3 @@ function addEventHandler(node, type, handler, removeFunc) {
     if (removeFunc) return function() {node.detachEvent("on" + type, wrapHandler);};
   }
 }
-
-// Create a set of white-space characters that will not be collapsed
-// by the browser, but will not break text-wrapping either.
-function safeWhiteSpace(n) {
-  var buffer = [], nb = true;
-  for (; n > 0; n--) {
-    buffer.push((nb || n == 1) ? nbsp : " ");
-    nb = !nb;
-  }
-  return buffer.join("");
-}
-
-// Make sure a string does not contain two consecutive 'collapseable'
-// whitespace characters.
-function splitSpaces(string) {
-  if (string.charAt(0) == " ") string = nbsp + string.slice(1);
-  return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
-}
