@@ -64,7 +64,7 @@ var Editor = (function(){
 
     function simplifyNode(node) {
       if (node.nodeType == 3) {
-        var text = node.nodeValue = splitSpaces(node.nodeValue.replace(/[\n\r]/g, ""));
+        var text = node.nodeValue = splitSpaces(node.nodeValue.replace(/\r/g, "").replace(/\n/g, " "));
         if (text.length) leaving = false;
         result.push(node);
       }
