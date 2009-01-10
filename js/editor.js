@@ -586,8 +586,12 @@ var Editor = (function(){
         }
         event.stop();
       }
-      else if (event.keyCode == 9) { // tab
+      else if (event.keyCode == 9 && !this.options.normalTab) { // tab
         this.handleTab(!event.ctrlKey && !event.shiftKey);
+        event.stop();
+      }
+      else if (event.keyCode == 32 && event.shiftKey) { // space
+        this.handleTab(true);
         event.stop();
       }
       else if (event.ctrlKey || event.metaKey) {
@@ -614,8 +618,10 @@ var Editor = (function(){
       // keydown event does not prevent the associated keypress event
       // from happening, so we have to cancel enter and tab again
       // here.
-      if (event.code == 13 || event.code == 9)
+      if (event.code == 13 || (event.code == 9 && !this.options.normalTab) ||
+          (event.keyCode == 32 && event.shiftKey))
         event.stop();
+
       else if ((event.character == "[" || event.character == "]") && event.ctrlKey)
         event.stop(), this.blinkParens();
       else if (electric && electric.indexOf(event.character) != -1)

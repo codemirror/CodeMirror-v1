@@ -8,13 +8,13 @@
 
     <h2>Basic Usage</h2>
 
-    <p>Inside the editor, the tab key is used to re-indent the current
-    selection (or the current line when nothing is selected), and
-    pressing enter will, apart from inserting a line break,
-    automatically indent the new line. Pressing control-enter will
-    cause the whole buffer to be re-coloured, which can be helpful
-    when some colouring has become out-of-date without the editor
-    noticing it.</p>
+    <p>Inside the editor, the tab key (or shift-space) is used to
+    re-indent the current selection (or the current line when nothing
+    is selected), and pressing enter will, apart from inserting a line
+    break, automatically indent the new line. Pressing control-enter
+    will cause the whole buffer to be re-coloured, which can be
+    helpful when some colouring has become out-of-date without the
+    editor noticing it.</p>
 
     <p>The editor sports an undo/redo system, accessible with
     control-z (undo) and control-y (redo). Safari will not allow
@@ -247,6 +247,10 @@
       <code>true</code>, pressing tab will insert four spaces rather
       than re-indenting the selected lines. Default
       <code>false</code>.</dd>
+
+      <dt><code>normalTab</code></dt><dd>Can be used to give tab it's
+      normal behaviour (usually 'focus next element') instead of
+      having it reindent code.</dd>
 
       <dt><code>readOnly</code></dt><dd>When set to <code>true</code>,
       the document is not editable.</dd>
