@@ -146,7 +146,7 @@ var select = {};
         var range = currentSelection.window.document.body.createTextRange();
         var node = point.node;
         if (!node) {
-          range.moveToElementText(win.document.body);
+          range.moveToElementText(currentSelection.window.document.body);
           range.collapse(false);
         }
         else if (node.nodeType == 3) {
