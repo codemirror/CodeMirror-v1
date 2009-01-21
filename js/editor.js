@@ -60,7 +60,7 @@ var Editor = (function(){
   function simplifyDOM(root) {
     var doc = root.ownerDocument;
     var result = [];
-    var leaving = false;
+    var leaving = true;
 
     function simplifyNode(node) {
       if (node.nodeType == 3) {
@@ -74,7 +74,7 @@ var Editor = (function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && newlineElements.hasOwnProperty(node.nodeName) && result.length) {
+        if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
           result.push(doc.createElement("BR"));
         }
