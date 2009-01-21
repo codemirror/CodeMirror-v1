@@ -74,7 +74,7 @@ var Editor = (function(){
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
+        if (!leaving && newlineElements.hasOwnProperty(node.nodeName) && result.length) {
           leaving = true;
           result.push(doc.createElement("BR"));
         }
