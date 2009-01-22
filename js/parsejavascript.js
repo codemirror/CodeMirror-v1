@@ -35,6 +35,8 @@ var JSParser = Editor.Parser = (function() {
         return lexical.indented + 4;
       else if (lexical.type == "form" && firstChar == "{")
         return lexical.indented;
+      else if (lexical.type == "switch")
+        return lexical.indented + (/^(?:case|default)\b/.test(firstChars) ? 2 : 4);
       else if (lexical.type == "stat" || lexical.type == "form")
         return lexical.indented + 2;
       else if (lexical.align)
@@ -230,6 +232,7 @@ var JSParser = Editor.Parser = (function() {
       else if (type == "function") cont(functiondef);
       else if (type == "for") cont(pushlex("form"), expect("("), pushlex(")"), forspec1, expect(")"), poplex, statement, poplex);
       else if (type == "variable") cont(pushlex("stat"), maybelabel);
+      else if (type == "switch") cont(pushlex("form"), expression, pushlex("switch"), expect("{"), block, poplex, poplex);
       else if (type == "case") cont(expression, expect(":"));
       else if (type == "default") cont(expect(":"));
       else if (type == "catch") cont(pushlex("form"), pushcontext, expect("("), funarg, expect(")"), statement, poplex, popcontext);
@@ -318,5 +321,5 @@ var JSParser = Editor.Parser = (function() {
     return parser;
   }
 
-  return {make: parseJS, electricChars: "{}"};
+  return {make: parseJS, electricChars: "{}:"};
 })();
