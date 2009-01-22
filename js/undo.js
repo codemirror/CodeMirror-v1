@@ -358,7 +358,7 @@ History.prototype = {
       if (i > 0)
         insert(line.from);
       // Add the text.
-      var node = makePartSpan(splitSpaces(line.text), this.container.ownerDocument);
+      var node = makePartSpan(fixSpaces(line.text), this.container.ownerDocument);
       insert(node);
       // See if the cursor was on this line. Put it back, adjusting
       // for changed line length, if it was.

@@ -4,23 +4,34 @@
  * plain sequences of <span> and <br> elements
  */
 
-var safeWhiteSpace, splitSpaces;
-// Make sure a string does not contain two consecutive 'collapseable'
-// whitespace characters.
-function safeWhiteSpace(n) {
-  var buffer = [], nb = true;
-  for (; n > 0; n--) {
-    buffer.push((nb || n == 1) ? nbsp : " ");
-    nb = !nb;
-  }
-  return buffer.join("");
-}
-
-// Create a set of white-space characters that will not be collapsed
-// by the browser, but will not break text-wrapping either.
-function splitSpaces(string) {
-  if (string.charAt(0) == " ") string = nbsp + string.slice(1);
-  return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
+var safeWhiteSpace, fixSpaces;
+function setWhiteSpaceModel(wrap) {
+  safeWhiteSpace = wrap ?
+    // Make sure a string does not contain two consecutive 'collapseable'
+    // whitespace characters.
+    function(n) {
+      var buffer = [], nb = true;
+      for (; n > 0; n--) {
+        buffer.push((nb || n == 1) ? nbsp : " ");
+        nb = !nb;
+      }
+      return buffer.join("");
+    } :
+    function(n) {
+      var buffer = [];
+      for (; n > 0; n--) buffer.push(nbsp);
+      return buffer.join("");
+    };
+  fixSpaces = wrap ?
+    // Create a set of white-space characters that will not be collapsed
+    // by the browser, but will not break text-wrapping either.
+    function(string) {
+      if (string.charAt(0) == " ") string = nbsp + string.slice(1);
+      return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
+    } :
+    function(string) {
+      return string.replace(/[\t ]/g, nbsp);
+    };
 }
 
 function makePartSpan(value, doc) {
@@ -41,7 +52,7 @@ var Editor = (function(){
   var newlineElements = {"P": true, "DIV": true, "LI": true};
 
   function asEditorLines(string) {
-    return splitSpaces(string.replace(/\t/g, "  ").replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
+    return fixSpaces(string.replace(/\t/g, "  ").replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
   }
 
   var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
@@ -55,7 +66,7 @@ var Editor = (function(){
 
     function simplifyNode(node) {
       if (node.nodeType == 3) {
-        var text = node.nodeValue = splitSpaces(node.nodeValue.replace(/\r/g, "").replace(/\n/g, " "));
+        var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/\r/g, "").replace(/\n/g, " "));
         if (text.length) leaving = false;
         result.push(node);
       }
@@ -325,9 +336,9 @@ var Editor = (function(){
     this.options = options;
     this.parent = parent;
     this.doc = document;
-    this.container = this.doc.body;
+    var container = this.container = this.doc.body;
     this.win = window;
-    this.history = new History(this.container, options.undoDepth, options.undoDelay,
+    this.history = new History(container, options.undoDepth, options.undoDelay,
                                this, options.onChange);
     var self = this;
 
@@ -336,17 +347,17 @@ var Editor = (function(){
     if (options.parserConfig && Editor.Parser.configure)
       Editor.Parser.configure(options.parserConfig);
 
-    if (!options.textWrapping)
-      this.container.style.whiteSpace = "pre";
+    // Can't just use the white-space style since IE is terminally broken.
+    setWhiteSpaceModel(options.textWrapping);
 
     if (!options.readOnly)
-      select.setCursorPos(this.container, {node: null, offset: 0});
+      select.setCursorPos(container, {node: null, offset: 0});
 
     this.dirty = [];
     if (options.content)
       this.importCode(options.content);
     else // FF acts weird when the editable document is completely empty
-      this.container.appendChild(this.doc.createElement("BR"));
+      container.appendChild(this.doc.createElement("BR"));
 
     if (!options.readOnly) {
       if (options.continuousScanning !== false) {
