@@ -240,10 +240,10 @@ var JSParser = Editor.Parser = (function() {
       if (atomicTypes.hasOwnProperty(type)) cont(maybeoperator);
       else if (type == "function") cont(functiondef);
       else if (type == "keyword c") cont(expression);
-      else if (type == "(") cont(pushlex(")"), expression, expect(")"), poplex);
+      else if (type == "(") cont(pushlex(")"), expression, expect(")"), poplex, maybeoperator);
       else if (type == "operator") cont(expression);
-      else if (type == "[") cont(pushlex("]"), commasep(expression), expect("]"), poplex);
-      else if (type == "{") cont(pushlex("}"), commasep(objprop), expect("}"), poplex);
+      else if (type == "[") cont(pushlex("]"), commasep(expression), expect("]"), maybeoperator, poplex);
+      else if (type == "{") cont(pushlex("}"), commasep(objprop), expect("}"), maybeoperator, poplex);
     }
     // Called for places where operators, function calls, or
     // subscripts are valid. Will skip on to the next action if none
