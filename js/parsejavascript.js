@@ -11,7 +11,7 @@ var JSParser = Editor.Parser = (function() {
   // Token types that can be considered to be atoms.
   var atomicTypes = {"atom": true, "number": true, "variable": true, "string": true, "regexp": true};
   // Constructor for the lexical context objects.
-  function JSLexical(indented, column, type, align, prev) {
+  function JSLexical(indented, column, type, align, prev, info) {
     // indentation at start of this line
     this.indented = indented;
     // column at which this scope was opened
@@ -25,20 +25,21 @@ var JSParser = Editor.Parser = (function() {
       this.align = align;
     // Parent scope, if any.
     this.prev = prev;
+    this.info = info;
   }
   // My favourite JavaScript indentation rules.
   function indentJS(lexical) {
     return function(firstChars) {
-      var firstChar = firstChars && firstChars.charAt(0);
-      var closing = firstChar == lexical.type;
-      if (lexical.type == "vardef")
+      var firstChar = firstChars && firstChars.charAt(0), type = lexical.type;
+      var closing = firstChar == type;
+      if (type == "vardef")
         return lexical.indented + 4;
-      else if (lexical.type == "form" && firstChar == "{")
+      else if (type == "form" && firstChar == "{")
         return lexical.indented;
-      else if (lexical.type == "switch")
-        return lexical.indented + (/^(?:case|default)\b/.test(firstChars) ? 2 : 4);
-      else if (lexical.type == "stat" || lexical.type == "form")
+      else if (type == "stat" || type == "form")
         return lexical.indented + 2;
+      else if (lexical.info == "switch" && !closing)
+        return lexical.indented + (/^(?:case|default)\b/.test(firstChars) ? 2 : 4);
       else if (lexical.align)
         return lexical.column - (closing ? 1 : 0);
       else
@@ -193,9 +194,9 @@ var JSParser = Editor.Parser = (function() {
     }
   
     // Push a new lexical context of the given type.
-    function pushlex(type){
+    function pushlex(type, info) {
       var result = function(){
-        lexical = new JSLexical(indented, column, type, null, lexical)
+        lexical = new JSLexical(indented, column, type, null, lexical, info)
       };
       result.lex = true;
       return result;
@@ -232,7 +233,7 @@ var JSParser = Editor.Parser = (function() {
       else if (type == "function") cont(functiondef);
       else if (type == "for") cont(pushlex("form"), expect("("), pushlex(")"), forspec1, expect(")"), poplex, statement, poplex);
       else if (type == "variable") cont(pushlex("stat"), maybelabel);
-      else if (type == "switch") cont(pushlex("form"), expression, pushlex("switch"), expect("{"), block, poplex, poplex);
+      else if (type == "switch") cont(pushlex("form"), expression, pushlex("}", "switch"), expect("{"), block, poplex, poplex);
       else if (type == "case") cont(expression, expect(":"));
       else if (type == "default") cont(expect(":"));
       else if (type == "catch") cont(pushlex("form"), pushcontext, expect("("), funarg, expect(")"), statement, poplex, popcontext);
