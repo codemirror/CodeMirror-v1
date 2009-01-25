@@ -371,6 +371,8 @@ var Editor = (function(){
           document.body.contentEditable = "true";
         else
           document.designMode = "on";
+
+        document.documentElement.style.borderWidth = "0";
         if (!options.textWrapping) container.style.whiteSpace = "pre";
       }
 
