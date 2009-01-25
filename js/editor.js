@@ -4,34 +4,22 @@
  * plain sequences of <span> and <br> elements
  */
 
-var safeWhiteSpace, fixSpaces;
-function setWhiteSpaceModel(wrap) {
-  safeWhiteSpace = wrap ?
-    // Make sure a string does not contain two consecutive 'collapseable'
-    // whitespace characters.
-    function(n) {
-      var buffer = [], nb = true;
-      for (; n > 0; n--) {
-        buffer.push((nb || n == 1) ? nbsp : " ");
-        nb = !nb;
-      }
-      return buffer.join("");
-    }
-  : function(n) {
-      var buffer = [];
-      for (; n > 0; n--) buffer.push(" ");
-      return buffer.join("");
-    };
-  fixSpaces = wrap ?
-    // Create a set of white-space characters that will not be collapsed
-    // by the browser, but will not break text-wrapping either.
-    function(string) {
-      if (string.charAt(0) == " ") string = nbsp + string.slice(1);
-      return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
-    }
-  : function(string) {
-      return string;
-    };
+// Make sure a string does not contain two consecutive 'collapseable'
+// whitespace characters.
+function makeWhiteSpace(n) {
+  var buffer = [], nb = true;
+  for (; n > 0; n--) {
+    buffer.push((nb || n == 1) ? nbsp : " ");
+    nb = !nb;
+  }
+  return buffer.join("");
+}
+
+// Create a set of white-space characters that will not be collapsed
+// by the browser, but will not break text-wrapping either.
+function fixSpaces(string) {
+  if (string.charAt(0) == " ") string = nbsp + string.slice(1);
+  return string.replace(/[\t \u00a0]{2,}/g, function(s) {return makeWhiteSpace(s.length);});
 }
 
 function makePartSpan(value, doc) {
@@ -347,8 +335,6 @@ var Editor = (function(){
     if (options.parserConfig && Editor.Parser.configure)
       Editor.Parser.configure(options.parserConfig);
 
-    setWhiteSpaceModel(options.textWrapping);
-
     if (!options.readOnly)
       select.setCursorPos(container, {node: null, offset: 0});
 
@@ -373,10 +359,18 @@ var Editor = (function(){
           document.designMode = "on";
 
         document.documentElement.style.borderWidth = "0";
-        container.style.whiteSpace = "pre";
-        if (options.textWrapping) {
-          if (internetExplorer) container.style.wordWrap = "break-word";
-          else container.style.whiteSpace = "pre-wrap";
+        if (internetExplorer) {
+          container.style.whiteSpace = "nowrap";
+          if (options.textWrapping) container.style.wordWrap = "break-word";
+        }
+        else {
+          if (options.textWrapping) {
+            container.style.whiteSpace = "-moz-pre-wrap";
+            container.style.whiteSpace = "pre-wrap";
+          }
+          else {
+            container.style.whiteSpace = "pre-wrap";
+          }
         }
       }
 
@@ -673,7 +667,7 @@ var Editor = (function(){
         }
         else {
           select.snapshotMove(whiteSpace.firstChild, whiteSpace.firstChild, indentDiff, true);
-          whiteSpace.currentText = safeWhiteSpace(newIndent);
+          whiteSpace.currentText = makeWhiteSpace(newIndent);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
       }
@@ -681,12 +675,12 @@ var Editor = (function(){
       else if (indentDiff > 0) {
         // If there is whitespace, we grow it.
         if (whiteSpace) {
-          whiteSpace.currentText = safeWhiteSpace(newIndent);
+          whiteSpace.currentText = makeWhiteSpace(newIndent);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
         }
         // Otherwise, we have to add a new whitespace node.
         else {
-          whiteSpace = makePartSpan(safeWhiteSpace(newIndent), this.doc);
+          whiteSpace = makePartSpan(makeWhiteSpace(newIndent), this.doc);
           whiteSpace.className = "whitespace";
           if (start) insertAfter(whiteSpace, start);
           else this.container.insertBefore(whiteSpace, this.container.firstChild);
