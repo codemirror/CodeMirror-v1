@@ -16,8 +16,8 @@ function setWhiteSpaceModel(wrap) {
         nb = !nb;
       }
       return buffer.join("");
-    } :
-    function(n) {
+    }
+  : function(n) {
       var buffer = [];
       for (; n > 0; n--) buffer.push(" ");
       return buffer.join("");
@@ -28,8 +28,8 @@ function setWhiteSpaceModel(wrap) {
     function(string) {
       if (string.charAt(0) == " ") string = nbsp + string.slice(1);
       return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
-    } :
-    function(string) {
+    }
+  : function(string) {
       return string;
     };
 }
@@ -145,7 +145,7 @@ var Editor = (function(){
 
     // Check whether a node is a normalized <span> element.
     function partNode(node){
-      if (node.nodeName == "SPAN" && node.childNodes.length == 1 && node.firstChild.nodeType == 3 && node.isPart) {
+      if (node.isPart && node.childNodes.length == 1 && node.firstChild.nodeType == 3) {
         node.currentText = node.firstChild.nodeValue;
         return !/[\n\t\r]/.test(node.currentText);
       }
@@ -367,7 +367,7 @@ var Editor = (function(){
       function setEditable() {
         // In IE, designMode frames can not run any scripts, so we use
         // contentEditable instead.
-        if (document.body.contentEditable != undefined && /MSIE/.test(navigator.userAgent))
+        if (document.body.contentEditable != undefined && internetExplorer)
           document.body.contentEditable = "true";
         else
           document.designMode = "on";

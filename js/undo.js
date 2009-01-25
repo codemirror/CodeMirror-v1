@@ -344,22 +344,17 @@ History.prototype = {
     // Clear the space where this change has to be made.
     removeRange(start, end);
 
-    // Build a function that will insert nodes before the end node of
-    // this chain.
-    var insert = end ?
-      function(node) {self.container.insertBefore(node, end);}
-    : function(node) {self.container.appendChild(node);};
-
     // Insert the content specified by the chain into the DOM tree.
     for (var i = 0; i < chain.length; i++) {
       var line = chain[i];
       // The start and end of the space are already correct, but BR
       // tags inside it have to be put back.
       if (i > 0)
-        insert(line.from);
+        self.container.insertBefore(line.from, end);
+
       // Add the text.
       var node = makePartSpan(fixSpaces(line.text), this.container.ownerDocument);
-      insert(node);
+      self.container.insertBefore(node, end);
       // See if the cursor was on this line. Put it back, adjusting
       // for changed line length, if it was.
       if (cursor && cursor.node == line.from) {
