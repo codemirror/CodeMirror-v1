@@ -118,6 +118,9 @@ var CodeMirror = (function(){
       return this.editor.getSearchCursor(string, fromCursor);
     },
 
+    undo: function() {this.editor.history.undo();},
+    redo: function() {this.editor.history.redo();},
+
     cursorPosition: function(start) {
       if (this.win.select.ie_selection) this.focus();
       return this.editor.cursorPosition(start);
