@@ -19,7 +19,7 @@ function setWhiteSpaceModel(wrap) {
     } :
     function(n) {
       var buffer = [];
-      for (; n > 0; n--) buffer.push(nbsp);
+      for (; n > 0; n--) buffer.push(" ");
       return buffer.join("");
     };
   fixSpaces = wrap ?
@@ -30,7 +30,7 @@ function setWhiteSpaceModel(wrap) {
       return string.replace(/[\t \u00a0]{2,}/g, function(s) {return safeWhiteSpace(s.length);});
     } :
     function(string) {
-      return string.replace(/[\t ]/g, nbsp);
+      return string;
     };
 }
 
@@ -347,7 +347,6 @@ var Editor = (function(){
     if (options.parserConfig && Editor.Parser.configure)
       Editor.Parser.configure(options.parserConfig);
 
-    // Can't just use the white-space style since IE is terminally broken.
     setWhiteSpaceModel(options.textWrapping);
 
     if (!options.readOnly)
@@ -372,6 +371,7 @@ var Editor = (function(){
           document.body.contentEditable = "true";
         else
           document.designMode = "on";
+        if (!options.textWrapping) container.style.whiteSpace = "pre";
       }
 
       // If setting the frame editable fails, try again when the user

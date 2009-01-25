@@ -79,7 +79,7 @@ var CodeMirror = (function(){
     if (typeof options.stylesheet == "string")
       options.stylesheet = [options.stylesheet];
 
-    var html = ["<html><head>"];
+    var html = ["<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"><html><head>"];
     forEach(options.stylesheet, function(file) {
       html.push("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + file + "\"/>");
     });
