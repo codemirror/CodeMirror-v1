@@ -373,7 +373,11 @@ var Editor = (function(){
           document.designMode = "on";
 
         document.documentElement.style.borderWidth = "0";
-        if (!options.textWrapping) container.style.whiteSpace = "pre";
+        container.style.whiteSpace = "pre";
+        if (options.textWrapping) {
+          if (internetExplorer) container.style.wordWrap = "break-word";
+          else container.style.whiteSpace = "pre-wrap";
+        }
       }
 
       // If setting the frame editable fails, try again when the user
