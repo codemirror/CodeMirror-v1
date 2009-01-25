@@ -359,19 +359,8 @@ var Editor = (function(){
           document.designMode = "on";
 
         document.documentElement.style.borderWidth = "0";
-        if (internetExplorer) {
+        if (!options.textWrapping)
           container.style.whiteSpace = "nowrap";
-          if (options.textWrapping) container.style.wordWrap = "break-word";
-        }
-        else {
-          if (options.textWrapping) {
-            container.style.whiteSpace = "-moz-pre-wrap";
-            container.style.whiteSpace = "pre-wrap";
-          }
-          else {
-            container.style.whiteSpace = "pre-wrap";
-          }
-        }
       }
 
       // If setting the frame editable fails, try again when the user
