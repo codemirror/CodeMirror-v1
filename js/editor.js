@@ -22,6 +22,12 @@ function fixSpaces(string) {
   return string.replace(/[\t \u00a0]{2,}/g, function(s) {return makeWhiteSpace(s.length);});
 }
 
+function cleanText(text) {
+  return text.replace(/\u00a0/g, " ").replace(/\u200b/g, "");
+}
+
+// Create a SPAN node with the expected properties for document part
+// spans.
 function makePartSpan(value, doc) {
   var text = value;
   if (value.nodeType == 3) text = value.nodeValue;
@@ -34,6 +40,22 @@ function makePartSpan(value, doc) {
   return span;
 }
 
+// On webkit, when the last BR of the document does not have text
+// behind it, the cursor can not be put on the line after it. This
+// makes pressing enter at the end of the document occasionally do
+// nothing (or at least seem to do nothing). To work around it, this
+// function makes sure the document ends with a span containing a
+// zero-width space character. The traverseDOM iterator filters such
+// character out again, so that the parsers won't see them. This
+// function is called from a few strategic places to make sure the
+// zwsp is restored after the highlighting process eats it.
+var webkitLastLineHack = webkit ?
+  function(container) {
+    var last = container.lastChild;
+    if (!last || !last.isPart || last.textContent != "\u200b")
+      container.appendChild(makePartSpan("\u200b", container.ownerDocument));
+  } : function() {};
+
 var Editor = (function(){
   // The HTML elements whose content should be suffixed by a newline
   // when converting them to flat text.
@@ -42,8 +64,6 @@ var Editor = (function(){
   function asEditorLines(string) {
     return fixSpaces(string.replace(/\t/g, "  ").replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
   }
-
-  var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
@@ -54,7 +74,7 @@ var Editor = (function(){
 
     function simplifyNode(node) {
       if (node.nodeType == 3) {
-        var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/\r/g, "").replace(/\n/g, " "));
+        var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/[\r\u200b]/g, "").replace(/\n/g, " "));
         if (text.length) leaving = false;
         result.push(node);
       }
@@ -189,10 +209,6 @@ var Editor = (function(){
 
     while (node && node.nodeName != "BR") node = node.nextSibling;
     return node;
-  }
-
-  function cleanText(text) {
-    return text.replace(/\u00a0/g, " ");
   }
 
   // Client interface for searching the content of the editor. Create
@@ -412,6 +428,7 @@ var Editor = (function(){
       var accum = [];
       select.markSelection(this.win);
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
+      webkitLastLineHack(this.container);
       select.selectMarked();
       return cleanText(accum.join(""));
     },
@@ -1162,6 +1179,7 @@ var Editor = (function(){
         }
       });
       if (lineDirty) this.history.touch(from);
+      webkitLastLineHack(this.container);
 
       // The function returns some status information that is used by
       // hightlightDirty to determine whether and where it has to

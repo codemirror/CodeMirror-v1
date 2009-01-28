@@ -216,10 +216,6 @@ History.prototype = {
   // Build chains from a set of touched nodes.
   touchedChains: function() {
     var self = this;
-    // Compare two strings, treating nbsps as spaces.
-    function compareText(a, b) {
-      return a.replace(/\u00a0/g, " ") == b.replace(/\u00a0/g, " ");
-    }
 
     // The temp system is a crummy hack to speed up determining
     // whether a (currently touched) node has a line object associated
@@ -237,7 +233,7 @@ History.prototype = {
       for (var cur = node ? node.nextSibling : self.container.firstChild;
            cur && cur.nodeName != "BR"; cur = cur.nextSibling)
         if (cur.currentText) text.push(cur.currentText);
-      return {from: node, to: cur, text: text.join("")};
+      return {from: node, to: cur, text: cleanText(text.join(""))};
     }
 
     // Filter out unchanged lines and nodes that are no longer in the
@@ -251,7 +247,7 @@ History.prototype = {
       else self.firstTouched = false;
 
       var line = buildLine(node), shadow = self.after(node);
-      if (!shadow || !compareText(shadow.text, line.text) || shadow.to != line.to) {
+      if (!shadow || shadow.text != line.text || shadow.to != line.to) {
         lines.push(line);
         setTemp(node, line);
       }

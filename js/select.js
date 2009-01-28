@@ -484,6 +484,7 @@ var select = {};
 
       range.deleteContents();
       range.insertNode(node);
+      webkitLastLineHack(window.document.body);
       range.setEndAfter(node);
       range.collapse(false);
       selectRange(range, window);
