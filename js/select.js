@@ -228,7 +228,7 @@ var select = {};
     // Used to normalize the effect of the enter key, since browsers
     // do widely different things when pressing enter in designMode.
     select.insertNewlineAtCursor = function(window) {
-      insertAtCursor(window, "<br/>");
+      insertAtCursor(window, "<br>");
     };
 
     select.insertTabAtCursor = function(window) {

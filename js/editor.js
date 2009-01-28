@@ -185,6 +185,8 @@ var Editor = (function(){
   }
   function endOfLine(node, container) {
     if (!node) node = container.firstChild;
+    else if (node.nodeName == "BR") node = node.nextSibling;
+
     while (node && node.nodeName != "BR") node = node.nextSibling;
     return node;
   }
@@ -437,7 +439,7 @@ var Editor = (function(){
 
     nextLine: function(line) {
       this.checkLine(line);
-      var end = endOfLine(line ? line.nextSibling : this.container.firstChild, this.container);
+      var end = endOfLine(line, this.container);
       return end || false;
     },
 
@@ -478,7 +480,7 @@ var Editor = (function(){
     insertIntoLine: function(line, position, content) {
       var before = null;
       if (position == "end") {
-        before = endOfLine(line ? line.nextSibling : this.container.firstChild, this.container);
+        before = endOfLine(line, this.container);
       }
       else {
         for (var cur = line ? line.nextSibling : this.container.firstChild; cur; cur = cur.nextSibling) {
@@ -559,13 +561,14 @@ var Editor = (function(){
 
     // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
+      var code = event.keyCode;
       // Don't scan when the user is typing.
       this.delayScanning();
       // Schedule a paren-highlight event, if configured.
       if (this.options.autoMatchParens)
         this.scheduleParenBlink();
 
-      if (event.keyCode == 13) { // enter
+      if (code == 13) { // enter
         if (event.ctrlKey) {
           this.reparseBuffer();
         }
@@ -576,24 +579,35 @@ var Editor = (function(){
         }
         event.stop();
       }
-      else if (event.keyCode == 9 && !this.options.normalTab) { // tab
+      else if (code == 9 && !this.options.normalTab) { // tab
         this.handleTab(!event.ctrlKey && !event.shiftKey);
         event.stop();
       }
-      else if (event.keyCode == 32 && event.shiftKey) { // space
+      else if (code == 32 && event.shiftKey) { // space
         this.handleTab(true);
         event.stop();
       }
-      else if (event.ctrlKey || event.metaKey) {
-        if (event.keyCode == 90 || event.keyCode == 8) { // Z, backspace
-          this.history.undo();
-          event.stop();
+      else if (event.metaKey && (code == 37 || code == 39)) { // Meta-left/right
+        var cursor = select.selectionTopNode(this.container);
+        if (cursor === false || !this.container.firstChild) return;
+
+        if (code == 37) select.focusAfterNode(startOfLine(cursor), this.container);
+        else {
+          end = endOfLine(cursor, this.container);
+          select.focusAfterNode(end ? end.previousSibling : this.container.lastChild, this.container);
         }
-        else if (event.keyCode == 89) { // Y
+        event.stop();
+      }
+      else if (event.ctrlKey || event.metaKey) {
+        if ((event.shiftKey && code == 90) || code == 89) { // shift-Z, Y
           this.history.redo();
           event.stop();
         }
-        else if (event.keyCode == 83 && this.options.saveFunction) { // S
+        else if (code == 90 || code == 8) { // Z, backspace
+          this.history.undo();
+          event.stop();
+        }
+        else if (code == 83 && this.options.saveFunction) { // S
           this.options.saveFunction();
           event.stop();
         }
