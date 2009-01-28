@@ -85,6 +85,11 @@ History.prototype = {
     }
   },
 
+  // Ask for the size of the un/redo histories.
+  historySize: function() {
+    return {undo: this.history.length, redo: this.redoHistory.length};
+  },
+
   // Push a changeset into the document.
   push: function(from, to, lines) {
     var chain = [];

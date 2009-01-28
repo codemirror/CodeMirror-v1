@@ -341,6 +341,12 @@
       programmatically changing it in any way except for calling
       <code>replace</code> on the cursor itself, might cause a cursor
       object to skip back to the beginning of the document.</dd>
+
+      <dt><code>undo()</code></dt><dd>Undo one changeset, if available.</dd>
+      <dt><code>redo()</code></dt><dd>Redo one changeset, if available.</dd>
+      <dt><code>historySize() &#8594; object</code></dt><dd>Get a
+      <code>{undo, redo}</code> object holding the sizes of the undo
+      and redo histories.</dd>
     </dl>
 
     <p>For detailed interaction with the content of the editor,

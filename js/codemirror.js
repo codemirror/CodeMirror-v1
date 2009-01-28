@@ -120,6 +120,7 @@ var CodeMirror = (function(){
 
     undo: function() {this.editor.history.undo();},
     redo: function() {this.editor.history.redo();},
+    historySize: function() {return this.editor.history.historySize();},
 
     cursorPosition: function(start) {
       if (this.win.select.ie_selection) this.focus();
