@@ -326,7 +326,7 @@ var JSParser = Editor.Parser = (function() {
   }
 
   return {make: parseJS,
-          electricChars: "{}:"
+          electricChars: "{}:",
           configure: function(conf) {if (conf.indentUnit != null) indentUnit = conf.indentUnit;}
          };
 })();
