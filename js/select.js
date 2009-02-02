@@ -322,10 +322,6 @@ var select = {};
   }
   // W3C model
   else {
-    // This is used to fix an issue with getting the scroll position
-    // in Opera.
-    var opera_scroll = window.scrollX == null;
-
     // Store start and end nodes, and offsets within these, and refer
     // back to the selection object from those nodes, so that this
     // object can be updated when the nodes are replaced before the
@@ -340,8 +336,6 @@ var select = {};
         start: {node: range.startContainer, offset: range.startOffset},
         end: {node: range.endContainer, offset: range.endOffset},
         window: win,
-        scrollX: opera_scroll && win.document.body.scrollLeft,
-        scrollY: opera_scroll && win.document.body.scrollTop,
         changed: false
       };
 
@@ -384,11 +378,6 @@ var select = {};
         }
       }
 
-      // Have to restore the scroll position of the frame in Opera.
-      if (opera_scroll) {
-        win.document.body.scrollLeft = currentSelection.scrollX;
-        win.document.body.scrollTop = currentSelection.scrollY;
-      }
       setPoint(currentSelection.end, "End");
       setPoint(currentSelection.start, "Start");
       selectRange(range, win);
@@ -485,10 +474,10 @@ var select = {};
       range.deleteContents();
       range.insertNode(node);
       webkitLastLineHack(window.document.body);
-      range.setEndAfter(node);
+      range = window.document.createRange();
+      range.selectNode(node);
       range.collapse(false);
       selectRange(range, window);
-      return node;
     }
 
     select.insertNewlineAtCursor = function(window) {
@@ -579,7 +568,7 @@ var select = {};
 
       var screen_y = y - body.scrollTop;
       if (screen_y < 0 || screen_y > win.innerHeight - 10)
-        win.scrollTo(0, y);
+        win.scrollTop = y;
     };
   }
 })();
