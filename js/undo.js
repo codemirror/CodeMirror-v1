@@ -95,7 +95,7 @@ History.prototype = {
     var chain = [];
     for (var i = 0; i < lines.length; i++) {
       var end = (i == lines.length - 1) ? to : this.container.ownerDocument.createElement("BR");
-      chain.push({from: from, to: end, text: lines[i]});
+      chain.push({from: from, to: end, text: cleanText(lines[i])});
       from = end;
     }
     this.pushChains([chain], from == null && to == null);
