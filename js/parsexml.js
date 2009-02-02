@@ -15,6 +15,8 @@ var XMLParser = Editor.Parser = (function() {
   var NoKludges = {autoSelfClosers: {}, doNotIndent: {}};
   var UseKludges = Kludges;
 
+  var indentUnit = 2;
+
   // Simple stateful tokenizer for XML documents. Returns a
   // MochiKit-style iterator, with a state property that contains a
   // function encapsulating the current state. See tokenize.js.
@@ -170,7 +172,7 @@ var XMLParser = Editor.Parser = (function() {
         while (context && !context.startOfLine)
           context = context.prev;
         if (context)
-          return context.indent + 2;
+          return context.indent + indentUnit;
         else
           return 0;
       };
@@ -277,10 +279,10 @@ var XMLParser = Editor.Parser = (function() {
     make: parseXML,
     electricChars: "/",
     configure: function(config) {
-      if (config.useHTMLKludges)
-        UseKludges = Kludges;
-      else
-        UseKludges = NoKludges;
+      if (config.useHTMLKludges != null)
+        UseKludges = config.useHTMLKludges ? Kludges : NoKludges;
+      if (config.indentUnit != null)
+        indentUnit = config.indentUnit;
     }
   };
 })();
