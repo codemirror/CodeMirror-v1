@@ -567,8 +567,8 @@ var select = {};
       }
 
       var screen_y = y - body.scrollTop;
-      if (screen_y < 0 || screen_y > win.innerHeight - 10)
-        win.scrollTop = y;
+      if (screen_y < 0 || screen_y > win.innerHeight - 30)
+        win.scrollTo(body.scrollLeft, y);
     };
   }
 })();
