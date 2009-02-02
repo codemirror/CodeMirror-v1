@@ -27,6 +27,9 @@ var JSParser = Editor.Parser = (function() {
     this.prev = prev;
     this.info = info;
   }
+
+  var indentUnit = 2;
+
   // My favourite JavaScript indentation rules.
   function indentJS(lexical) {
     return function(firstChars) {
@@ -37,13 +40,13 @@ var JSParser = Editor.Parser = (function() {
       else if (type == "form" && firstChar == "{")
         return lexical.indented;
       else if (type == "stat" || type == "form")
-        return lexical.indented + 2;
+        return lexical.indented + indentUnit;
       else if (lexical.info == "switch" && !closing)
-        return lexical.indented + (/^(?:case|default)\b/.test(firstChars) ? 2 : 4);
+        return lexical.indented + (/^(?:case|default)\b/.test(firstChars) ? indentUnit : 2 * indentUnit);
       else if (lexical.align)
         return lexical.column - (closing ? 1 : 0);
       else
-        return lexical.indented + (closing ? 0 : 2);
+        return lexical.indented + (closing ? 0 : indentUnit);
     };
   }
 
@@ -322,5 +325,8 @@ var JSParser = Editor.Parser = (function() {
     return parser;
   }
 
-  return {make: parseJS, electricChars: "{}:"};
+  return {make: parseJS,
+          electricChars: "{}:"
+          configure: function(conf) {if (conf.indentUnit != null) indentUnit = conf.indentUnit;}
+         };
 })();
