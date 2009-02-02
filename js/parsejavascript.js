@@ -65,7 +65,7 @@ var JSParser = Editor.Parser = (function() {
     // variables defined in that, and the scopes above it.
     var context = null;
     // The lexical scope, used mostly for indentation.
-    var lexical = new JSLexical((basecolumn || 0) - 2, 0, "block", false);
+    var lexical = new JSLexical((basecolumn || 0) - indentUnit, 0, "block", false);
     // Current column, and the indentation at the start of the current
     // line. Used to create lexical scope objects.
     var column = 0;
