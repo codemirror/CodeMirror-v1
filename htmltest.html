@@ -3,6 +3,16 @@
     <script src="js/codemirror.js" type="text/javascript"></script>
     <title>CodeMirror: HTML/XML demonstration</title>
     <link rel="stylesheet" type="text/css" href="css/docs.css"/>
+    <style type="text/css">
+      .CodeMirror-line-numbers {
+        width: 1.7em;
+        background-color: #eee;
+        text-align: right;
+        padding-right: .3em;
+        color: #aaa;
+        font-size: 70%;
+      }
+    </style>
   </head>
   <body style="padding: 20px;">
 
@@ -32,7 +42,8 @@ more information.</p>
     parserfile: "parsexml.js",
     stylesheet: "css/xmlcolors.css",
     path: "js/",
-    continuousScanning: 500
+    continuousScanning: 500,
+    lineNumbers: true
   });
 </script>
   </body>

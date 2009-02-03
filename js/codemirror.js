@@ -47,8 +47,78 @@ var CodeMirror = (function(){
     dumbTabs: false,
     normalTab: false,
     activeTokens: null,
-    cursorActivity: null
+    cursorActivity: null,
+    lineNumbers: false
   });
+
+  function wrapLineNumberDiv(place) {
+    return function(node) {
+      var container = document.createElement("DIV"),
+          nums = document.createElement("DIV");
+      nums.className = "CodeMirror-line-numbers";
+      container.style.position = "relative";
+      nums.style.position = "absolute";
+      nums.style.height = "100%";
+      if (nums.style.setExpression)
+        nums.style.setExpression("height", "this.previousSibling.offsetHeight + 'px'");
+      nums.style.top = "0px";
+      nums.style.overflow = "hidden";
+      place(container);
+      container.appendChild(node);
+      container.appendChild(nums);
+    }
+  }
+
+  function nodeTop(node) {
+    var accum = 0;
+    while (node) {
+      accum += node.offsetTop;
+      node = node.offsetParent;
+    }
+    return accum;
+  }
+
+  function computedStyle(el) {
+    return el.currentStyle || el.ownerDocument.defaultView.getComputedStyle(el, null);
+  }
+
+  var defaultWidth = "25px";
+
+  function applyLineNumbers(frame) {
+    var win = frame.contentWindow, doc = win.document,
+        nums = frame.nextSibling, scroller = document.createElement("DIV"),
+        test = doc.createElement("SPAN");
+
+    var width = nums.offsetWidth + "px";
+    if (nums.offsetWidth <= 10) nums.style.width = width = defaultWidth;
+    frame.parentNode.style.marginLeft = width;
+    nums.style.left = "-" + width;
+
+    test.appendChild(doc.createTextNode("\u200b"));
+    doc.body.insertBefore(test, doc.body.firstChild);
+    setTimeout(function() {
+      scroller.style.paddingTop = nodeTop(test) + "px";
+      var computedHeight = computedStyle(test).lineHeight;
+      scroller.style.lineHeight = /px$/.test(computedHeight) ? computedHeight : test.offsetHeight + "px";
+      doc.body.removeChild(test);
+
+      nums.appendChild(scroller);
+      var nextNum = 1;
+      function resize() {
+        var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
+        for (var n = Math.ceil(diff / 10); n > 0; n--) {
+          scroller.appendChild(document.createTextNode(String(nextNum++)));
+          scroller.appendChild(document.createElement("BR"));
+        }
+      }
+      resize();
+      win.addEventHandler(doc, "resize", resize);
+      win.addEventHandler(win, "scroll", function(){
+        resize();
+        nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
+      });
+    }, 0);
+  }
 
   function CodeMirror(place, options) {
     // Use passed options, if any, to override defaults.
@@ -64,10 +134,12 @@ var CodeMirror = (function(){
     // always add it, redundant as it sounds.
     frame.style.display = "block";
 
-    if (place.appendChild)
-      place.appendChild(frame);
-    else
-      place(frame);
+    if (place.appendChild) {
+      var node = place;
+      place = function(n){node.appendChild(n);};
+    }
+    if (options.lineNumbers) place = wrapLineNumberDiv(place);
+    place(frame);
 
     // Link back to this object, so that the editor can fetch options
     // and add a reference to itself.
@@ -96,6 +168,11 @@ var CodeMirror = (function(){
   }
 
   CodeMirror.prototype = {
+    init: function() {
+      if (this.options.initCallback) this.options.initCallback(this);
+      if (this.options.lineNumbers) applyLineNumbers(this.frame);
+    },
+
     getCode: function() {return this.editor.getCode();},
     setCode: function(code) {this.editor.importCode(code);},
     selection: function() {return this.editor.selectedText();},

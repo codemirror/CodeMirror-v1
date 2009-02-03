@@ -243,6 +243,15 @@
       enable text-wrapping in the editor frame. Default is
       <code>true</code>.</dd>
 
+      <dt><code>lineNumbers</code></dt><dd>Show line numbers to the
+      left of the editor. This requires you to specify a style for the
+      <code>CodeMirror-line-numbers</code> CSS class (in the outer
+      document) to configure the width, font, colors, etcetera for the
+      line-number DIV. (CodeMirror sets a <code>line-height</code>
+      style for this element, but some styles might have an effect on
+      the height of lines, which will cause the numbers to be aligned
+      incorrectly.) Defaults to <code>false</code>.</dd>
+
       <dt><code>dumbTabs</code></dt><dd>When this is set to
       <code>true</code>, pressing tab will insert four spaces rather
       than re-indenting the selected lines. Default
