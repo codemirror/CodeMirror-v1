@@ -1094,7 +1094,7 @@ var Editor = (function(){
             this.remove();
             part = this.get();
             // Adjust selection information, if any. See select.js for details.
-            select.snapshotMove(old.firstChild, part.firstChild || part, 0);
+            select.snapshotMove(old.firstChild, part && (part.firstChild || part), 0);
           }
           return part;
         }
@@ -1185,7 +1185,7 @@ var Editor = (function(){
       // hightlightDirty to determine whether and where it has to
       // continue.
       return {left: lines,
-              node: parts.get(),
+              node: parts.getNonEmpty(),
               dirty: lineDirty};
     }
   };
