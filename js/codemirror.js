@@ -35,7 +35,7 @@ var CodeMirror = (function(){
     continuousScanning: false,
     saveFunction: null,
     onChange: null,
-    undoDepth: 20,
+    undoDepth: 50,
     undoDelay: 800,
     disableSpellcheck: true,
     textWrapping: true,
