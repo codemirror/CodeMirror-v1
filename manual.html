@@ -443,30 +443,30 @@
       document.</dd>
       <dt><code>lastLine()</code> &#8594;
       <code>handle</code></dt><dd>The last line.</dd>
-      <dt><code>nextLine(line)</code> &#8594;
+      <dt><code>nextLine(handle)</code> &#8594;
       <code>handle</code></dt><dd>Get the line after the given one, or
       <code>false</code> if that was the last line.</dd>
-      <dt><code>prevLine(line)</code> &#8594;
+      <dt><code>prevLine(handle)</code> &#8594;
       <code>handle</code></dt><dd>Find the line before the given one,
       return <code>false</code> if that was the first line.</dd>
       <dt><code>nthLine(number)</code> &#8594;
       <code>handle</code></dt><dd>Find the Nth line of the document.
       Note that the first line counts as one, not zero. Returns
       <code>false</code> if there is no such line.</dd>
-      <dt><code>lineContent(line)</code> &#8594;
+      <dt><code>lineContent(handle)</code> &#8594;
       <code>string</code></dt><dd>Retrieve the content of the
       line.</dd>
-      <dt><code>setLineContent(line, string)</code></dt><dd>Replace
+      <dt><code>setLineContent(handle, string)</code></dt><dd>Replace
       the content of the line with the given string.</dd>
-      <dt><code>lineNumber(line)</code> &#8594;
+      <dt><code>lineNumber(handle)</code> &#8594;
       <code>number</code></dt><dd>Ask which line of the document
       (1-based) the given line is.</dd>
-      <dt><code>selectLines(startLine, startOffset, endLine,
-      endOffset)</code></dt><dd>Move the selection to a specific
-      point. <code>endLine</code> and <code>endOffset</code> can be
-      omitted to just place the cursor somewhere without selecting any
-      text.</dd>
-      <dt><code>insertIntoLine(line, position,
+      <dt><code>selectLines(startHandle, startOffset,
+      endHandle, endOffset)</code></dt><dd>Move the selection to a
+      specific point. <code>endHandle</code> and
+      <code>endOffset</code> can be omitted to just place the cursor
+      somewhere without selecting any text.</dd>
+      <dt><code>insertIntoLine(handle, position,
       text)</code></dt><dd>Insert a piece of text into a line.
       <code>position</code> can be an integer, specifying the position
       in the line where the text should be inserted, or the string
