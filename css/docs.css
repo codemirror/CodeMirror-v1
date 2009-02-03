@@ -9,6 +9,10 @@ h1 {
   font-size: 22pt;
 }
 
+h1.underline {
+  border-bottom: 3px solid #C44;
+}
+
 h2 {
   font-size: 14pt;
 }

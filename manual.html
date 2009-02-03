@@ -4,9 +4,19 @@
     <link rel="stylesheet" type="text/css" href="css/docs.css"/>
   </head>
   <body>
-    <h1>CodeMirror user manual</h1>
+    <h1 class="underline">CodeMirror user manual</h1>
 
-    <h2>Basic Usage</h2>
+    <h2>Contents</h2>
+
+    <ul>
+      <li><a href="#useage">Basic Useage</a></li>
+      <li><a href="#configuration">Configuration</a></li>
+      <li><a href="#parsers">Parsers</a></li>
+      <li><a href="#programming">Programming Interface</a></li>
+      <li><a href="#writeparser">Writing a Parser</a></li>
+    </ul>
+
+    <h2 id="useage">Basic Usage</h2>
 
     <p>Inside the editor, the tab key (or shift-space) is used to
     re-indent the current selection (or the current line when nothing
@@ -141,7 +151,7 @@
     parsers. These all start with either <code>parse</code> or
     <code>tokenize</code>.</p>
 
-    <h2>Configuration</h2>
+    <h2 id="configuration">Configuration</h2>
 
     <p>There are three ways to configure CodeMirror:</p>
 
@@ -283,9 +293,10 @@
       of the node (so no turning the span into a link), since this
       will greatly confuse the editor.</dd>
 
-      <dt><code>parserConfig</code></dt><dd>A value that is passed
-      along to the parser to configure it. What this value may look
-      like depends on the parser used.</dd>
+      <dt id="parserConfig"><code>parserConfig</code></dt><dd>An
+      object value that is passed along to the parser to configure it.
+      What this object should look like depends on the parser
+      used.</dd>
 
       <dt><code>content</code></dt><dd>The starting content of the
       editor. You'll probably not want to provide a global default for
@@ -294,7 +305,56 @@
 
     </dl>
 
-    <h2>Programming interface</h2>
+    <h2 id="parsers">Parsers</h2>
+
+    <p>The following parsers come with the distribution of CodeMirror:</p>
+
+    <dl>
+      <dt><code><a
+      href="js/parsexml.js">parsexml.js</a></code></dt><dd>A HTML/XML
+      parser. Takes two configuration options (see the <code><a
+      href="#parserConfig">parserConfig</a></code> option above):
+      <code>useHTMLKludges</code> to specify whether the content of
+      the editor is HTML or XML, and things like self-closing tags
+      (<code>br</code>, <code>img</code>) exist. This defaults to
+      <code>true</code>. An <code>indentUnit</code> option (integer)
+      can be given to specify the amount of space one 'level' of
+      indentation should add. Default is <code>2</code>. Example
+      colours for the styles that this parser uses are defined in
+      <code><a
+      href="css/xmlcolors.css">css/xmlcolors.css</a></code>.</dd>
+
+      <dt><code><a
+      href="js/tokenizejavascript.js">tokenizejavascript.js</a></code>,
+      <code><a
+      href="js/parsejavascript.js">parseejavascript.js</a></code></dt><dd>The
+      JavaScript parser. Takes one option, <code>indentUnit</code>,
+      which works as in the XML parser. Example colours in <code><a
+      href="css/jscolors.css">css/jscolors.css</a></code></dd>
+
+      <dt><code><a
+      href="js/parsecss.js">parsecss.js</a></code></dt><dd>A CSS
+      parser. Takes no options. Styles in <code><a
+      href="css/csscolors.css">css/csscolors.css</a></code></dd>
+
+      <dt><code><a
+      href="js/parsehtmlmixed.js">parsehtmlmixed.js</a></code></dt><dd>A
+      mixed-mode HTML parser. Requires the XML, JavaScript, and CSS
+      parsers to also be loaded, so your <code>parserFile</code>
+      option looks something like <code>["parsexml.js", "parsecss.js",
+      "tokenizejavascript.js", "parsejavascript.js",
+      "parsehtmlmixed.js"]</code>. Supports a <code>indentUnit</code>
+      configuration option.</dd>
+
+      <dt><code><a
+      href="js/parsesparql.js">parsesparql.js</a></code></dt><dd>Parses
+      the <a href="http://en.wikipedia.org/wiki/SPARQL">SPARQL</a>
+      query language. Example styles in <code><a
+      href="css/sparqlcolors.css">css/sparqlcolors.css</a></code></dd>
+
+    </dl>
+
+    <h2 id="programming">Programming Interface</h2>
 
     <p>To be as flexible as possible, CodeMirror implements a very
     plain editable field, without any accompanying buttons, bells, and
@@ -410,7 +470,7 @@
       <code>"end"</code>, for the end of the line.</dd>
     </dl>
 
-    <h2>Writing a parser</h2>
+    <h2 id="writeparser">Writing a Parser</h2>
 
     <p>A parser is implemented by one or more files (see
     <code>parserfile</code> above) which, when loaded, add a
