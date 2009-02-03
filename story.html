@@ -3,8 +3,8 @@
     <title>Implementing a syntax-higlighting JavaScript editor in JavaScript</title>
     <style type="text/css">
       body {
-        font-family: tahoma, arial, sans-serif;
-        padding: 3em 8em;
+        padding: 3em 6em;
+        max-width: 50em;
       }
       h1 {
         text-align: center;
@@ -16,7 +16,7 @@
       code {
         font-family: courier, monospace;
         font-size: 80%;
-        color: #448888;
+        color: #144;
       }
       p {
         margin: 1em 0;
@@ -42,6 +42,11 @@
       <b>Date</b>: May 24th 2007
     </p>
 
+    <p style="color: #811; font-size: 90%; font-style: italic">Note: some of the details given here no
+    longer apply to the current <a
+    href="http://marijn.haverbeke.nl/codemirror">CodeMirror</a>
+    codebase, which has evolved quite a bit in the meantime.</p>
+
     <p>In one of his (very informative) <a
     href="http://video.yahoo.com/?t=t&amp;p=douglascrockford">video
     lectures</a>, Douglas Crockford remarks that writing JavaScript for
@@ -58,7 +63,7 @@
     <p>In this document I describe the story of implementing this, for your
     education and amusement. A demonstration of the resulting program,
     along with the source code, can be found at <a
-    href="index.html">my website</a>.</p>
+    href="http://marijn.haverbeke.nl/codemirror">my website</a>.</p>
 
     <h2>Take one: Only indentation</h2>
 
@@ -148,7 +153,7 @@
     myself waiting for over four seconds every time I pressed enter. That
     seemed a little slow.</p>
 
-    <h2><code>designMode</code> it is</h2>
+    <h2>designMode it is</h2>
 
     <p>The solution was obvious: Since the text inside a textarea can only be
     manipulated as one single big string, I had to spread it out over

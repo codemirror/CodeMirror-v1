@@ -1,15 +1,15 @@
 body {
   margin: 0;
-  font-family: tahoma, arial, sans-serif;
   padding: 3em 6em;
   color: black;
+  max-width: 50em;
 }
 
 h1 {
   font-size: 22pt;
 }
 
-h1.underline {
+.underline {
   border-bottom: 3px solid #C44;
 }
 
@@ -30,7 +30,7 @@ div.border {
 code {
   font-family: courier, monospace;
   font-size: 90%;
-  color: #155;
+  color: #144;
 }
 
 pre.code {
