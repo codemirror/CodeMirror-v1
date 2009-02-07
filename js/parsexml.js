@@ -186,7 +186,6 @@ var XMLParser = Editor.Parser = (function() {
     function element(style, content) {
       if (content == "<") cont(tagname, attributes, endtag(tokenNr == 1));
       else if (content == "</") cont(closetagname, expect(">"));
-      else if (content == "<?") cont(tagname, attributes, expect("?>"));
       else if (harmlessTokens.hasOwnProperty(style)) cont();
       else mark("xml-error") || cont();
     }
