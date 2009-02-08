@@ -86,38 +86,45 @@ var CodeMirror = (function(){
 
   function applyLineNumbers(frame) {
     var win = frame.contentWindow, doc = win.document,
-        nums = frame.nextSibling, scroller = document.createElement("DIV"),
-        test = doc.createElement("SPAN");
+        nums = frame.nextSibling, scroller = document.createElement("DIV");
 
-    var width = nums.offsetWidth + "px";
-    if (nums.offsetWidth <= 10) nums.style.width = width = defaultWidth;
-    frame.parentNode.style.marginLeft = width;
-    nums.style.left = "-" + width;
+    // Look at actual DOM to find out how big the top margin and the
+    // line height inside the editor are.
+    function sampleSizes() {
+      var width = nums.offsetWidth + "px";
+      if (nums.offsetWidth <= 10) nums.style.width = width = defaultWidth;
+      frame.parentNode.style.marginLeft = width;
+      nums.style.left = "-" + width;
 
-    test.appendChild(doc.createTextNode("\u200b"));
-    doc.body.insertBefore(test, doc.body.firstChild);
-    setTimeout(function() {
-      scroller.style.paddingTop = nodeTop(test) + "px";
-      var computedHeight = computedStyle(test).lineHeight;
-      scroller.style.lineHeight = /px$/.test(computedHeight) ? computedHeight : test.offsetHeight + "px";
-      doc.body.removeChild(test);
+      var test = doc.createElement("SPAN");
+      test.style.position = "absolute"
+      test.appendChild(doc.createTextNode("\u00a0"));
+      doc.body.insertBefore(test, doc.body.firstChild);
+      setTimeout(function() {
+        scroller.style.paddingTop = nodeTop(test) + "px";
+        var computedHeight = computedStyle(test).lineHeight;
+        scroller.style.lineHeight = /px$/.test(computedHeight) ? computedHeight : test.offsetHeight + "px";
+        doc.body.removeChild(test);
+      }, 0);
+    }
 
-      nums.appendChild(scroller);
-      var nextNum = 1;
-      function resize() {
+    nums.appendChild(scroller);
+    var nextNum = 1, prevHeight = null;
+    function update() {
+      if (doc.body.offsetHeight != prevHeight) {
+        prevHeight = doc.body.offsetHeight;
+        sampleSizes();
         var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
         for (var n = Math.ceil(diff / 10); n > 0; n--) {
           scroller.appendChild(document.createTextNode(String(nextNum++)));
           scroller.appendChild(document.createElement("BR"));
         }
       }
-      resize();
-      win.addEventHandler(doc, "resize", resize);
-      win.addEventHandler(win, "scroll", function(){
-        resize();
-        nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
-      });
-    }, 0);
+      nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
+    }
+    update();
+    win.addEventHandler(win, "scroll", update);
+    setInterval(update, 500);
   }
 
   function CodeMirror(place, options) {
