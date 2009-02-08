@@ -78,47 +78,70 @@ var CodeMirror = (function(){
     return accum;
   }
 
-  function computedStyle(el) {
-    return el.currentStyle || el.ownerDocument.defaultView.getComputedStyle(el, null);
+  function createStyleStub(document, selector, content) {
+    var styleNode = document.createElement("STYLE");
+    styleNode.type = "text/css";
+    document.body.appendChild(styleNode);
+    if (document.styleSheets.length == 0) return "wait";
+
+    var sheet = (document.styleSheets[document.styleSheets.length - 1]);
+    if (sheet.cssRules) {
+      sheet.insertRule(selector + " {" + content + "}", 0);
+      return sheet.cssRules[0].style;
+    }
+    else if (sheet.rules) {
+      sheet.addRule(selector, content);
+      return sheet.rules[0].style;
+    }
   }
 
   var defaultWidth = "25px";
 
   function applyLineNumbers(frame) {
     var win = frame.contentWindow, doc = win.document,
-        nums = frame.nextSibling, scroller = document.createElement("DIV");
+        nums = frame.nextSibling, scroller = document.createElement("DIV"),
+        style = createStyleStub(document, ".CodeMirror-line-numbers .CodeMirror-line-div", "height: auto");
+
+    // Hack: Webkit sometimes doesn't initalise it's
+    // document.styleSheets object right away, and when CodeMirror is
+    // called directly from a script tag, it can end up seeing an
+    // empty styleSheets array. In this case, retry later.
+    if (style == "wait") {setTimeout(function(){applyLineNumbers(frame);}, 50); return;}
+    nums.appendChild(scroller);
 
     // Look at actual DOM to find out how big the top margin and the
     // line height inside the editor are.
-    function sampleSizes() {
+    function sampleSizes(c) {
       var width = nums.offsetWidth + "px";
       if (nums.offsetWidth <= 10) nums.style.width = width = defaultWidth;
       frame.parentNode.style.marginLeft = width;
       nums.style.left = "-" + width;
 
-      var test = doc.createElement("SPAN");
+      var test = doc.createElement("DIV");
       test.style.position = "absolute"
-      test.appendChild(doc.createTextNode("\u00a0"));
+      test.innerHTML = "<span>&nbsp;</span><br><span>&nbsp;</span>";
       doc.body.insertBefore(test, doc.body.firstChild);
       setTimeout(function() {
         scroller.style.paddingTop = nodeTop(test) + "px";
-        var computedHeight = computedStyle(test).lineHeight;
-        scroller.style.lineHeight = /px$/.test(computedHeight) ? computedHeight : test.offsetHeight + "px";
+        style.height = (test.lastChild.offsetTop - test.firstChild.offsetTop) + "px";
         doc.body.removeChild(test);
+        c();
       }, 0);
     }
 
-    nums.appendChild(scroller);
     var nextNum = 1, prevHeight = null;
     function update() {
       if (doc.body.offsetHeight != prevHeight) {
         prevHeight = doc.body.offsetHeight;
-        sampleSizes();
-        var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
-        for (var n = Math.ceil(diff / 10); n > 0; n--) {
-          scroller.appendChild(document.createTextNode(String(nextNum++)));
-          scroller.appendChild(document.createElement("BR"));
-        }
+        sampleSizes(function() {
+          var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
+          for (var n = Math.ceil(diff / 10); n > 0; n--) {
+            var div = document.createElement("DIV");
+            div.className = "CodeMirror-line-div";
+            div.appendChild(document.createTextNode(nextNum++));
+            scroller.appendChild(div);
+          }
+        });
       }
       nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
     }
