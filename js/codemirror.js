@@ -122,9 +122,11 @@ var CodeMirror = (function(){
       test.innerHTML = "<span>&nbsp;</span><br><span>&nbsp;</span>";
       doc.body.insertBefore(test, doc.body.firstChild);
       setTimeout(function() {
-        scroller.style.paddingTop = nodeTop(test) + "px";
-        style.height = (test.lastChild.offsetTop - test.firstChild.offsetTop) + "px";
-        doc.body.removeChild(test);
+        if (test.parentNode) {
+          scroller.style.paddingTop = nodeTop(test) + "px";
+          style.height = (test.lastChild.offsetTop - test.firstChild.offsetTop) + "px";
+          doc.body.removeChild(test);
+        }
         c();
       }, 0);
     }
