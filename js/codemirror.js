@@ -122,6 +122,7 @@ var CodeMirror = (function(){
         var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
         for (var n = Math.ceil(diff / 10); n > 0; n--) {
           var div = document.createElement("DIV");
+          div.style.overflow = "hidden";
           div.style.height = lineHeight;
           div.appendChild(document.createTextNode(nextNum++));
           scroller.appendChild(div);
