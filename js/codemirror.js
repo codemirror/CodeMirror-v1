@@ -156,6 +156,7 @@ var CodeMirror = (function(){
     setDefaults(options, CodeMirrorConfig);
 
     var frame = this.frame = document.createElement("IFRAME");
+    frame.frameBorder = 0;
     frame.src = "javascript:false;";
     frame.style.border = "0";
     frame.style.width = options.width;
