@@ -553,7 +553,7 @@ var select = {};
     };
 
     select.scrollToCursor = function(container) {
-      var body = container.ownerDocument.body, win = container.ownerDocument.defaultView;
+      var doc = container.ownerDocument, body = doc.body, win = doc.defaultView, html = doc.documentElement;
       var element = select.selectionTopNode(container, true) || container.firstChild;
       
       // In Opera, BR elements *always* have a scrollTop property of zero. Go Opera.
@@ -566,9 +566,9 @@ var select = {};
         pos = pos.offsetParent;
       }
 
-      var screen_y = y - body.scrollTop;
+      var screen_y = y - (body.scrollTop || html.scrollTop || 0);
       if (screen_y < 0 || screen_y > win.innerHeight - 30)
-        win.scrollTo(body.scrollLeft, y);
+        win.scrollTo(body.scrollLeft || html.scrollLeft || 0, y);
     };
   }
 })();
