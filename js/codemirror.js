@@ -78,72 +78,54 @@ var CodeMirror = (function(){
     return accum;
   }
 
-  function createStyleStub(document, selector, content) {
-    var styleNode = document.createElement("STYLE");
-    styleNode.type = "text/css";
-    document.body.appendChild(styleNode);
-    if (document.styleSheets.length == 0) return "wait";
-
-    var sheet = (document.styleSheets[document.styleSheets.length - 1]);
-    if (sheet.cssRules) {
-      sheet.insertRule(selector + " {" + content + "}", 0);
-      return sheet.cssRules[0].style;
-    }
-    else if (sheet.rules) {
-      sheet.addRule(selector, content);
-      return sheet.rules[0].style;
-    }
-  }
-
   var defaultWidth = "25px";
 
   function applyLineNumbers(frame) {
     var win = frame.contentWindow, doc = win.document,
-        nums = frame.nextSibling, scroller = document.createElement("DIV"),
-        style = createStyleStub(document, ".CodeMirror-line-numbers .CodeMirror-line-div", "height: auto");
+        nums = frame.nextSibling, scroller = document.createElement("DIV");
 
-    // Hack: Webkit sometimes doesn't initalise it's
-    // document.styleSheets object right away, and when CodeMirror is
-    // called directly from a script tag, it can end up seeing an
-    // empty styleSheets array. In this case, retry later.
-    if (style == "wait") {setTimeout(function(){applyLineNumbers(frame);}, 50); return;}
     nums.appendChild(scroller);
+
+    var lineHeight = "0px";
 
     // Look at actual DOM to find out how big the top margin and the
     // line height inside the editor are.
-    function sampleSizes(c) {
+    function sampleSizes() {
       var width = nums.offsetWidth + "px";
       if (nums.offsetWidth <= 10) nums.style.width = width = defaultWidth;
       frame.parentNode.style.marginLeft = width;
       nums.style.left = "-" + width;
 
-      var test = doc.createElement("DIV");
-      test.style.position = "absolute"
-      test.innerHTML = "<span>&nbsp;</span><br><span>&nbsp;</span>";
-      doc.body.insertBefore(test, doc.body.firstChild);
-      setTimeout(function() {
-        if (test.parentNode) {
-          scroller.style.paddingTop = nodeTop(test) + "px";
-          style.height = (test.lastChild.offsetTop - test.firstChild.offsetTop) + "px";
-          doc.body.removeChild(test);
+      if (doc.body.firstChild)
+        scroller.style.paddingTop = nodeTop(doc.body.firstChild) + "px";
+
+      for (var cur = doc.body.firstChild; cur; cur = cur.nextSibling) {
+        var prev = cur.previousSibling, next = cur.nextSibling;
+        if (cur.nodeName == "BR" && prev && next && prev.nodeName == "SPAN" &&
+            next.nodeName == "SPAN" && win.nodeText(prev) && win.nodeText(next)) {
+          var height = (next.offsetTop - prev.offsetTop) + "px";
+          if (height != lineHeight) {
+            lineHeight = height;
+            for (var line = scroller.firstChild; line; line = line.nextSibling)
+              line.style.height = lineHeight;
+          }
+          break;
         }
-        c();
-      }, 0);
+      }
     }
 
     var nextNum = 1, prevHeight = null;
     function update() {
       if (doc.body.offsetHeight != prevHeight) {
         prevHeight = doc.body.offsetHeight;
-        sampleSizes(function() {
-          var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
-          for (var n = Math.ceil(diff / 10); n > 0; n--) {
-            var div = document.createElement("DIV");
-            div.className = "CodeMirror-line-div";
-            div.appendChild(document.createTextNode(nextNum++));
-            scroller.appendChild(div);
-          }
-        });
+        sampleSizes();
+        var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
+        for (var n = Math.ceil(diff / 10); n > 0; n--) {
+          var div = document.createElement("DIV");
+          div.style.height = lineHeight;
+          div.appendChild(document.createTextNode(nextNum++));
+          scroller.appendChild(div);
+        }
       }
       nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
     }

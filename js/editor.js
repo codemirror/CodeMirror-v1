@@ -481,7 +481,7 @@ var Editor = (function(){
       var accum = [];
       for (line = line ? line.nextSibling : this.container.firstChild;
            line && line.nodeName != "BR"; line = line.nextSibling)
-        accum.push(line.innerText || line.textContent || line.nodeValue || "");
+        accum.push(nodeText(line));
       return cleanText(accum.join(""));
     },
 

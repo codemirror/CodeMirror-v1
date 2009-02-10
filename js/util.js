@@ -124,3 +124,7 @@ function addEventHandler(node, type, handler, removeFunc) {
     if (removeFunc) return function() {node.detachEvent("on" + type, wrapHandler);};
   }
 }
+
+function nodeText(node) {
+  return node.innerText || node.textContent || node.nodeValue || "";
+}
