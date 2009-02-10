@@ -1,4 +1,5 @@
 Editor.Parser = (function() {
+  var indentUnit = 2;
   function wordRegexp(words) {
     return new RegExp("^(?:" + words.join("|") + ")$", "i");
   }
@@ -92,7 +93,7 @@ Editor.Parser = (function() {
       else if (context.align)
         return context.col - (closing ? context.width : 0);
       else
-        return context.indent + (closing ? 0 : 2);
+        return context.indent + (closing ? 0 : indentUnit);
     }
   }
 
@@ -130,7 +131,7 @@ Editor.Parser = (function() {
         else if (/[\]\}\)]/.test(content)) {
           while (context && context.type == "pattern")
             popContext();
-          if (context && content == matching[context.type]) 
+          if (context && content == matching[context.type])
             popContext();
         }
         else if (content == "." && context && context.type == "pattern") {
@@ -158,5 +159,11 @@ Editor.Parser = (function() {
     return iter;
   }
 
-  return {make: parseSparql, electricChars: "}]"};
+  return {
+    make: parseSparql,
+    electricChars: "}]",
+    configure: function(conf) {
+      if (conf.indentUnit != null) indentUnit = conf.indentUnit;
+    }
+  };
 })();

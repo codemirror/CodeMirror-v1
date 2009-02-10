@@ -1,6 +1,7 @@
 /* Simple parser for CSS */
 
 var CSSParser = Editor.Parser = (function() {
+  var indentUnit = 2;
   var tokenizeCSS = (function() {
     function normal(source, setState) {
       var ch = source.next();
@@ -101,8 +102,8 @@ var CSSParser = Editor.Parser = (function() {
   function indentCSS(inBraces, inRule, base) {
     return function(nextChars) {
       if (!inBraces || /^\}/.test(nextChars)) return base;
-      else if (inRule) return base + 4;
-      else return base + 2;
+      else if (inRule) return base + indentUnit * 2;
+      else return base + indentUnit;
     };
   }
 
@@ -151,5 +152,11 @@ var CSSParser = Editor.Parser = (function() {
     return iter;
   }
 
-  return {make: parseCSS, electricChars: "}"};
+  return {
+    make: parseCSS,
+    electricChars: "}",
+    configure: function(conf) {
+      if (conf.indentUnit != null) indentUnit = conf.indentUnit;
+    }
+  };
 })();
