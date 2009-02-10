@@ -96,7 +96,7 @@ var CodeMirror = (function(){
       frame.parentNode.style.marginLeft = width;
       nums.style.left = "-" + width;
 
-      if (doc.body.firstChild)
+      if (doc.body.firstChild && (!window.opera || doc.body.firstChild.offsetTop))
         scroller.style.paddingTop = nodeTop(doc.body.firstChild) + "px";
 
       for (var cur = doc.body.firstChild; cur; cur = cur.nextSibling) {
