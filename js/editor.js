@@ -604,6 +604,10 @@ var Editor = (function(){
         this.handleTab(true);
         event.stop();
       }
+      else if ((code == 219 || code == 221) && event.ctrlKey) {
+        this.blinkParens(event.shiftKey);
+        event.stop();
+      }
       else if (event.metaKey && (code == 37 || code == 39)) { // Meta-left/right
         var cursor = select.selectionTopNode(this.container);
         if (cursor === false || !this.container.firstChild) return;
@@ -642,9 +646,6 @@ var Editor = (function(){
       if (event.code == 13 || (event.code == 9 && !this.options.normalTab) ||
           (event.keyCode == 32 && event.shiftKey))
         event.stop();
-
-      else if ((event.character == "[" || event.character == "]") && event.ctrlKey)
-        event.stop(), this.blinkParens();
       else if (electric && electric.indexOf(event.character) != -1)
         this.parent.setTimeout(method(this, "indentAtCursor"), 0);
     },
@@ -754,7 +755,8 @@ var Editor = (function(){
     // Delay (or initiate) the next paren blink event.
     scheduleParenBlink: function() {
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
-      this.parenEvent = this.parent.setTimeout(method(this, "blinkParens"), 300);
+      var self = this;
+      this.parenEvent = this.parent.setTimeout(function(){this.blinkParens();}, 300);
     },
 
     isNearParsedNode: function(node) {
@@ -771,7 +773,7 @@ var Editor = (function(){
     // '()[]{}', search for the matching paren/brace/bracket, and
     // highlight them in green for a moment, or red if no proper match
     // was found.
-    blinkParens: function() {
+    blinkParens: function(jump) {
       // Clear the event property.
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
       this.parenEvent = null;
@@ -837,7 +839,10 @@ var Editor = (function(){
         }
         else {
           blink(cursor, found.status);
-          if (found.node) blink(found.node, found.status);
+          if (found.node) {
+            blink(found.node, found.status);
+            if (jump) select.focusAfterNode(found.node.previousSibling, this.container);
+          }
           break;
         }
       }
