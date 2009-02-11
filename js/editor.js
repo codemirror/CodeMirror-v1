@@ -792,7 +792,8 @@ var Editor = (function(){
       if (!cursor || !this.isNearParsedNode(cursor)) return;
       this.highlightAtCursor();
       cursor = select.selectionTopNode(this.container, true);
-      if (!cursor || !(ch = paren(cursor))) return;
+      if (!(cursor && ((ch = paren(cursor)) || (cursor = cursor.nextSibling) && (ch = paren(cursor)))))
+        return;
       // We only look for tokens with the same className.
       var className = cursor.className, dir = forward(ch), match = matching[ch];
 
