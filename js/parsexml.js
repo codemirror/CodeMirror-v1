@@ -10,9 +10,9 @@ var XMLParser = Editor.Parser = (function() {
   var Kludges = {
     autoSelfClosers: {"br": true, "img": true, "hr": true, "link": true, "input": true,
                       "meta": true, "col": true, "frame": true, "base": true, "area": true},
-    doNotIndent: {"pre": true}
+    doNotIndent: {"pre": true, "!cdata": true}
   };
-  var NoKludges = {autoSelfClosers: {}, doNotIndent: {}};
+  var NoKludges = {autoSelfClosers: {}, doNotIndent: {"!cdata": true}};
   var UseKludges = Kludges;
 
   var indentUnit = 2;
@@ -181,11 +181,15 @@ var XMLParser = Editor.Parser = (function() {
     function base() {
       return pass(element, base);
     }
-    var harmlessTokens = {"xml-text": true, "xml-entity": true, "xml-comment": true,
-                          "xml-cdata": true, "xml-processing": true};
+    var harmlessTokens = {"xml-text": true, "xml-entity": true, "xml-comment": true, "xml-processing": true};
     function element(style, content) {
       if (content == "<") cont(tagname, attributes, endtag(tokenNr == 1));
       else if (content == "</") cont(closetagname, expect(">"));
+      else if (style == "xml-cdata") {
+        if (!context || context.name != "!cdata") pushContext("!cdata");
+        if (/\]\]>$/.test(content)) popContext();
+        cont();
+      }
       else if (harmlessTokens.hasOwnProperty(style)) cont();
       else mark("xml-error") || cont();
     }
