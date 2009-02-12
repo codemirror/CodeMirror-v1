@@ -101,10 +101,7 @@ function normalizeEvent(event) {
   }
 
   if (event.type == "keypress") {
-    if (event.charCode === 0 || event.charCode == undefined)
-      event.code = event.keyCode;
-    else
-      event.code = event.charCode;
+    event.code = (event.charCode == null) ? event.keyCode : event.charCode;
     event.character = String.fromCharCode(event.code);
   }
   return event;
