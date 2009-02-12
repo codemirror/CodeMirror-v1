@@ -756,7 +756,7 @@ var Editor = (function(){
     scheduleParenBlink: function() {
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
       var self = this;
-      this.parenEvent = this.parent.setTimeout(function(){this.blinkParens();}, 300);
+      this.parenEvent = this.parent.setTimeout(function(){self.blinkParens();}, 300);
     },
 
     isNearParsedNode: function(node) {
