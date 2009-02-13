@@ -257,9 +257,13 @@
       left of the editor. This requires you to specify a style for the
       <code>CodeMirror-line-numbers</code> CSS class (in the outer
       document) to configure the width, font, colors, etcetera for the
-      line-number DIV. Defaults to <code>false</code>. When enabling
-      this, you have to disable <code>textWrapping</code>, since the
-      line numbers don't take wrapped lines into account.</dd>
+      line-number DIV. You have to make sure that lines in the
+      numbering element have the same height as lines in the editor.
+      This is most easily done by giving them both the same font and
+      an absolute ('pt' or 'px') font size. This option defaults to
+      <code>false</code>. When enabling this, you have to disable
+      <code>textWrapping</code>, since the line numbers don't take
+      wrapped lines into account.</dd>
 
       <dt><code>dumbTabs</code></dt><dd>When this is set to
       <code>true</code>, pressing tab will insert four spaces rather

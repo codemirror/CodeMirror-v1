@@ -54,8 +54,8 @@ var CodeMirror = (function(){
   function wrapLineNumberDiv(place) {
     return function(node) {
       var container = document.createElement("DIV"),
-          nums = document.createElement("DIV");
-      nums.className = "CodeMirror-line-numbers";
+          nums = document.createElement("DIV"),
+          scroller = document.createElement("DIV");
       container.style.position = "relative";
       nums.style.position = "absolute";
       nums.style.height = "100%";
@@ -66,73 +66,34 @@ var CodeMirror = (function(){
       place(container);
       container.appendChild(node);
       container.appendChild(nums);
+      scroller.className = "CodeMirror-line-numbers";
+      nums.appendChild(scroller);
     }
   }
-
-  function nodeTop(node) {
-    var accum = 0;
-    while (node) {
-      accum += node.offsetTop;
-      node = node.offsetParent;
-    }
-    return accum;
-  }
-
-  var defaultWidth = "25px";
 
   function applyLineNumbers(frame) {
     var win = frame.contentWindow, doc = win.document,
-        nums = frame.nextSibling, scroller = document.createElement("DIV");
+        nums = frame.nextSibling, scroller = nums.firstChild;
 
-    nums.appendChild(scroller);
-
-    var lineHeight = "0px";
-
-    // Look at actual DOM to find out how big the top margin and the
-    // line height inside the editor are.
-    function sampleSizes() {
-      var width = nums.offsetWidth + "px";
-      if (nums.offsetWidth <= 10) nums.style.width = width = defaultWidth;
-      frame.parentNode.style.marginLeft = width;
-      nums.style.left = "-" + width;
-
-      if (doc.body.firstChild && (!window.opera || doc.body.firstChild.offsetTop))
-        scroller.style.paddingTop = nodeTop(doc.body.firstChild) + "px";
-
-      for (var cur = doc.body.firstChild; cur; cur = cur.nextSibling) {
-        var prev = cur.previousSibling, next = cur.nextSibling;
-        if (cur.nodeName == "BR" && prev && next && prev.nodeName == "SPAN" &&
-            next.nodeName == "SPAN" && win.nodeText(prev) && win.nodeText(next)) {
-          var height = (next.offsetTop - prev.offsetTop) + "px";
-          if (height != lineHeight) {
-            lineHeight = height;
-            for (var line = scroller.firstChild; line; line = line.nextSibling)
-              line.style.height = lineHeight;
-          }
-          break;
-        }
+    var nextNum = 1, barWidth = null;
+    function sizeBar() {
+      if (nums.offsetWidth != barWidth) {
+        barWidth = nums.offsetWidth;
+        nums.style.left = "-" + (frame.parentNode.style.marginLeft = barWidth + "px");
       }
     }
-
-    var nextNum = 1, prevHeight = null;
     function update() {
-      if (doc.body.offsetHeight != prevHeight) {
-        prevHeight = doc.body.offsetHeight;
-        sampleSizes();
-        var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
-        for (var n = Math.ceil(diff / 10); n > 0; n--) {
-          var div = document.createElement("DIV");
-          div.style.overflow = "hidden";
-          div.style.height = lineHeight;
-          div.appendChild(document.createTextNode(nextNum++));
-          scroller.appendChild(div);
-        }
+      var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
+      for (var n = Math.ceil(diff / 10); n > 0; n--) {
+        scroller.appendChild(document.createTextNode(nextNum++));
+        scroller.appendChild(document.createElement("BR"));
       }
       nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
     }
+    sizeBar();
     update();
     win.addEventHandler(win, "scroll", update);
-    setInterval(update, 500);
+    setInterval(sizeBar, 500);
   }
 
   function CodeMirror(place, options) {
