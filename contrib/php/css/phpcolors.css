@@ -89,7 +89,7 @@ span.js-localvariable {
 span.php-comment {
   color: #AA7700;
   font-stretch: condensed;
-  font-style: italic;
+/*  font-style: italic;  This causes line height to slightly change, getting line numbers out of sync */
 }
 
 span.php-string-single-quoted {
