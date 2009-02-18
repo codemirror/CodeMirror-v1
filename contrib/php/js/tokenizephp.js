@@ -18,6 +18,26 @@ References:
 */
 
 
+// add the forEach method for JS engines that don't support it (e.g. IE)
+// code from https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference:Objects:Array:forEach
+if (!Array.prototype.forEach)
+{
+  Array.prototype.forEach = function(fun /*, thisp*/)
+  {
+    var len = this.length;
+    if (typeof fun != "function")
+      throw new TypeError();
+
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in this)
+        fun.call(thisp, this[i], i, this);
+    }
+  };
+}
+
+
 var tokenizePHP = (function() {
   /* A map of PHP's reserved words (keywords, predefined classes, functions and
      constants. Each token has a type ('keyword', 'operator' etc.) and a style.

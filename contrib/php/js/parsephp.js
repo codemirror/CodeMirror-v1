@@ -23,6 +23,33 @@ Features:
 
 */
 
+
+// add the Array.indexOf method for JS engines that don't support it (e.g. IE)
+// code from https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Global_Objects/Array/IndexOf
+if (!Array.prototype.indexOf)
+{
+  Array.prototype.indexOf = function(elt /*, from*/)
+  {
+    var len = this.length;
+
+    var from = Number(arguments[1]) || 0;
+    from = (from < 0)
+         ? Math.ceil(from)
+         : Math.floor(from);
+    if (from < 0)
+      from += len;
+
+    for (; from < len; from++)
+    {
+      if (from in this &&
+          this[from] === elt)
+        return from;
+    }
+    return -1;
+  };
+};
+
+
 var PHPParser = Editor.Parser = (function() {
   // Token types that can be considered to be atoms, part of operator expressions
   var atomicTypes = {
@@ -44,7 +71,7 @@ var PHPParser = Editor.Parser = (function() {
     // Parent scope, if any.
     this.prev = prev;
     this.info = info;
-  }
+  };
   var indentUnit = 4;
 
   // PHP indentation rules
@@ -63,7 +90,7 @@ var PHPParser = Editor.Parser = (function() {
       else
         return lexical.indented + (closing ? 0 : indentUnit);
     };
-  }
+  };
 
   // The parser-iterator-producing function itself.
   function parsePHP(input, basecolumn) {
