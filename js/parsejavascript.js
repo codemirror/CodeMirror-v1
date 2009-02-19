@@ -304,13 +304,19 @@ var JSParser = Editor.Parser = (function() {
       else if (type == ",") cont(vardef1);
     }
     // For loops.
-    function forspec1(type, value){
+    function forspec1(type){
       if (type == "var") cont(vardef1, forspec2);
+      else if (type == ";") pass(forspec2);
       else cont(expression, forspec2);
     }
     function forspec2(type){
       if (type == ",") cont(forspec1);
-      if (type == ";") cont(expression, expect(";"), expression);
+      else if (type == ";") cont(forspec3);
+      else cont(expression, expect(";"), forspec3);
+    }
+    function forspec3(type) {
+      if (type == ")") pass();
+      else cont(expression);
     }
     // A function definition creates a new context, and the variables
     // in its argument list have to be added to this context.
