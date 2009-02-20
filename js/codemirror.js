@@ -30,7 +30,7 @@ var CodeMirror = (function(){
     path: "",
     parserfile: [],
     basefiles: ["util.js", "stringstream.js", "select.js", "undo.js", "editor.js", "tokenize.js"],
-    linesPerPass: 15,
+    linesPerPass: 30,
     passDelay: 200,
     continuousScanning: false,
     saveFunction: null,
