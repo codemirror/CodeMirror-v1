@@ -600,7 +600,7 @@ var Editor = (function(){
         this.handleTab(!event.ctrlKey && !event.shiftKey);
         event.stop();
       }
-      else if (code == 32 && event.shiftKey) { // space
+      else if (code == 32 && event.shiftKey && this.options.normalTab) { // space
         this.handleTab(true);
         event.stop();
       }
