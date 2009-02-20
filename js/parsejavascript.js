@@ -249,15 +249,15 @@ var JSParser = Editor.Parser = (function() {
       else if (type == "keyword c") cont(expression);
       else if (type == "(") cont(pushlex(")"), expression, expect(")"), poplex, maybeoperator);
       else if (type == "operator") cont(expression);
-      else if (type == "[") cont(pushlex("]"), commasep(expression), expect("]"), maybeoperator, poplex);
-      else if (type == "{") cont(pushlex("}"), commasep(objprop), expect("}"), maybeoperator, poplex);
+      else if (type == "[") cont(pushlex("]"), commasep(expression, "]"), poplex, maybeoperator);
+      else if (type == "{") cont(pushlex("}"), commasep(objprop, "}"), poplex, maybeoperator);
     }
     // Called for places where operators, function calls, or
     // subscripts are valid. Will skip on to the next action if none
     // is found.
     function maybeoperator(type){
       if (type == "operator") cont(expression);
-      else if (type == "(") cont(pushlex(")"), expression, commasep(expression), expect(")"), poplex, maybeoperator);
+      else if (type == "(") cont(pushlex(")"), expression, commasep(expression, ")"), poplex, maybeoperator);
       else if (type == ".") cont(property, maybeoperator);
       else if (type == "[") cont(pushlex("]"), expression, expect("]"), poplex, maybeoperator);
     }
@@ -279,12 +279,14 @@ var JSParser = Editor.Parser = (function() {
     }
     // Parses a comma-separated list of the things that are recognized
     // by the 'what' argument.
-    function commasep(what){
+    function commasep(what, end){
       function proceed(type) {
         if (type == ",") cont(what, proceed);
+        else cont(expect(end));
       };
-      return function commaSeparated() {
-        pass(what, proceed);
+      return function commaSeparated(type) {
+        if (type == end) cont();
+        else pass(what, proceed);
       };
     }
     // Look for statements until a closing brace is found.
@@ -322,7 +324,7 @@ var JSParser = Editor.Parser = (function() {
     // in its argument list have to be added to this context.
     function functiondef(type, value){
       if (type == "variable"){register(value); cont(functiondef);}
-      else if (type == "(") cont(pushcontext, commasep(funarg), expect(")"), statement, popcontext);
+      else if (type == "(") cont(pushcontext, commasep(funarg, ")"), statement, popcontext);
     }
     function funarg(type, value){
       if (type == "variable"){register(value); cont();}
