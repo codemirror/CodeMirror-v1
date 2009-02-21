@@ -675,8 +675,12 @@ var Editor = (function(){
       // Ask the lexical context for the correct indentation, and
       // compute how much this differs from the current indentation.
       var newIndent = 0, curIndent = whiteSpace ? whiteSpace.currentText.length : 0;
-      if (start) newIndent = start.indentation(nextChars, curIndent, direction);
-      else if (Editor.Parser.firstIndentation) newIndent = Editor.Parser.firstIndentation(nextChars, curIndent, direction);
+      if (direction != null && this.options.tabMode == "shift")
+        newIndent = direction ? curIndent + 2 : Math.max(0, curIndent - 2)
+      else if (start)
+        newIndent = start.indentation(nextChars, curIndent, direction);
+      else if (Editor.Parser.firstIndentation)
+        newIndent = Editor.Parser.firstIndentation(nextChars, curIndent, direction);
       var indentDiff = newIndent - curIndent;
 
       // If there is too much, this is just a matter of shrinking a span.
