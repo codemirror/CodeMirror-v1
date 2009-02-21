@@ -596,11 +596,11 @@ var Editor = (function(){
         }
         event.stop();
       }
-      else if (code == 9 && !this.options.normalTab) { // tab
+      else if (code == 9 && this.options.tabMode != "default") { // tab
         this.handleTab(!event.ctrlKey && !event.shiftKey);
         event.stop();
       }
-      else if (code == 32 && event.shiftKey && this.options.normalTab) { // space
+      else if (code == 32 && event.shiftKey && this.options.tabMode == "default") { // space
         this.handleTab(true);
         event.stop();
       }
@@ -643,8 +643,8 @@ var Editor = (function(){
       // keydown event does not prevent the associated keypress event
       // from happening, so we have to cancel enter and tab again
       // here.
-      if (event.code == 13 || (event.code == 9 && !this.options.normalTab) ||
-          (event.keyCode == 32 && event.shiftKey))
+      if (event.code == 13 || (event.code == 9 && this.options.tabMode != "default") ||
+          (event.keyCode == 32 && event.shiftKey && this.options.tabMode == "default"))
         event.stop();
       else if (electric && electric.indexOf(event.character) != -1)
         this.parent.setTimeout(method(this, "indentAtCursor"), 0);
@@ -738,7 +738,7 @@ var Editor = (function(){
     // re-indented, when nothing is selected, the line with the cursor
     // is re-indented.
     handleTab: function(direction) {
-      if (this.options.dumbTabs) {
+      if (this.options.tabMode == "spaces") {
         select.insertTabAtCursor(this.win);
       }
       else if (!select.somethingSelected(this.win)) {

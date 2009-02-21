@@ -44,8 +44,7 @@ var CodeMirror = (function(){
     height: "300px",
     autoMatchParens: false,
     parserConfig: null,
-    dumbTabs: false,
-    normalTab: false,
+    tabMode: "indent", // or "spaces", "default", "shift"
     activeTokens: null,
     cursorActivity: null,
     lineNumbers: false
@@ -97,6 +96,10 @@ var CodeMirror = (function(){
   }
 
   function CodeMirror(place, options) {
+    // Backward compatibility for deprecated options.
+    if (options.dumbTabs) options.tabMode = "spaces";
+    else if (options.normalTab) options.tabMode = "default";
+
     // Use passed options, if any, to override defaults.
     this.options = options = options || {};
     setDefaults(options, CodeMirrorConfig);

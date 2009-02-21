@@ -18,13 +18,13 @@
 
     <h2 id="useage">Basic Usage</h2>
 
-    <p>Inside the editor, the tab key (or shift-space) is used to
-    re-indent the current selection (or the current line when nothing
-    is selected), and pressing enter will, apart from inserting a line
-    break, automatically indent the new line. Pressing control-enter
-    will cause the whole buffer to be re-coloured, which can be
-    helpful when some colouring has become out-of-date without the
-    editor noticing it.</p>
+    <p>Inside the editor, the tab key is used to re-indent the current
+    selection (or the current line when nothing is selected), and
+    pressing enter will, apart from inserting a line break,
+    automatically indent the new line. Pressing control-enter will
+    cause the whole buffer to be re-coloured, which can be helpful
+    when some colouring has become out-of-date without the editor
+    noticing it.</p>
 
     <p>The editor sports an undo/redo system, accessible with
     control-z (undo) and control-y (redo). Safari will not allow
@@ -265,6 +265,19 @@
       <code>textWrapping</code>, since the line numbers don't take
       wrapped lines into account.</dd>
 
+      <dt><code>tabMode</code></dt><dd>Determines what the effect of
+      pressing tab is. Possibilities are:
+      <dl>
+        <dt><code>"indent"</code></dt><dd>The default. Causes tab to
+        adjust the indentation of the selection or current line using
+        the parser's rules.</dd>
+        <dt><code>"spaces"</code></dt><dd>Pressing tab simply inserts
+        four spaces.</dd>
+        <dt><code>"default"</code></dt><dd>CodeMirror does not
+        interfere with the tab key, but leaves it to the browser to
+        handle it. Binds shift-space to regular indentation
+        behaviour.</dd>
+      </dl></dd>
       <dt><code>dumbTabs</code></dt><dd>When this is set to
       <code>true</code>, pressing tab will insert four spaces rather
       than re-indenting the selected lines. Default
