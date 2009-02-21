@@ -12,7 +12,6 @@ var PHPHTMLMixedParser = Editor.Parser = (function() {
   if (!(PHPParser && CSSParser && JSParser && XMLParser))
     throw new Error("PHP, CSS, JS, and XML parsers must be loaded for PHP+HTML mixed mode to work.");
   XMLParser.configure({useHTMLKludges: true});
-  var indentUnit = 2;
 
   function parseMixed(stream) {
     var htmlParser = XMLParser.make(stream), localParser = null, inTag = false;
@@ -86,16 +85,6 @@ var PHPHTMLMixedParser = Editor.Parser = (function() {
     return iter;
   }
 
-  return {
-    make: parseMixed,
-    electricChars: "{}/:",
-    configure: function(conf) {
-      if (conf.indentUnit != null) indentUnit = conf.indentUnit;
-      XMLParser.configure(conf);
-      PHPParser.configure(conf);
-      JSParser.configure(conf);
-      CSSParser.configure(conf);
-    }
-  };
+  return {make: parseMixed, electricChars: "{}/:"};
 
 })();

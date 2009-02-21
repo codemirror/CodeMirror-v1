@@ -69,14 +69,6 @@ var HTMLMixedParser = Editor.Parser = (function() {
     return iter;
   }
 
-  return {
-    make: parseMixed,
-    electricChars: "{}/:",
-    configure: function(conf) {
-      XMLParser.configure(conf);
-      JSParser.configure(conf);
-      CSSParser.configure(conf);
-    }
-  };
+  return {make: parseMixed, electricChars: "{}/:"};
 
 })();
