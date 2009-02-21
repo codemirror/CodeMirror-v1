@@ -340,6 +340,7 @@ var Editor = (function(){
   // The Editor object is the main inside-the-iframe interface.
   function Editor(options) {
     this.options = options;
+    window.indentUnit = options.indentUnit;
     this.parent = parent;
     this.doc = document;
     var container = this.container = this.doc.body;

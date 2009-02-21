@@ -265,6 +265,10 @@
       <code>textWrapping</code>, since the line numbers don't take
       wrapped lines into account.</dd>
 
+      <dt><code>indentUnit</code></dt><dd>An integer that specifies
+      the amount of spaces one 'level' of indentation should add.
+      Default is <code>2</code>.</dd>
+
       <dt><code>tabMode</code></dt><dd>Determines what the effect of
       pressing tab is. Possibilities are:
       <dl>
@@ -330,30 +334,25 @@
     <dl>
       <dt><code><a
       href="js/parsexml.js">parsexml.js</a></code></dt><dd>A HTML/XML
-      parser. Takes two configuration options (see the <code><a
-      href="#parserConfig">parserConfig</a></code> option above):
-      <code>useHTMLKludges</code> to specify whether the content of
-      the editor is HTML or XML, and things like self-closing tags
+      parser. Takes a <code>useHTMLKludges</code> configuration option
+      (see the <code><a href="#parserConfig">parserConfig</a></code>
+      option above), which specifies whether the content of the editor
+      is HTML or XML, and things like self-closing tags
       (<code>br</code>, <code>img</code>) exist. This defaults to
-      <code>true</code>. An <code>indentUnit</code> option (integer)
-      can be given to specify the amount of space one 'level' of
-      indentation should add. Default is <code>2</code>. Example
-      colours for the styles that this parser uses are defined in
-      <code><a
+      <code>true</code>. Example colours for the styles that this
+      parser uses are defined in <code><a
       href="css/xmlcolors.css">css/xmlcolors.css</a></code>.</dd>
 
       <dt><code><a
       href="js/tokenizejavascript.js">tokenizejavascript.js</a></code>,
       <code><a
       href="js/parsejavascript.js">parseejavascript.js</a></code></dt><dd>The
-      JavaScript parser. Takes one option, <code>indentUnit</code>,
-      which works as in the XML parser. Example colours in <code><a
+      JavaScript parser. Example colours in <code><a
       href="css/jscolors.css">css/jscolors.css</a></code></dd>
 
       <dt><code><a
       href="js/parsecss.js">parsecss.js</a></code></dt><dd>A CSS
-      parser. Also takes an <code>indentUnit</code> configuration
-      option. Styles in <code><a
+      parser. Styles in <code><a
       href="css/csscolors.css">css/csscolors.css</a></code></dd>
 
       <dt><code><a
@@ -362,14 +361,12 @@
       parsers to also be loaded, so your <code>parserfile</code>
       option looks something like <code>["parsexml.js", "parsecss.js",
       "tokenizejavascript.js", "parsejavascript.js",
-      "parsehtmlmixed.js"]</code>. Supports a <code>indentUnit</code>
-      configuration option.</dd>
+      "parsehtmlmixed.js"]</code>.</dd>
 
       <dt><code><a
       href="js/parsesparql.js">parsesparql.js</a></code></dt><dd>Parses
       the <a href="http://en.wikipedia.org/wiki/SPARQL">SPARQL</a>
-      query language. Understands the <code>indentUnit</code>
-      configuration argument. Example styles in <code><a
+      query language. Example styles in <code><a
       href="css/sparqlcolors.css">css/sparqlcolors.css</a></code></dd>
 
     </dl>

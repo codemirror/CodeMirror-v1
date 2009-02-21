@@ -28,8 +28,6 @@ var JSParser = Editor.Parser = (function() {
     this.info = info;
   }
 
-  var indentUnit = 2;
-
   // My favourite JavaScript indentation rules.
   function indentJS(lexical) {
     return function(firstChars) {
@@ -334,8 +332,5 @@ var JSParser = Editor.Parser = (function() {
     return parser;
   }
 
-  return {make: parseJS,
-          electricChars: "{}:",
-          configure: function(conf) {if (conf.indentUnit != null) indentUnit = conf.indentUnit;}
-         };
+  return {make: parseJS, electricChars: "{}:"};
 })();

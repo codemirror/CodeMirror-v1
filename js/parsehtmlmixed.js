@@ -2,7 +2,6 @@ var HTMLMixedParser = Editor.Parser = (function() {
   if (!(CSSParser && JSParser && XMLParser))
     throw new Error("CSS, JS, and XML parsers must be loaded for HTML mixed mode to work.");
   XMLParser.configure({useHTMLKludges: true});
-  var indentUnit = 2;
 
   function parseMixed(stream) {
     var htmlParser = XMLParser.make(stream), localParser = null, inTag = false;
@@ -74,7 +73,6 @@ var HTMLMixedParser = Editor.Parser = (function() {
     make: parseMixed,
     electricChars: "{}/:",
     configure: function(conf) {
-      if (conf.indentUnit != null) indentUnit = conf.indentUnit;
       XMLParser.configure(conf);
       JSParser.configure(conf);
       CSSParser.configure(conf);

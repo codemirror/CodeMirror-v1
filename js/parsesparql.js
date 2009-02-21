@@ -1,5 +1,4 @@
 Editor.Parser = (function() {
-  var indentUnit = 2;
   function wordRegexp(words) {
     return new RegExp("^(?:" + words.join("|") + ")$", "i");
   }
@@ -159,11 +158,5 @@ Editor.Parser = (function() {
     return iter;
   }
 
-  return {
-    make: parseSparql,
-    electricChars: "}]",
-    configure: function(conf) {
-      if (conf.indentUnit != null) indentUnit = conf.indentUnit;
-    }
-  };
+  return {make: parseSparql, electricChars: "}]"};
 })();

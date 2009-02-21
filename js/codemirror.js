@@ -47,7 +47,8 @@ var CodeMirror = (function(){
     tabMode: "indent", // or "spaces", "default", "shift"
     activeTokens: null,
     cursorActivity: null,
-    lineNumbers: false
+    lineNumbers: false,
+    indentUnit: 2
   });
 
   function wrapLineNumberDiv(place) {
