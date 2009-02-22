@@ -291,6 +291,11 @@ var select = {};
       selection.createRange().scrollIntoView();
     };
 
+    select.scrollToNode = function(node) {
+      if (!node) return;
+      node.scrollIntoView();
+    };
+
     // Some hacks for storing and re-storing the selection when the editor loses and regains focus.
     select.selectionCoords = function (win) {
       var selection = win.document.selection;
@@ -552,9 +557,9 @@ var select = {};
         selectRange(range, win);
     };
 
-    select.scrollToCursor = function(container) {
-      var doc = container.ownerDocument, body = doc.body, win = doc.defaultView, html = doc.documentElement;
-      var element = select.selectionTopNode(container, true) || container.firstChild;
+    select.scrollToNode = function(element) {
+      if (!element) return;
+      var doc = element.ownerDocument, body = doc.body, win = doc.defaultView, html = doc.documentElement;
       
       // In Opera, BR elements *always* have a scrollTop property of zero. Go Opera.
       while (element && !element.offsetTop)
@@ -569,6 +574,10 @@ var select = {};
       var screen_y = y - (body.scrollTop || html.scrollTop || 0);
       if (screen_y < 0 || screen_y > win.innerHeight - 30)
         win.scrollTo(body.scrollLeft || html.scrollLeft || 0, y);
+    };
+
+    select.scrollToCursor = function(container) {
+      select.scrollToNode(select.selectionTopNode(container, true) || container.firstChild);
     };
   }
 })();

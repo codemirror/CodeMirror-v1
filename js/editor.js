@@ -622,11 +622,11 @@ var Editor = (function(){
       }
       else if (event.ctrlKey || event.metaKey) {
         if ((event.shiftKey && code == 90) || code == 89) { // shift-Z, Y
-          this.history.redo();
+          select.scrollToNode(this.history.redo());
           event.stop();
         }
         else if (code == 90 || code == 8) { // Z, backspace
-          this.history.undo();
+          select.scrollToNode(this.history.undo());
           event.stop();
         }
         else if (code == 83 && this.options.saveFunction) { // S

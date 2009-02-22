@@ -70,8 +70,10 @@ History.prototype = {
     if (this.history.length) {
       // Take the top diff from the history, apply it, and store its
       // shadow in the redo history.
-      this.redoHistory.push(this.updateTo(this.history.pop(), "applyChain"));
+      var item = this.history.pop();
+      this.redoHistory.push(this.updateTo(item, "applyChain"));
       if (this.onChange) this.onChange();
+      return this.chainNode(item);
     }
   },
 
@@ -80,8 +82,10 @@ History.prototype = {
     this.commit();
     if (this.redoHistory.length) {
       // The inverse of undo, basically.
-      this.addUndoLevel(this.updateTo(this.redoHistory.pop(), "applyChain"));
+      var item = this.redoHistory.pop();
+      this.addUndoLevel(this.updateTo(item, "applyChain"));
       if (this.onChange) this.onChange();
+      return this.chainNode(item);
     }
   },
 
@@ -105,6 +109,14 @@ History.prototype = {
     this.commit(doNotHighlight);
     this.addUndoLevel(this.updateTo(chains, "applyChain"));
     this.redoHistory = [];
+  },
+
+  // Retrieve a DOM node from a chain (for scrolling to it after undo/redo).
+  chainNode: function(chains) {
+    for (var i = 0; i < chains.length; i++) {
+      var start = chains[i][0], node = start && (start.from || start.to);
+      if (node) return node;
+    }
   },
 
   // Clear the undo history, make the current document the start
