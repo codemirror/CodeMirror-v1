@@ -161,10 +161,10 @@ var XMLParser = Editor.Parser = (function() {
       context = context.prev;
     }
     function computeIndentation(baseContext) {
-      return function(nextChars) {
+      return function(nextChars, current) {
         var context = baseContext;
         if (context && context.noIndent)
-          return 0;
+          return current;
         if (context && /^<\//.test(nextChars))
           context = context.prev;
         while (context && !context.startOfLine)
