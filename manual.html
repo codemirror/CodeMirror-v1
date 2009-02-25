@@ -436,12 +436,17 @@
       <code>{undo, redo}</code> object holding the sizes of the undo
       and redo histories.</dd>
 
-      <dt><code>freeze(callback)</code></dt><dd>Freeze keyboard input
-      for the editor, and have it call the given <code>callback</code>
-      function for every key that was pressed. This function is given
-      a slightly normalised (see <code>normalizeEvent</code> in <a
+      <dt><code>freeze(callback, filter)</code></dt><dd>Freeze
+      keyboard input for the editor, and have it call the given
+      <code>callback</code> function for every key that was pressed.
+      This function is given a slightly normalised (see
+      <code>normalizeEvent</code> in <a
       href="js/util.js"><code>util.js</code></a>) <code>keydown</code>
-      event object.</dd>
+      event object. If a second argument is given, this will be used
+      to determine which events to apply the callback to. It should
+      take a key code (as in <code>event.keyCode</code>), and return a
+      boolean, where <code>true</code> means the event should be
+      routed to the callback.</dd>
       <dt><code>unfreeze()</code></dt><dd>Revert the effect of
       <code>freeze</code>.</dd>
     </dl>

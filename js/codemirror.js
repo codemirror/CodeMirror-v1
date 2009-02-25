@@ -180,7 +180,7 @@ var CodeMirror = (function(){
     redo: function() {this.editor.history.redo();},
     historySize: function() {return this.editor.history.historySize();},
 
-    freeze: function(callback) {this.editor.freeze(callback);},
+    freeze: function(callback, filter) {this.editor.freeze(callback, filter);},
     unfreeze: function() {this.editor.unfreeze();},
 
     cursorPosition: function(start) {
