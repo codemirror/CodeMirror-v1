@@ -435,6 +435,15 @@
       <dt><code>historySize() &#8594; object</code></dt><dd>Get a
       <code>{undo, redo}</code> object holding the sizes of the undo
       and redo histories.</dd>
+
+      <dt><code>freeze(callback)</code></dt><dd>Freeze keyboard input
+      for the editor, and have it call the given <code>callback</code>
+      function for every key that was pressed. This function is given
+      a slightly normalised (see <code>normalizeEvent</code> in <a
+      href="js/util.js"><code>util.js</code></a>) <code>keydown</code>
+      event object.</dd>
+      <dt><code>unfreeze()</code></dt><dd>Revert the effect of
+      <code>freeze</code>.</dd>
     </dl>
 
     <p>For detailed interaction with the content of the editor,

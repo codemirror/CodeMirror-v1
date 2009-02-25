@@ -413,6 +413,10 @@ var Editor = (function(){
     return (code >= 16 && code <= 18) || // shift, control, alt
            (code >= 33 && code <= 40); // arrows, home, end
   }
+  function isEditKey(code) {
+    return (code >= 33 && code <= 40) ||  // arrows, home, end
+      code == 8 || code == 46; // backspace, delete
+  }
 
   Editor.prototype = {
     // Import a piece of code into the editor.
@@ -577,8 +581,22 @@ var Editor = (function(){
         this.indentRegion(null, this.container.lastChild);
     },
 
+    freeze: function(eventHandler) {
+      this.frozen = eventHandler;
+    },
+    unfreeze: function() {
+      this.frozen = "leave";
+    },
+
     // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
+      if (this.frozen == "leave") this.frozen = null;
+      if (this.frozen) {
+        if (isEditKey(event.keyCode)) event.stop();
+        this.frozen(event);
+        return;
+      }
+
       var code = event.keyCode;
       // Don't scan when the user is typing.
       this.delayScanning();
@@ -644,7 +662,7 @@ var Editor = (function(){
       // keydown event does not prevent the associated keypress event
       // from happening, so we have to cancel enter and tab again
       // here.
-      if (event.code == 13 || (event.code == 9 && this.options.tabMode != "default") ||
+      if (this.frozen || event.code == 13 || (event.code == 9 && this.options.tabMode != "default") ||
           (event.keyCode == 32 && event.shiftKey && this.options.tabMode == "default"))
         event.stop();
       else if (electric && electric.indexOf(event.character) != -1)
