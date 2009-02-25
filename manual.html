@@ -233,7 +233,7 @@
 
       <dt><code>onChange</code></dt><dd>An optional function of zero
       arguments that gets called whenever the document is changed.
-      Happens at undo-commit time, it is not instantanious.</dd>
+      Happens at undo-commit time, not instantaniously.</dd>
 
       <dt><code>undoDelay</code></dt><dd>When nothing is done in the
       editor for this amount of milliseconds, pending changes get
@@ -286,21 +286,13 @@
         deeper, pressing shift-tab or ctrl-tab (whichever your browser
         does not interfere with), un-indents it.</dd>
       </dl></dd>
-      <dt><code>dumbTabs</code></dt><dd>When this is set to
-      <code>true</code>, pressing tab will insert four spaces rather
-      than re-indenting the selected lines. Default
-      <code>false</code>.</dd>
-
-      <dt><code>normalTab</code></dt><dd>Can be used to give tab its
-      normal behaviour (usually 'focus next element') instead of
-      having it reindent code.</dd>
 
       <dt><code>readOnly</code></dt><dd>When set to <code>true</code>,
       the document is not editable.</dd>
 
       <dt><code>initCallback</code></dt><dd>If set to a function, this
-      will be called (without arguments) after the editor has finished
-      initialising.</dd>
+      will be called (with the editor object as its argument) after
+      the editor has finished initialising.</dd>
       
       <dt><code>cursorActivity</code></dt><dd>A function that is
       called every time the cursor moves, with the top-level node that
