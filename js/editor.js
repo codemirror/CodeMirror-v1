@@ -986,6 +986,10 @@ var Editor = (function(){
     // there are dirty nodes left after this function has spent all
     // its lines, it shedules another highlight to finish the job.
     highlightDirty: function(force) {
+      // Prevent FF from raising an error when it is firing timeouts
+      // on a page that's no longer loaded.
+      if (!window.select) return;
+
       var lines = force ? Infinity : this.options.linesPerPass;
       if (!this.options.readOnly) select.markSelection(this.win);
       var start;
