@@ -583,11 +583,11 @@ var Editor = (function(){
         this.indentRegion(null, this.container.lastChild);
     },
 
-    freeze: function(eventHandler, filter) {
+    grabKeys: function(eventHandler, filter) {
       this.frozen = eventHandler;
       this.keyFilter = filter;
     },
-    unfreeze: function() {
+    unGrabKeys: function() {
       this.frozen = "leave";
       this.keyFilter = null;
     },

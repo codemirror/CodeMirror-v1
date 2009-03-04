@@ -180,8 +180,8 @@ var CodeMirror = (function(){
     redo: function() {this.editor.history.redo();},
     historySize: function() {return this.editor.history.historySize();},
 
-    freeze: function(callback, filter) {this.editor.freeze(callback, filter);},
-    unfreeze: function() {this.editor.unfreeze();},
+    grabKeys: function(callback, filter) {this.editor.grabKeys(callback, filter);},
+    unGrabKeys: function() {this.editor.unGrabKeys();},
 
     cursorPosition: function(start) {
       if (this.win.select.ie_selection) this.focus();
