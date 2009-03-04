@@ -7,6 +7,8 @@
       div.top {text-align: center;}
       div.top h1 {margin-bottom: 0;}
       div.top h2 {margin-top: 0; margin-bottom: 1.5em;}
+      div.donate span {cursor: pointer; text-decoration: underline;}
+      div.donate {font-size: 70%; margin-top: 1em; width: 155px; padding: 10px; border: 1px solid #c44;}
     </style>
   </head>
   <body>
@@ -15,7 +17,28 @@
   <h1>CodeMirror</h1>
   <h2 class="underline">In-browser code editing made slightly less painful</h2>
 </div>
-<div style="float: right; padding-left: 10px;"><img src="css/people.jpg" alt=""/></div>
+<div style="float: right; padding-left: 10px;">
+  <form action="https://www.paypal.com/cgi-bin/webscr" method="post" id="paypal">
+    <input type="hidden" name="cmd" value="_s-xclick"/>
+    <input type="hidden" name="hosted_button_id" value="3701544"/>
+  </form>
+  <img src="css/people.jpg" alt=""/><br/>
+  <div class="donate">
+    Make a donation:
+    <ul style="margin: 0 2em; padding: 0">
+      <li><span onclick="document.getElementById('paypal').submit();">Paypal</span></li>
+      <li><span onclick="document.getElementById('bankinfo').style.display = 'block';">Bank</span></li>
+    </ul>
+    <div id="bankinfo" style="display: none; font-size: 80%;">
+      Bank: <i>Rabobank</i><br/>
+      Country: <i>Netherlands</i><br/>
+      SWIFT: <i>RABONL2U</i><br/>
+      Account: <i>147850770</i><br/>
+      Name: <i>Marijn Haverbeke</i><br/>
+      IBAN: <i>NL26 RABO 0147 8507 70</i>
+    </div>
+  </div>
+</div>
 
 <p>CodeMirror is a JavaScript program that can be used to create a
 relatively pleasant editor interface for code-like content &#x2015;
