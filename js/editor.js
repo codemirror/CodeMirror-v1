@@ -400,9 +400,15 @@ var Editor = (function(){
       addEventHandler(document, "keyup", method(this, "keyUp"));
 
       function cursorActivity() {self.cursorActivity(false);}
-      addEventHandler(document.body, "paste", cursorActivity);
-      addEventHandler(document.body, "cut", cursorActivity);
       addEventHandler(document.body, "mouseup", cursorActivity);
+      addEventHandler(document.body, "paste", function(event) {
+        cursorActivity();
+        if (internetExplorer) {
+          self.replaceSelection(window.clipboardData.getData("Text"));
+          event.stop();
+        }
+      });
+      addEventHandler(document.body, "cut", cursorActivity);
 
       if (this.options.autoMatchParens)
         addEventHandler(document.body, "click", method(this, "scheduleParenBlink"));
