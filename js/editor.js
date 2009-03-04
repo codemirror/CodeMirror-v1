@@ -1147,8 +1147,9 @@ var Editor = (function(){
             throw "Parser out of sync. Expected BR.";
 
           if (part.dirty || !part.indentation) lineDirty = true;
-          if (lineDirty) self.history.touch(from);
+          if (lineDirty || !from || (from.oldNextSibling != from.nextSibling)) self.history.touch(from);
           from = part;
+          part.oldNextSibling = part.nextSibling;
 
           // Every <br> gets a copy of the parser state and a lexical
           // context assigned to it. The first is used to be able to
@@ -1210,7 +1211,7 @@ var Editor = (function(){
           }
         }
       });
-      if (lineDirty) this.history.touch(from);
+      if (lineDirty || !from || (from.oldNextSibling != from.nextSibling)) self.history.touch(from);
       webkitLastLineHack(this.container);
 
       // The function returns some status information that is used by
