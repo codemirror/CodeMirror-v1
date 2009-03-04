@@ -72,7 +72,6 @@ var PHPParser = Editor.Parser = (function() {
     this.prev = prev;
     this.info = info;
   };
-  var indentUnit = 4;
 
   // PHP indentation rules
   function indentPHP(lexical) {
@@ -367,12 +366,6 @@ var PHPParser = Editor.Parser = (function() {
     return parser;
   }
 
-  return {
-    make: parsePHP,
-    electricChars: "{}:",
-    configure: function(conf) {
-      if (conf.indentUnit != null) indentUnit = conf.indentUnit;
-    }
-  };
+  return {make: parsePHP, electricChars: "{}:"};
 
 })();
