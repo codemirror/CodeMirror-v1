@@ -587,7 +587,7 @@ var Editor = (function(){
       this.frozen = eventHandler;
       this.keyFilter = filter;
     },
-    unGrabKeys: function() {
+    ungrabKeys: function() {
       this.frozen = "leave";
       this.keyFilter = null;
     },

@@ -181,7 +181,7 @@ var CodeMirror = (function(){
     historySize: function() {return this.editor.history.historySize();},
 
     grabKeys: function(callback, filter) {this.editor.grabKeys(callback, filter);},
-    unGrabKeys: function() {this.editor.unGrabKeys();},
+    ungrabKeys: function() {this.editor.ungrabKeys();},
 
     cursorPosition: function(start) {
       if (this.win.select.ie_selection) this.focus();
