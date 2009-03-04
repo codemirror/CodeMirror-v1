@@ -22,10 +22,11 @@ embedded in a web-application.</p>
 var keyBindings = {
   enter: "newline-and-indent",
   tab: "reindent-selection",
-  ctrl_enter: "reparse-buffer",
   ctrl_z: "undo",
   ctrl_y: "redo",
-  ctrl_backspace: "undo-for-safari (which blocks ctrl-z)"
+  ctrl_backspace: "undo-for-safari (which blocks ctrl-z)",
+  ctrl-bracket: "highlight-brackets",
+  ctrl-shift-bracket: "jump-to-matching-bracket"
 };
 
 // Press tab on the next line and the wrong indentation will be fixed.
