@@ -481,6 +481,7 @@ var Editor = (function(){
         end = {node: endLine, offset: endOffset};
       }
       select.setCursorPos(this.container, start, end);
+      select.scrollToCursor(this.container);
     },
 
     lineContent: function(line) {

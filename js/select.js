@@ -573,7 +573,7 @@ var select = {};
 
       var screen_y = y - (body.scrollTop || html.scrollTop || 0);
       if (screen_y < 0 || screen_y > win.innerHeight - 30)
-        win.scrollTo(body.scrollLeft || html.scrollLeft || 0, y);
+        element.scrollIntoView();
     };
 
     select.scrollToCursor = function(container) {
