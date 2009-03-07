@@ -179,6 +179,7 @@ var CodeMirror = (function(){
     undo: function() {this.editor.history.undo();},
     redo: function() {this.editor.history.redo();},
     historySize: function() {return this.editor.history.historySize();},
+    clearHistory: function() {this.editor.history.clear();},
 
     grabKeys: function(callback, filter) {this.editor.grabKeys(callback, filter);},
     ungrabKeys: function() {this.editor.ungrabKeys();},

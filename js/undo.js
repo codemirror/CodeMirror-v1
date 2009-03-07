@@ -89,6 +89,11 @@ History.prototype = {
     }
   },
 
+  clear: function() {
+    this.history = [];
+    this.redoHistory = [];
+  },
+
   // Ask for the size of the un/redo histories.
   historySize: function() {
     return {undo: this.history.length, redo: this.redoHistory.length};
