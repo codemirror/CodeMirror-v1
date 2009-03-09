@@ -211,6 +211,25 @@ var Editor = (function(){
     return node;
   }
 
+  // Replace all DOM nodes in the current selection with new ones.
+  // Needed to prevent issues in IE where the old DOM nodes can be
+  // pasted back into the document, still holding their old undo
+  // information.
+  function scrubPasted(container, start, start2) {
+    var end = select.selectionTopNode(container, true),
+        doc = container.ownerDocument;
+    if (start != null && start.parentNode != container) start = start2;
+    if (start === false) start = null;
+    if (start == end || !end || !container.firstChild) return;
+
+    var clear = traverseDOM(start ? start.nextSibling : container.firstChild);
+    while (end.parentNode == container) try{clear.next();}catch(e){break;}
+    forEach(clear.nodes, function(node) {
+      var newNode = node.nodeName == "BR" ? doc.createElement("BR") : makePartSpan(node.currentText, doc);
+      container.replaceChild(newNode, node);
+    });
+  }
+
   // Client interface for searching the content of the editor. Create
   // these by calling CodeMirror.getSearchCursor. To use, call
   // findNext on the resulting object -- this returns a boolean
@@ -404,8 +423,17 @@ var Editor = (function(){
       addEventHandler(document.body, "paste", function(event) {
         cursorActivity();
         if (internetExplorer) {
-          self.replaceSelection(window.clipboardData.getData("Text"));
-          event.stop();
+          var text = null;
+          try {text = window.clipboardData.getData("Text");}catch(e){}
+          if (text != null) {
+            self.replaceSelection(text);
+            event.stop();
+          }
+          else {
+            var start = select.selectionTopNode(self.container, true),
+                start2 = start && start.previousSibling;
+            setTimeout(function(){scrubPasted(self.container, start, start2);}, 0);
+          }
         }
       });
       addEventHandler(document.body, "cut", cursorActivity);
