@@ -1119,6 +1119,21 @@ var Editor = (function(){
         return part;
       }
 
+      function maybeTouch(node) {
+        if (node) {
+          if (node.nextSibling != node.oldNextSibling) {
+            self.history.touch(node);
+            node.oldNextSibling = node.nextSibling;
+          }
+        }
+        else {
+          if (self.container.firstChild != self.container.oldFirstChild) {
+            self.history.touch(node);
+            self.container.oldFirstChild = self.container.firstChild;
+          }
+        }
+      }
+
       // Get the token stream. If from is null, we start with a new
       // parser from the start of the frame, otherwise a partial parse
       // is resumed.
@@ -1182,8 +1197,7 @@ var Editor = (function(){
             throw "Parser out of sync. Expected BR.";
 
           if (part.dirty || !part.indentation) lineDirty = true;
-          if (lineDirty || !from || (from.oldNextSibling != from.nextSibling)) self.history.touch(from);
-          if (from) from.oldNextSibling = from.nextSibling;
+          maybeTouch(from);
           from = part;
 
           // Every <br> gets a copy of the parser state and a lexical
@@ -1246,7 +1260,7 @@ var Editor = (function(){
           }
         }
       });
-      if (lineDirty || !from || (from.oldNextSibling != from.nextSibling)) self.history.touch(from);
+      maybeTouch(from);
       webkitLastLineHack(this.container);
 
       // The function returns some status information that is used by
