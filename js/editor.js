@@ -928,10 +928,9 @@ var Editor = (function(){
 
     // Indent all lines whose start falls inside of the current
     // selection.
-    indentRegion: function(current, end, direction) {
-      select.markSelection(this.win);
-      current = startOfLine(current);
-      end = endOfLine(end, this.container);
+    indentRegion: function(start, end, direction) {
+      var current = (start = startOfLine(start));
+      if (end.nodeName != "BR") end = endOfLine(end, this.container);
 
       do {
         this.highlight(current);
@@ -939,7 +938,7 @@ var Editor = (function(){
         this.indentLineAfter(current, direction);
         current = hl ? hl.node : null;
       } while (current != end);
-      select.selectMarked();
+      select.setCursorPos(this.container, {node: start, offset: 0}, {node: end, offset: 0});
     },
 
     // Find the node that the cursor is in, mark it as dirty, and make
