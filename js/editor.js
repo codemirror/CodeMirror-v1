@@ -773,22 +773,13 @@ var Editor = (function(){
     highlightAtCursor: function() {
       var pos = select.selectionTopNode(this.container, true);
       var to = select.selectionTopNode(this.container, false);
-      if (pos === false || !to) return;
-      // Skip one node ahead to make sure the cursor itself is
-      // *inside* a highlighted line.
-      if (to.nextSibling) to = to.nextSibling;
+      if (pos === false || to === false) return;
 
       select.markSelection(this.win);
-      var toIsText = to.nodeType == 3;
-      if (!toIsText) to.dirty = true;
-
-      // Highlight lines as long as to is in the document and dirty.
-      while (to.parentNode == this.container && (toIsText || to.dirty)) {
-        var result = this.highlight(pos, 1, true);
-        if (result) pos = result.node;
-        if (!result || result.left) break;
-      }
+      if (this.highlight(pos, endOfLine(to, this.container), true, 20) === false)
+        return false;
       select.selectMarked();
+      return true;
     },
 
     // When tab is pressed with text selected, the whole selection is
@@ -816,16 +807,6 @@ var Editor = (function(){
       this.parenEvent = this.parent.setTimeout(function(){self.blinkParens();}, 300);
     },
 
-    isNearParsedNode: function(node) {
-      var distance = 0;
-      while (node && (!node.parserFromHere || node.dirty)) {
-        distance += (node.textContent || node.innerText || "-").length;
-        if (distance > 800) return false;
-        node = node.previousSibling;
-      }
-      return true;
-    },
-
     // Take the token before the cursor. If it contains a character in
     // '()[]{}', search for the matching paren/brace/bracket, and
     // highlight them in green for a moment, or red if no proper match
@@ -848,8 +829,7 @@ var Editor = (function(){
       }
 
       var ch, self = this, cursor = select.selectionTopNode(this.container, true);
-      if (!cursor || !this.isNearParsedNode(cursor)) return;
-      this.highlightAtCursor();
+      if (!cursor || !this.highlightAtCursor()) return;
       cursor = select.selectionTopNode(this.container, true);
       if (!(cursor && ((ch = paren(cursor)) || (cursor = cursor.nextSibling) && (ch = paren(cursor)))))
         return;
@@ -911,7 +891,7 @@ var Editor = (function(){
       if (!this.container.firstChild) return;
       // The line has to have up-to-date lexical information, so we
       // highlight it first.
-      this.highlightAtCursor();
+      if (!this.highlightAtCursor()) return;
       var cursor = select.selectionTopNode(this.container, false);
       // If we couldn't determine the place of the cursor,
       // there's nothing to indent.
@@ -929,14 +909,14 @@ var Editor = (function(){
     // Indent all lines whose start falls inside of the current
     // selection.
     indentRegion: function(start, end, direction) {
-      var current = (start = startOfLine(start));
+      var current = (start = startOfLine(start)), before = start && startOfLine(start.previousSibling);
       if (end.nodeName != "BR") end = endOfLine(end, this.container);
 
       do {
-        this.highlight(current);
-        var hl = this.highlight(current, 1);
+        if (current) this.highlight(before, current, true);
         this.indentLineAfter(current, direction);
-        current = hl ? hl.node : null;
+        before = current;
+        current = endOfLine(current, this.container);
       } while (current != end);
       select.setCursorPos(this.container, {node: start, offset: 0}, {node: end, offset: 0});
     },
@@ -1074,25 +1054,25 @@ var Editor = (function(){
     // situations: ensuring that a certain line is highlighted, or
     // highlighting up to X lines starting from a certain point. The
     // 'from' argument gives the node at which it should start. If
-    // this is null, it will start at the beginning of the frame. When
-    // a number of lines is given with the 'lines' argument, it will
-    // colour no more than that amount. If at any time it comes across
-    // a 'clean' line (no dirty nodes), it will stop, except when
-    // 'cleanLines' is true.
-    highlight: function(from, lines, cleanLines){
-      var container = this.container, self = this, active = this.options.activeTokens, origFrom = from;
+    // this is null, it will start at the beginning of the document.
+    // When a number of lines is given with the 'target' argument, it
+    // will highlight no more than that amount of lines. If this
+    // argument holds a DOM node, it will highlight until it reaches
+    // that node. If at any time it comes across a 'clean' line (no
+    // dirty nodes), it will stop, except when 'cleanLines' is true.
+    highlight: function(from, target, cleanLines, maxBacktrack){
+      var container = this.container, self = this, active = this.options.activeTokens;
+      var lines = (typeof target == "number" ? target : null);
 
       if (!container.firstChild)
         return;
-      // lines given as null means 'make sure this BR node has up to date parser information'
-      if (lines == null) {
-        if (!from) return;
-        else from = from.previousSibling;
-      }
       // Backtrack to the first node before from that has a partial
       // parse stored.
-      while (from && (!from.parserFromHere || from.dirty))
+      while (from && (!from.parserFromHere || from.dirty)) {
         from = from.previousSibling;
+        if (maxBacktrack != null && from.nodeName == "BR" && (--maxBacktrack) < 0)
+          return false;
+      }
       // If we are at the end of the document, do nothing.
       if (from && !from.nextSibling)
         return;
@@ -1207,13 +1187,14 @@ var Editor = (function(){
           part.indentation = token.indentation;
           part.dirty = false;
 
-          // No line argument passed means 'go at least until this node'.
-          if (lines == null && part == origFrom) throw StopIteration;
+          // If the target argument wasn't an integer, go at least
+          // until that node.
+          if (lines == null && part == target) throw StopIteration;
 
           // A clean line with more than one node means we are done.
           // Throwing a StopIteration is the way to break out of a
           // MochiKit forEach loop.
-          if ((lines !== undefined && --lines <= 0) || (!lineDirty && !prevLineDirty && lineNodes > 1 && !cleanLines))
+          if ((lines != null && --lines <= 0) || (!lineDirty && !prevLineDirty && lineNodes > 1 && !cleanLines))
             throw StopIteration;
           prevLineDirty = lineDirty; lineDirty = false; lineNodes = 0;
           parts.next();
