@@ -1100,16 +1100,14 @@ var Editor = (function(){
 
       function maybeTouch(node) {
         if (node) {
-          if (node.nextSibling != node.oldNextSibling) {
+          if (lineDirty || node.nextSibling != node.oldNextSibling)
             self.history.touch(node);
-            node.oldNextSibling = node.nextSibling;
-          }
+          node.oldNextSibling = node.nextSibling;
         }
         else {
-          if (self.container.firstChild != self.container.oldFirstChild) {
+          if (lineDirty || self.container.firstChild != self.container.oldFirstChild)
             self.history.touch(node);
-            self.container.oldFirstChild = self.container.firstChild;
-          }
+          self.container.oldFirstChild = self.container.firstChild;
         }
       }
 
