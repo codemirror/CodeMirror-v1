@@ -1069,9 +1069,9 @@ var Editor = (function(){
       // Backtrack to the first node before from that has a partial
       // parse stored.
       while (from && (!from.parserFromHere || from.dirty)) {
-        from = from.previousSibling;
         if (maxBacktrack != null && from.nodeName == "BR" && (--maxBacktrack) < 0)
           return false;
+        from = from.previousSibling;
       }
       // If we are at the end of the document, do nothing.
       if (from && !from.nextSibling)
