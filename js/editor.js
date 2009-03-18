@@ -656,7 +656,7 @@ var Editor = (function(){
         this.handleTab(true);
         event.stop();
       }
-      else if ((code == 219 || code == 221) && event.ctrlKey) {
+      else if ((code == 219 || code == 221) && event.ctrlKey && !event.altKey) {
         this.blinkParens(event.shiftKey);
         event.stop();
       }
