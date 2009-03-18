@@ -637,8 +637,11 @@ var Editor = (function(){
       if (this.options.autoMatchParens)
         this.scheduleParenBlink();
 
+      // The variouschecks for !altKey are there because AltGr sets both
+      // ctrlKey and altKey to true, and should not be recognised as
+      // Control.
       if (code == 13) { // enter
-        if (event.ctrlKey) {
+        if (event.ctrlKey && !event.altKey) {
           this.reparseBuffer();
         }
         else {
@@ -671,7 +674,7 @@ var Editor = (function(){
         }
         event.stop();
       }
-      else if (event.ctrlKey || event.metaKey) {
+      else if ((event.ctrlKey || event.metaKey) && !event.altKey) {
         if ((event.shiftKey && code == 90) || code == 89) { // shift-Z, Y
           select.scrollToNode(this.history.redo());
           event.stop();
