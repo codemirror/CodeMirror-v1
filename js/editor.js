@@ -809,26 +809,16 @@ var Editor = (function(){
 
     home: function() {
       var cur = select.selectionTopNode(this.container, true), start = cur;
-      if (cur === false || !this.container.firstChild) return false;
+      if (cur === false || !(!cur || cur.isPart || cur.nodeName == "BR") || !this.container.firstChild)
+        return false;
 
-      if (!cur || cur.nodeName == "BR") {
-        var next = cur ? cur.nextSibling : this.container.firstChild;
-        if (next && next.isPart) {
-          if (hasClass(next, "whitespace"))
-            select.focusAfterNode(next, this.container);
-          return true;
-        }
-      }
-      else if (cur && cur.isPart) {
-        while (cur && cur.nodeName != "BR") cur = cur.previousSibling;
-        var next = cur ? cur.nextSibling : this.container.firstChild;
-        if (next && next != start && next.isPart && hasClass(next, "whitespace"))
-          select.focusAfterNode(next, this.container);
-        else
-          select.focusAfterNode(cur, this.container);
-        return true;
-      }
-      return false;
+      while (cur && cur.nodeName != "BR") cur = cur.previousSibling;
+      var next = cur ? cur.nextSibling : this.container.firstChild;
+      if (next && next != start && next.isPart && hasClass(next, "whitespace"))
+        select.focusAfterNode(next, this.container);
+      else
+        select.focusAfterNode(cur, this.container);
+      return true;
     },
 
     // Delay (or initiate) the next paren blink event.
