@@ -659,7 +659,11 @@ var Editor = (function(){
         this.handleTab(true);
         event.stop();
       }
-      else if ((code == 219 || code == 221) && event.ctrlKey && !event.altKey) {
+      else if (code == 36) { // home
+        if (this.home())
+          event.stop();
+      }
+      else if ((code == 219 || code == 221) && event.ctrlKey && !event.altKey) { // [, ]
         this.blinkParens(event.shiftKey);
         event.stop();
       }
@@ -801,6 +805,30 @@ var Editor = (function(){
         if (start === false || end === false) return;
         this.indentRegion(start, end, direction);
       }
+    },
+
+    home: function() {
+      var cur = select.selectionTopNode(this.container, true), start = cur;
+      if (cur === false || !this.container.firstChild) return false;
+
+      if (!cur || cur.nodeName == "BR") {
+        var next = cur ? cur.nextSibling : this.container.firstChild;
+        if (next && next.isPart) {
+          if (hasClass(next, "whitespace"))
+            select.focusAfterNode(next, this.container);
+          return true;
+        }
+      }
+      else if (cur && cur.isPart) {
+        while (cur && cur.nodeName != "BR") cur = cur.previousSibling;
+        var next = cur ? cur.nextSibling : this.container.firstChild;
+        if (next && next != start && next.isPart && hasClass(next, "whitespace"))
+          select.focusAfterNode(next, this.container);
+        else
+          select.focusAfterNode(cur, this.container);
+        return true;
+      }
+      return false;
     },
 
     // Delay (or initiate) the next paren blink event.
