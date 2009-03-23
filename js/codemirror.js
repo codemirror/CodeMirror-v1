@@ -239,8 +239,10 @@ var CodeMirror = (function(){
       area = document.getElementById(area);
 
     options = options || {};
-    if (area.style.width) options.width = area.style.width;
-    if (area.style.height) options.height = area.style.height;
+    if (area.style.width && options.width == null)
+      options.width = area.style.width;
+    if (area.style.height && options.height == null)
+      options.height = area.style.height;
     if (options.content == null) options.content = area.value;
 
     if (area.form) {
