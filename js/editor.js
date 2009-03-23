@@ -62,7 +62,8 @@ var Editor = (function(){
   var newlineElements = {"P": true, "DIV": true, "LI": true};
 
   function asEditorLines(string) {
-    return fixSpaces(string.replace(/\t/g, "  ").replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
+    var tab = makeWhiteSpace(indentUnit);
+    return fixSpaces(string.replace(/\t/g, tab).replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
   }
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
