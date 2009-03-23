@@ -158,6 +158,7 @@ var CodeMirror = (function(){
     setCode: function(code) {this.editor.importCode(code);},
     selection: function() {return this.editor.selectedText();},
     reindent: function() {this.editor.reindent();},
+    reindentSelection: function() {this.editor.reindentSelection(null);},
 
     focus: function() {
       this.win.focus();

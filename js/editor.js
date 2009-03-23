@@ -613,6 +613,18 @@ var Editor = (function(){
         this.indentRegion(null, this.container.lastChild);
     },
 
+    reindentSelection: function(direction) {
+      if (!select.somethingSelected(this.win)) {
+        this.indentAtCursor(direction);
+      }
+      else {
+        var start = select.selectionTopNode(this.container, true),
+            end = select.selectionTopNode(this.container, false);
+        if (start === false || end === false) return;
+        this.indentRegion(start, end, direction);
+      }
+    },
+
     grabKeys: function(eventHandler, filter) {
       this.frozen = eventHandler;
       this.keyFilter = filter;
@@ -794,18 +806,10 @@ var Editor = (function(){
     // re-indented, when nothing is selected, the line with the cursor
     // is re-indented.
     handleTab: function(direction) {
-      if (this.options.tabMode == "spaces") {
+      if (this.options.tabMode == "spaces")
         select.insertTabAtCursor(this.win);
-      }
-      else if (!select.somethingSelected(this.win)) {
-        this.indentAtCursor(direction);
-      }
-      else {
-        var start = select.selectionTopNode(this.container, true),
-            end = select.selectionTopNode(this.container, false);
-        if (start === false || end === false) return;
-        this.indentRegion(start, end, direction);
-      }
+      else
+        this.reindentSelection(direction);
     },
 
     home: function() {
