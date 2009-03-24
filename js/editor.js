@@ -575,7 +575,7 @@ var Editor = (function(){
         return h.textAfter(start.node).slice(start.offset, end.offset);
 
       var text = [h.textAfter(start.node).slice(start.offset)];
-      for (pos = h.nodeAfter(start.node); pos != end.node; pos = h.nodeAfter(pos))
+      for (var pos = h.nodeAfter(start.node); pos != end.node; pos = h.nodeAfter(pos))
         text.push(h.textAfter(pos));
       text.push(h.textAfter(end.node).slice(0, end.offset));
       return cleanText(text.join("\n"));
@@ -686,7 +686,7 @@ var Editor = (function(){
 
         if (code == 37) select.focusAfterNode(startOfLine(cursor), this.container);
         else {
-          end = endOfLine(cursor, this.container);
+          var end = endOfLine(cursor, this.container);
           select.focusAfterNode(end ? end.previousSibling : this.container.lastChild, this.container);
         }
         event.stop();
