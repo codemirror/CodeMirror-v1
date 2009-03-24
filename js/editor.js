@@ -63,7 +63,7 @@ var Editor = (function(){
 
   function asEditorLines(string) {
     var tab = makeWhiteSpace(indentUnit);
-    return fixSpaces(string.replace(/\t/g, tab).replace(/\u00a0/g, " ")).replace(/\r\n?/g, "\n").split("\n");
+    return map(string.replace(/\t/g, tab).replace(/\u00a0/g, " ").replace(/\r\n?/g, "\n").split("\n"), fixSpaces);
   }
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
