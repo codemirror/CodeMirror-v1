@@ -59,8 +59,10 @@ var CodeMirror = (function(){
       container.style.position = "relative";
       nums.style.position = "absolute";
       nums.style.height = "100%";
-      if (nums.style.setExpression)
-        nums.style.setExpression("height", "this.previousSibling.offsetHeight + 'px'");
+      if (nums.style.setExpression) {
+        try {nums.style.setExpression("height", "this.previousSibling.offsetHeight + 'px'");}
+        catch(e) {} // Seems to throw 'Not Implemented' on some IE8 versions
+      }
       nums.style.top = "0px";
       nums.style.overflow = "hidden";
       place(container);
