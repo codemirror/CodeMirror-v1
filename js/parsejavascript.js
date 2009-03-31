@@ -300,19 +300,24 @@ var JSParser = Editor.Parser = (function() {
       if (type == "variable"){register(value); cont(vardef2);}
       else cont();
     }
-    function vardef2(type){
-      if (type == "operator") cont(expression, vardef2);
+    function vardef2(type, value){
+      if (value == "=") cont(expression, vardef2);
       else if (type == ",") cont(vardef1);
     }
     // For loops.
     function forspec1(type){
       if (type == "var") cont(vardef1, forspec2);
       else if (type == ";") pass(forspec2);
-      else cont(expression, forspec2);
+      else if (type == "variable") cont(formaybein);
+      else pass(forspec2);
     }
-    function forspec2(type){
-      if (type == ",") cont(forspec1);
-      else if (type == ";") cont(forspec3);
+    function formaybein(type, value){
+      if (value == "in") cont(expression);
+      else cont(maybeoperator, forspec2);
+    }
+    function forspec2(type, value){
+      if (type == ";") cont(forspec3);
+      else if (value == "in") cont(expression);
       else cont(expression, expect(";"), forspec3);
     }
     function forspec3(type) {
