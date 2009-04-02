@@ -11,19 +11,6 @@ function method(obj, name) {
 // The value used to signal the end of a sequence in iterators.
 var StopIteration = {toString: function() {return "StopIteration"}};
 
-// Checks whether the argument is an iterator or a regular sequence,
-// turns it into an iterator.
-function iter(seq) {
-  var i = 0;
-  if (seq.next) return seq;
-  else return {
-    next: function() {
-      if (i >= seq.length) throw StopIteration;
-      else return seq[i++];
-    }
-  };
-}
-
 // Apply a function to each element in a sequence.
 function forEach(iter, f) {
   if (iter.next) {
