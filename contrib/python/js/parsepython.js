@@ -324,6 +324,10 @@ Editor.Parser = (function() {
     })();
 
     function parsePython(source) {
+        if (!keywords) {
+            configure({});
+        }
+
         var tokens = tokenizePython(source);
         var lastToken = null;
         var column = 0;
@@ -334,10 +338,6 @@ Editor.Parser = (function() {
                        next: null,
                        type: NORMALCONTEXT
                        };
-
-        if (keywords === null) {
-            configure({});
-        }
 
         function pushContext(level, type) {
             type = type ? type : NORMALCONTEXT;
