@@ -2,15 +2,26 @@ Editor.Parser = (function() {
     function wordRegexp(words) {
         return new RegExp("^(?:" + words.join("|") + ")$");
     }
-    var singleOperators = "+-*/%&|^~<>";
+    var DELIMITERCLASS = 'py-delimiter';
+    var LITERALCLASS = 'py-literal';
+    var ERRORCLASS = 'py-error';
+    var OPERATORCLASS = 'py-operator';
+    var IDENTIFIERCLASS = 'py-identifier';
+    var STRINGCLASS = 'py-string';
+    var BYTESCLASS = 'py-bytes';
+    var UNICODECLASS = 'py-unicode';
+    var RAWCLASS = 'py-raw';
+    var NORMALCONTEXT = 'normal';
+    var STRINGCONTEXT = 'string';
+    var singleOperators = '+-*/%&|^~<>';
     var doubleOperators = wordRegexp(['==', '!=', '\\<=', '\\>=', '\\<\\>',
                                       '\\<\\<', '\\>\\>', '\\/\\/', '\\*\\*']);
-    var singleDelimiters = "()[]{}@,:.`=;";
-    var doubleDelimiters = ["\\+=", "\\-=", "\\*=", "/=", "%=", "&=", "\\|=",
-                            "\\^="];
-    var tripleDelimiters = wordRegexp(["//=","\\>\\>=","\\<\\<=","\\*\\*="]);
-    var singleStarters = singleOperators + singleDelimiters + "=!";
-    var doubleStarters = "=<>*/";
+    var singleDelimiters = '()[]{}@,:.`=;';
+    var doubleDelimiters = ['\\+=', '\\-=', '\\*=', '/=', '%=', '&=', '\\|=',
+                            '\\^='];
+    var tripleDelimiters = wordRegexp(['//=','\\>\\>=','\\<\\<=','\\*\\*=']);
+    var singleStarters = singleOperators + singleDelimiters + '=!';
+    var doubleStarters = '=<>*/';
     var identifierStarters = /[_A-Za-z]/;
 
     var wordOperators = wordRegexp(['and', 'or', 'not', 'is', 'in']);
@@ -51,7 +62,7 @@ Editor.Parser = (function() {
             py = py3;
             stringStarters = /['"rbRB]/;
             stringTypes = /[rb]/;
-            doubleDelimiters.push("\\-\\>");
+            doubleDelimiters.push('\\-\\>');
         } else {
             py = py2;
             stringStarters = /['"RUru]/;
@@ -71,7 +82,7 @@ Editor.Parser = (function() {
             function filterPossible(token, styleIfPossible) {
                 if (!possible.style && !possible.content) {
                     return token;
-                } else if (typeof(token) == 'string') {
+                } else if (typeof(token) == STRINGCONTEXT) {
                     token = {content: source.get(), style: token};
                 }
                 if (possible.style || styleIfPossible) {
@@ -85,14 +96,14 @@ Editor.Parser = (function() {
             }
 
             // Handle comments
-            if (ch == "#") {
+            if (ch == '#') {
                 while (!source.endOfLine()) {
                     source.next();
                 }
-                return "py-comment";
+                return 'py-comment';
             }
             // Handle special chars
-            if (ch == "\\") {
+            if (ch == '\\') {
                 if (source.peek() != '\n') {
                     var whitespace = true;
                     while (!source.endOfLine()) {
@@ -101,10 +112,10 @@ Editor.Parser = (function() {
                         }
                     }
                     if (!whitespace) {
-                        return "py-error";
+                        return ERRORCLASS;
                     }
                 }
-                return "py-special";
+                return 'py-special';
             }
             // Handle operators and delimiters
             if (singleStarters.indexOf(ch) != -1) {
@@ -115,32 +126,32 @@ Editor.Parser = (function() {
                         source.next();
                         if (tripleDelimiters.test(temp + source.peek())) {
                             source.next();
-                            return 'py-delimiter';
+                            return DELIMITERCLASS;
                         } else {
-                            return 'py-operator';
+                            return OPERATORCLASS;
                         }
                     } else if (doubleDelimiters.test(temp)) {
                         source.next();
-                        return 'py-delimiter';
+                        return DELIMITERCLASS;
                     }
                 }
                 // It must be a single delimiter or operator
                 if (singleOperators.indexOf(ch) != -1) {
-                    return 'py-operator';
+                    return OPERATORCLASS;
                 } else if (singleDelimiters.indexOf(ch) != -1) {
                     if (ch == '@' && /\w/.test(source.peek())) {
                         possible = {style:'py-decorator',
                                     content: source.get()};
                         ch = source.next();
                     } else if (ch == '.' && /\d/.test(source.peek())) {
-                        possible = {style:'py-literal',
+                        possible = {style:LITERALCLASS,
                                     content: source.get()};
                         ch = source.next();
                     } else {
-                        return 'py-delimiter';
+                        return DELIMITERCLASS;
                     }
                 } else {
-                    return 'py-error';
+                    return ERRORCLASS;
                 }
             }
             // Handle number literals
@@ -151,17 +162,17 @@ Editor.Parser = (function() {
                         case 'O':
                             source.next();
                             source.nextWhile(matcher(/[0-7]/));
-                            return filterPossible('py-literal', 'py-error');
+                            return filterPossible(LITERALCLASS, ERRORCLASS);
                         case 'x':
                         case 'X':
                             source.next();
                             source.nextWhile(matcher(/[0-9A-Fa-f]/));
-                            return filterPossible('py-literal', 'py-error');
+                            return filterPossible(LITERALCLASS, ERRORCLASS);
                         case 'b':
                         case 'B':
                             source.next();
                             source.nextWhile(matcher(/[01]/));
-                            return filterPossible('py-literal', 'py-error');
+                            return filterPossible(LITERALCLASS, ERRORCLASS);
                     }
                 }
                 source.nextWhile(matcher(/\d/));
@@ -178,7 +189,7 @@ Editor.Parser = (function() {
                     if (/\d/.test(source.peek())) {
                         source.nextWhile(matcher(/\d/));
                     } else {
-                        return filterPossible('py-error');
+                        return filterPossible(ERRORCLASS);
                     }
                 }
                 // Grab a complex number
@@ -186,22 +197,22 @@ Editor.Parser = (function() {
                     source.next();
                 }
 
-                return filterPossible("py-literal");
+                return filterPossible(LITERALCLASS);
             }
             // Handle strings
             if (stringStarters.test(ch)) {
                 var peek = source.peek();
-                var stringType = 'py-string';
+                var stringType = STRINGCLASS;
                 if ((stringTypes.test(ch)) && (peek == '"' || peek == "'")) {
                     switch (ch.toLowerCase()) {
                         case 'b':
-                            stringType = 'py-bytes';
+                            stringType = BYTESCLASS;
                             break;
                         case 'r':
-                            stringType = 'py-raw';
+                            stringType = RAWCLASS;
                             break;
                         case 'u':
-                            stringType = 'py-unicode';
+                            stringType = UNICODECLASS;
                             break;
                     }
                     ch = source.next();
@@ -243,19 +254,19 @@ Editor.Parser = (function() {
                 source.nextWhile(matcher(/[\w\d]/));
                 word = source.get();
                 if (wordOperators.test(word)) {
-                    type = "py-operator";
+                    type = OPERATORCLASS;
                 } else if (keywords.test(word)) {
-                    type = "py-keyword";
+                    type = 'py-keyword';
                 } else if (types.test(word)) {
-                    type = "py-type";
+                    type = 'py-type';
                 } else {
-                    type = "py-identifier";
+                    type = IDENTIFIERCLASS;
                     while (source.peek() == '.') {
                         source.next();
                         if (identifierStarters.test(source.peek())) {
                             source.nextWhile(matcher(/[\w\d]/));
                         } else {
-                            type = 'py-error';
+                            type = ERRORCLASS;
                             break;
                         }
                     }
@@ -266,10 +277,10 @@ Editor.Parser = (function() {
 
             // Register Dollar sign and Question mark as errors. Always!
             if (/\$\?/.test(ch)) {
-                return filterPossible('py-error');
+                return filterPossible(ERRORCLASS);
             }
 
-            return filterPossible('py-error');
+            return filterPossible(ERRORCLASS);
         }
 
         function inString(style, terminator) {
@@ -321,7 +332,7 @@ Editor.Parser = (function() {
                        startNewScope: false,
                        level: 0,
                        next: null,
-                       type: 'normal'
+                       type: NORMALCONTEXT
                        };
 
         if (keywords === null) {
@@ -329,7 +340,7 @@ Editor.Parser = (function() {
         }
 
         function pushContext(level, type) {
-            type = type ? type : 'normal';
+            type = type ? type : NORMALCONTEXT;
             context = {prev: context,
                        endOfScope: false,
                        startNewScope: false,
@@ -394,13 +405,13 @@ Editor.Parser = (function() {
                 var content = token.content;
 
                 if (lastToken) {
-                    if (lastToken.content == 'def' && type == 'py-identifier') {
+                    if (lastToken.content == 'def' && type == IDENTIFIERCLASS) {
                         token.style = 'py-func';
                     }
                     if (lastToken.content == '\n') {
                         var tempCtx = context;
                         // Check for a different scope
-                        if (type == 'whitespace' && context.type == 'normal') {
+                        if (type == 'whitespace' && context.type == NORMALCONTEXT) {
                             if (token.value.length < context.level) {
                                 while (token.value.length < context.level) {
                                     popContext();
@@ -409,14 +420,14 @@ Editor.Parser = (function() {
                                 if (token.value.length != context.level) {
                                     context = tempCtx;
                                     if (config.strictErrors) {
-                                        token.style = 'py-error';
+                                        token.style = ERRORCLASS;
                                     }
                                 } else {
                                     context.next = null;
                                 }
                             }
                         } else if (context.level !== 0 &&
-                                   context.type == 'normal') {
+                                   context.type == NORMALCONTEXT) {
                             while (0 !== context.level) {
                                 popContext();
                             }
@@ -424,7 +435,7 @@ Editor.Parser = (function() {
                             if (context.level !== 0) {
                                 context = tempCtx;
                                 if (config.strictErrors) {
-                                    token.style = 'py-error';
+                                    token.style = ERRORCLASS;
                                 }
                             }
                         }
@@ -433,16 +444,16 @@ Editor.Parser = (function() {
 
                 // Handle Scope Changes
                 switch(type) {
-                    case 'py-string':
-                    case 'py-bytes':
-                    case 'py-raw':
-                    case 'py-unicode':
-                        if (context.type !== 'string') {
-                            pushContext(context.level + 1, 'string');
+                    case STRINGCLASS:
+                    case BYTESCLASS:
+                    case RAWCLASS:
+                    case UNICODECLASS:
+                        if (context.type !== STRINGCONTEXT) {
+                            pushContext(context.level + 1, STRINGCONTEXT);
                         }
                         break;
                     default:
-                        if (context.type === 'string') {
+                        if (context.type === STRINGCONTEXT) {
                             popContext(true);
                         }
                         break;
@@ -452,12 +463,12 @@ Editor.Parser = (function() {
                     case '@':
                         // These delimiters don't appear by themselves
                         if (content !== token.value) {
-                            token.style = 'py-error';
+                            token.style = ERRORCLASS;
                         }
                         break;
                     case ':':
                         // Colons only delimit scope inside a normal scope
-                        if (context.type === 'normal') {
+                        if (context.type === NORMALCONTEXT) {
                             context.startNewScope = context.level+indentUnit;
                         }
                         break;
@@ -476,7 +487,7 @@ Editor.Parser = (function() {
                     case 'pass':
                     case 'return':
                         // These end a normal scope
-                        if (context.type === 'normal') {
+                        if (context.type === NORMALCONTEXT) {
                             context.endOfScope = true;
                         }
                         break;
@@ -490,7 +501,7 @@ Editor.Parser = (function() {
                         } else if (context.startNewScope !== false) {
                             var temp = context.startNewScope;
                             context.startNewScope = false;
-                            pushContext(temp, 'normal');
+                            pushContext(temp, NORMALCONTEXT);
                         }
                         // Newlines require an indentation function wrapped in a closure for proper context.
                         token.indentation = indentPython(context);
