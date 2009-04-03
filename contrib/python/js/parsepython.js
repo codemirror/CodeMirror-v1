@@ -364,6 +364,7 @@ Editor.Parser = (function() {
         }
 
         function indentPython(context) {
+            var temp;
             return function(nextChars, currentLevel, direction) {
                 if (direction === null || direction === undefined) {
                     if (nextChars) {
@@ -378,10 +379,10 @@ Editor.Parser = (function() {
                         if (context.next) {
                             return context.next.level;
                         } else {
-                            return context.level + indentUnit;
+                            return context.level;
                         }
                     } else {
-                        var temp = context;
+                        temp = context;
                         while (temp.prev && temp.prev.level > currentLevel) {
                             temp = temp.prev;
                         }
@@ -391,11 +392,19 @@ Editor.Parser = (function() {
                     if (currentLevel > context.level) {
                         return context.level;
                     } else if (context.prev) {
-                        return context.prev.level;
+                        temp = context;
+                        while (temp.prev && temp.prev.level >= currentLevel) {
+                            temp = temp.prev;
+                        }
+                        if (temp.prev) {
+                            return temp.prev.level;
+                        } else {
+                            return temp.level;
+                        }
                     }
                 }
                 return context.level;
-            }
+            };
         }
 
         var iter = {
