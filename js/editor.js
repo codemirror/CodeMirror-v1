@@ -672,7 +672,7 @@ var Editor = (function(){
         this.handleTab(true);
         event.stop();
       }
-      else if (code == 36) { // home
+      else if (code == 36 && !event.shiftKey) { // home
         if (this.home())
           event.stop();
       }
@@ -680,7 +680,7 @@ var Editor = (function(){
         this.blinkParens(event.shiftKey);
         event.stop();
       }
-      else if (event.metaKey && (code == 37 || code == 39)) { // Meta-left/right
+      else if (event.metaKey && !event.shiftKey && (code == 37 || code == 39)) { // Meta-left/right
         var cursor = select.selectionTopNode(this.container);
         if (cursor === false || !this.container.firstChild) return;
 
