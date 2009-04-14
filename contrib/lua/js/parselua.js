@@ -50,8 +50,8 @@ var luaStdFunctions = wordRegexp([
 				"true","function", "end", "if", "then", "else", "do", 
 				"while", "repeat", "until", "for", "in", "local" ]);
 
- var luaIndentKeys = wordRegexp(["function", "if","repeat","for","while"]);
- var luaUnindentKeys = wordRegexp(["end", "until"]);
+ var luaIndentKeys = wordRegexp(["function", "if","repeat","for","while", "{"]);
+ var luaUnindentKeys = wordRegexp(["end", "until", "}"]);
  var luaMiddleKeys = wordRegexp(["else","elseif"]);
 
 
@@ -237,6 +237,6 @@ function parseLUA(source,basecolumn) {
     return iter;
   }
 
-  return {make: parseLUA, configure:configureLUA, electricChars: "delf"};   //en[d] els[e] unti[l] elsei[f]  // this should be taken from Keys keywords
+  return {make: parseLUA, configure:configureLUA, electricChars: "delf}"};   //en[d] els[e] unti[l] elsei[f]  // this should be taken from Keys keywords
 })();
 
