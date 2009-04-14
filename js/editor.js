@@ -19,7 +19,8 @@ function makeWhiteSpace(n) {
 // by the browser, but will not break text-wrapping either.
 function fixSpaces(string) {
   if (string.charAt(0) == " ") string = nbsp + string.slice(1);
-  return string.replace(/[\t \u00a0]{2,}/g, function(s) {return makeWhiteSpace(s.length);});
+  return string.replace(/\t/g, function(){return makeWhiteSpace(indentUnit);})
+    .replace(/[ \u00a0]{2,}/g, function(s) {return makeWhiteSpace(s.length);});
 }
 
 function cleanText(text) {
