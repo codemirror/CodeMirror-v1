@@ -15,15 +15,6 @@
 // is applied to the result of traverseDOM (see codemirror.js), and
 // the resulting stream is fed to the parser.
 window.stringStream = function(source){
-  function wrapString(string) {
-    var pos = 0;
-    return {next: function() {
-      if (pos >= string.length) throw StopIteration;
-      else return string.charAt(pos++);
-    }};
-  }
-
-  if (typeof source == "string") source = wrapString(source);
   // String that's currently being iterated over.
   var current = "";
   // Position in that string.
