@@ -324,47 +324,63 @@
     <p>The following parsers come with the distribution of CodeMirror:</p>
 
     <dl>
-      <dt><code><a
-      href="js/parsexml.js">parsexml.js</a></code></dt><dd>A HTML/XML
-      parser. Takes a <code>useHTMLKludges</code> configuration option
-      (see the <code><a href="#parserConfig">parserConfig</a></code>
-      option above), which specifies whether the content of the editor
-      is HTML or XML, and things like self-closing tags
-      (<code>br</code>, <code>img</code>) exist. This defaults to
-      <code>true</code>. Example colours for the styles that this
-      parser uses are defined in <code><a
+      <dt><code><a href="js/parsexml.js">parsexml.js</a></code> (<a
+      href="htmltest.html">demo</a>)</dt><dd>A HTML/XML parser. Takes
+      a <code>useHTMLKludges</code> configuration option (see the
+      <code><a href="#parserConfig">parserConfig</a></code> option
+      above), which specifies whether the content of the editor is
+      HTML or XML, and things like self-closing tags (<code>br</code>,
+      <code>img</code>) exist. This defaults to <code>true</code>.
+      Example colours for the styles that this parser uses are defined
+      in <code><a
       href="css/xmlcolors.css">css/xmlcolors.css</a></code>.</dd>
 
       <dt><code><a
       href="js/tokenizejavascript.js">tokenizejavascript.js</a></code>,
       <code><a
-      href="js/parsejavascript.js">parseejavascript.js</a></code></dt><dd>The
-      JavaScript parser. Example colours in <code><a
+      href="js/parsejavascript.js">parseejavascript.js</a></code> (<a
+      href="jstest.html">demo</a>)</dt><dd>The JavaScript parser.
+      Example colours in <code><a
       href="css/jscolors.css">css/jscolors.css</a></code></dd>
 
-      <dt><code><a
-      href="js/parsecss.js">parsecss.js</a></code></dt><dd>A CSS
-      parser. Styles in <code><a
+      <dt><code><a href="js/parsecss.js">parsecss.js</a></code> (<a
+      href="csstest.html">demo</a>)</dt><dd>A CSS parser. Styles in
+      <code><a
       href="css/csscolors.css">css/csscolors.css</a></code></dd>
 
       <dt><code><a
-      href="js/parsehtmlmixed.js">parsehtmlmixed.js</a></code></dt><dd>A
-      mixed-mode HTML parser. Requires the XML, JavaScript, and CSS
-      parsers to also be loaded, so your <code>parserfile</code>
-      option looks something like <code>["parsexml.js", "parsecss.js",
+      href="js/parsehtmlmixed.js">parsehtmlmixed.js</a></code> (<a
+      href="mixedtest.html">demo</a>)</dt><dd>A mixed-mode HTML
+      parser. Requires the XML, JavaScript, and CSS parsers to also be
+      loaded, so your <code>parserfile</code> option looks something
+      like <code>["parsexml.js", "parsecss.js",
       "tokenizejavascript.js", "parsejavascript.js",
       "parsehtmlmixed.js"]</code>.</dd>
 
-      <dt><code><a
-      href="js/parsesparql.js">parsesparql.js</a></code></dt><dd>Parses
-      the <a href="http://en.wikipedia.org/wiki/SPARQL">SPARQL</a>
-      query language. Example styles in <code><a
+      <dt><code><a href="js/parsesparql.js">parsesparql.js</a></code>
+      (<a href="sparqltest.html">demo</a>)</dt><dd>Parses the <a
+      href="http://en.wikipedia.org/wiki/SPARQL">SPARQL</a> query
+      language. Example styles in <code><a
       href="css/sparqlcolors.css">css/sparqlcolors.css</a></code></dd>
 
       <dt><code><a
       href="js/parsedummy.js">parsedummy.js</a></code></dt><dd>A
       'dummy' parser to make it possible to edit plain text, or
       documents for which no suitable parser exists.</dd>
+
+      <dt><code><a
+      href="contrib/php/js/parsephp.js">contrib/php/js/parsephp.js</a></code>
+      (<a href="contrib/php/index.html">demo</a>)</dt><dd>PHP
+      parser.</dd>
+
+      <dt><code><a
+      href="contrib/python/js/parsepython.js">contrib/python/js/parsepython.js</a></code>
+      (<a href="contrib/python/index.html">demo</a>)</dt><dd>Python
+      parser.</dd>
+
+      <dt><code><a href="contrib/lua/js/parselua.js">contrib/lua/js/parselua.js</a></code>
+      (<a href="contrib/lua/index.html">demo</a>)</dt><dd>Lua
+      parser.</dd>
 
     </dl>
 
