@@ -15,9 +15,14 @@ href="LICENSE">license</a>.</p>
 --[[
 example useless code to show lua syntax highlighting
 this is multiline comment
-]]--
+]]
 
 function blahblahblah(x)
+
+  local table = {
+    "asd" = 123,
+    "x" = 0.34,  
+  }
   if x ~= 3 then
     print( x )
   elseif x == "string"
@@ -31,14 +36,22 @@ function blahblahblah(x)
 end
 
 function blablabla3()
+
   for k,v in ipairs( table ) do
     --abcde..
-    x=[[
-  x is a multi line string
- ]]
+    y=[=[
+  x=[[
+      x is a multi line string
+   ]]
+  but its definition is iside a highest level string!
+  ]=]
     print(" \"\" ")
+  --this marks a parser error:
+  s = [== asdasdasd]]
+
     s = math.sin( x )
   end
+
 end
 </textarea>
 </div>

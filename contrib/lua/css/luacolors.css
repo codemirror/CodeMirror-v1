@@ -49,4 +49,11 @@ span.lua-token {
   color: #151;
 }
 
+span.lua-error {
+  color: #FFF;
+  background-color: #F00;
+}
+
+
+
 

@@ -9,20 +9,26 @@
  */
 
  
-function wordRegexp(words) {
+function findFirstRegexp(words) {
+    return new RegExp("^(?:" + words.join("|") + ")", "i");
+}
+
+function matchRegexp(words) {
     return new RegExp("^(?:" + words.join("|") + ")$", "i");
 }
+
+
  
-var luaCustomFunctions= wordRegexp([]);
+var luaCustomFunctions= matchRegexp([]);
  
 function configureLUA(parserConfig){
 	if(parserConfig)
-	luaCustomFunctions= wordRegexp(parserConfig);
+	luaCustomFunctions= matchRegexp(parserConfig);
 }
 
 
 //long list of standard functions from lua manual
-var luaStdFunctions = wordRegexp([
+var luaStdFunctions = matchRegexp([
 "_G","_VERSION","assert","collectgarbage","dofile","error","getfenv","getmetatable","ipairs","load","loadfile","loadstring","module","next","pairs","pcall","print","rawequal","rawget","rawset","require","select","setfenv","setmetatable","tonumber","tostring","type","unpack","xpcall",
 
 "coroutine.create","coroutine.resume","coroutine.running","coroutine.status","coroutine.wrap","coroutine.yield",
@@ -46,13 +52,15 @@ var luaStdFunctions = wordRegexp([
 
 
 
- var luaKeywords = wordRegexp(["and","break","elseif","false","nil","not","or","return",
+ var luaKeywords = matchRegexp(["and","break","elseif","false","nil","not","or","return",
 				"true","function", "end", "if", "then", "else", "do", 
 				"while", "repeat", "until", "for", "in", "local" ]);
 
- var luaIndentKeys = wordRegexp(["function", "if","repeat","for","while", "{"]);
- var luaUnindentKeys = wordRegexp(["end", "until", "}"]);
- var luaMiddleKeys = wordRegexp(["else","elseif"]);
+ var luaIndentKeys = matchRegexp(["function", "if","repeat","for","while", "[\(]", "{"]);
+ var luaUnindentKeys = matchRegexp(["end", "until", "[\)]", "}"]);
+
+ var luaUnindentKeys2 = findFirstRegexp(["end", "until", "[\)]", "}"]);
+ var luaMiddleKeys = findFirstRegexp(["else","elseif"]);
 
 
 
@@ -62,15 +70,23 @@ var LUAParser = Editor.Parser = (function() {
       var ch = source.next();
 
    if (ch == "-" && source.equals("-")) {
-        setState(inSLComment);
+        source.next();
+ 		setState(inSLComment);
         return null;
       } 
 	else if (ch == "\"" || ch == "'") {
         setState(inString(ch));
         return null;
       }
-    if (ch == "[" && source.equals("[")) {
-        setState(inMLString());
+    if (ch == "[" && (source.equals("[") || source.equals("="))) {
+        var level = 0;
+		while(source.equals("=")){
+			level ++;
+			source.next();
+		}
+		if(! source.equals("[") )
+			return "lua-error";		
+		setState(inMLSomething(level,"lua-string"));
         return null;
       } 
 	    
@@ -117,45 +133,40 @@ function inSLComment(source, setState) {
 	var count=0;
       while (!source.endOfLine()) {
 	 	var ch = source.next();
+		var level = 0;
 		if ((ch =="[") && start)
+			while(source.equals("=")){
+			source.next();
+			level++;
+			}
 			if (source.equals("[")){
-       				setState(inMLComment);
+       				setState(inMLSomething(level,"lua-comment"));
         			return null;
   				}
-		if (start && (ch != "-"))
-		     start = false;	
+		 start = false;	
 	}
 	setState(normal);      		
      return "lua-comment";
 	
     }
 
-    function inMLComment(source, setState) {
+    function inMLSomething(level,what) {
+	//wat sholud be "lua-string" or "lua-comment", level is the number of "=" in opening mark.
+	return function(source, setState){
       var dashes = 0;
       while (!source.endOfLine()) {
         var ch = source.next();
-        if (dashes >= 2 && ch == "-" && source.equals("-")) {
-          var dummy = source.next();
+        if (dashes == level+1 && ch == "]" ) {
           setState(normal);
           break;
         }
-        dashes = (ch == "]") ? dashes + 1 : 0;
-      }
-      return "lua-comment";
-    }
-
-    function inMLString(quote) {
-      return function(source, setState) {
-        while (!source.endOfLine()) {
-          var ch = source.next();
-          if (ch == "]" && source.equals("]")){
-	    	source.next();
-		setState(normal);
-            	break;
-		}
+		if (dashes == 0) 
+			dashes = (ch == "]") ? 1:0;
+		else
+ 			dashes = (ch == "=") ? dashes + 1 : 0;
         }
-	return "lua-string";
-      };
+      return what;
+	 }
     }
 
 
@@ -182,7 +193,7 @@ function inSLComment(source, setState) {
   function indentLUA(indentDepth, base) {
     return function(nextChars) {
 
-      var closing = (luaUnindentKeys.test(nextChars) || luaMiddleKeys.test(nextChars));
+      var closing = (luaUnindentKeys2.test(nextChars) || luaMiddleKeys.test(nextChars));
 
  	
 	return base + ( indentUnit * (indentDepth - (closing?1:0)) );
@@ -213,9 +224,9 @@ function parseLUA(source,basecolumn) {
 	}
 
 	if (luaIndentKeys.test(content))
-          indentDepth++;
+    	indentDepth++;
 	else if (luaUnindentKeys.test(content))
-	  indentDepth--;
+		indentDepth--;
         
 
         if (content == "\n")
@@ -237,6 +248,6 @@ function parseLUA(source,basecolumn) {
     return iter;
   }
 
-  return {make: parseLUA, configure:configureLUA, electricChars: "delf}"};   //en[d] els[e] unti[l] elsei[f]  // this should be taken from Keys keywords
+  return {make: parseLUA, configure:configureLUA, electricChars: "delf})"};   //en[d] els[e] unti[l] elsei[f]  // this should be taken from Keys keywords
 })();
 

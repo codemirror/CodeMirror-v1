@@ -1120,7 +1120,7 @@ var Editor = (function(){
       }
       // Create a part corresponding to a given token.
       function tokenPart(token){
-        var part = makePartSpan(token.value, self.doc);
+        var part = makePartSpan(token.value, self.doc);     
         part.className = token.style;
         return part;
       }
