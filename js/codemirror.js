@@ -188,6 +188,8 @@ var CodeMirror = (function(){
     grabKeys: function(callback, filter) {this.editor.grabKeys(callback, filter);},
     ungrabKeys: function() {this.editor.ungrabKeys();},
 
+    setParser: function(name) {this.editor.setParser(name);},
+
     cursorPosition: function(start) {
       if (this.win.select.ie_selection) this.focus();
       return this.editor.cursorPosition(start);

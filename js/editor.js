@@ -635,6 +635,14 @@ var Editor = (function(){
       this.keyFilter = null;
     },
 
+    setParser: function(name) {
+      Editor.Parser = window[name];
+      if (this.container.firstChild) {
+        this.addDirtyNode(this.firstChild);
+        this.scheduleHighlight();
+      }
+    },
+
     // Intercept enter and tab, and assign their new functions.
     keyDown: function(event) {
       if (this.frozen == "leave") this.frozen = null;

@@ -1,4 +1,4 @@
-Editor.Parser = (function() {
+var PythonParser = Editor.Parser = (function() {
     function wordRegexp(words) {
         return new RegExp("^(?:" + words.join("|") + ")$");
     }
