@@ -638,6 +638,9 @@ var Editor = (function(){
     setParser: function(name) {
       Editor.Parser = window[name];
       if (this.container.firstChild) {
+        forEach(this.container.childNodes, function(n) {
+          if (n.nodeType != 3) n.dirty = true;
+        });
         this.addDirtyNode(this.firstChild);
         this.scheduleHighlight();
       }
