@@ -1061,6 +1061,8 @@ var Editor = (function(){
     documentScanner: function(linesPer) {
       var self = this, pos = null;
       return function() {
+        // FF timeout weirdness workaround.
+        if (!window.select) return;
         // If the current node is no longer in the document... oh
         // well, we start over.
         if (pos && pos.parentNode != self.container)
