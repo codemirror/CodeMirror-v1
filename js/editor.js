@@ -213,6 +213,8 @@ var Editor = (function(){
     return node;
   }
 
+  function time() {return new Date().getTime();}
+
   // Replace all DOM nodes in the current selection with new ones.
   // Needed to prevent issues in IE where the old DOM nodes can be
   // pasted back into the document, still holding their old undo
@@ -386,7 +388,7 @@ var Editor = (function(){
 
     if (!options.readOnly) {
       if (options.continuousScanning !== false) {
-        this.scanner = this.documentScanner(options.linesPerPass);
+        this.scanner = this.documentScanner(options.passTime);
         this.delayScanning();
       }
 
@@ -906,7 +908,7 @@ var Editor = (function(){
       while (true) {
         var found = tryFindMatch();
         if (found.status == "dirty") {
-          this.highlight(found.node, 1);
+          this.highlight(found.node, endOfLine(found.node));
           // Needed because in some corner cases a highlight does not
           // reach a node.
           found.node.dirty = false;
@@ -1030,38 +1032,32 @@ var Editor = (function(){
       return null;
     },
 
-    // Pick dirty nodes, and highlight them, until
-    // options.linesPerPass lines have been highlighted. The highlight
-    // method will continue to next lines as long as it finds dirty
-    // nodes. It returns an object indicating the amount of lines
-    // left, and information about the place where it stopped. If
-    // there are dirty nodes left after this function has spent all
-    // its lines, it shedules another highlight to finish the job.
+    // Pick dirty nodes, and highlight them, until options.passTime
+    // milliseconds have gone by. The highlight method will continue
+    // to next lines as long as it finds dirty nodes. It returns
+    // information about the place where it stopped. If there are
+    // dirty nodes left after this function has spent all its lines,
+    // it shedules another highlight to finish the job.
     highlightDirty: function(force) {
       // Prevent FF from raising an error when it is firing timeouts
       // on a page that's no longer loaded.
       if (!window.select) return;
 
-      var lines = force ? Infinity : this.options.linesPerPass;
       if (!this.options.readOnly) select.markSelection(this.win);
-      var start;
-      while (lines > 0 && (start = this.getDirtyNode())){
-        var result = this.highlight(start, lines);
-        if (result) {
-          lines = result.left;
-          if (result.node && result.dirty)
-            this.addDirtyNode(result.node);
-        }
+      var start, endTime = force ? null : time() + this.options.passTime;
+      while (time() < endTime && (start = this.getDirtyNode())) {
+        var result = this.highlight(start, endTime);
+        if (result && result.node && result.dirty)
+          this.addDirtyNode(result.node);
       }
       if (!this.options.readOnly) select.selectMarked();
-      if (start)
-        this.scheduleHighlight();
+      if (start) this.scheduleHighlight();
       return this.dirty.length == 0;
     },
 
     // Creates a function that, when called through a timeout, will
     // continuously re-parse the document.
-    documentScanner: function(linesPer) {
+    documentScanner: function(passTime) {
       var self = this, pos = null;
       return function() {
         // FF timeout weirdness workaround.
@@ -1071,7 +1067,7 @@ var Editor = (function(){
         if (pos && pos.parentNode != self.container)
           pos = null;
         select.markSelection(self.win);
-        var result = self.highlight(pos, linesPer, true);
+        var result = self.highlight(pos, time() + passTime, true);
         select.selectMarked();
         var newPos = result ? (result.node && result.node.nextSibling) : null;
         pos = (pos == newPos) ? null : newPos;
@@ -1092,17 +1088,20 @@ var Editor = (function(){
     // help from the parser and the DOM normalizer). Its interface is
     // rather overcomplicated, because it is used in different
     // situations: ensuring that a certain line is highlighted, or
-    // highlighting up to X lines starting from a certain point. The
-    // 'from' argument gives the node at which it should start. If
-    // this is null, it will start at the beginning of the document.
-    // When a number of lines is given with the 'target' argument, it
-    // will highlight no more than that amount of lines. If this
-    // argument holds a DOM node, it will highlight until it reaches
-    // that node. If at any time it comes across a 'clean' line (no
-    // dirty nodes), it will stop, except when 'cleanLines' is true.
+    // highlighting up to X milliseconds starting from a certain
+    // point. The 'from' argument gives the node at which it should
+    // start. If this is null, it will start at the beginning of the
+    // document. When a timestamp is given with the 'target' argument,
+    // it will stop highlighting at that time. If this argument holds
+    // a DOM node, it will highlight until it reaches that node. If at
+    // any time it comes across two 'clean' lines (no dirty nodes), it
+    // will stop, except when 'cleanLines' is true. maxBacktrack is
+    // the maximum number of lines to backtrack to find an existing
+    // parser instance. This is used to give up in situations where a
+    // highlight would take too long and freeze the browser interface.
     highlight: function(from, target, cleanLines, maxBacktrack){
       var container = this.container, self = this, active = this.options.activeTokens;
-      var lines = (typeof target == "number" ? target : null);
+      var endTime = (typeof target == "number" ? target : null);
 
       if (!container.firstChild)
         return;
@@ -1227,12 +1226,12 @@ var Editor = (function(){
 
           // If the target argument wasn't an integer, go at least
           // until that node.
-          if (lines == null && part == target) throw StopIteration;
+          if (endTime == null && part == target) throw StopIteration;
 
           // A clean line with more than one node means we are done.
           // Throwing a StopIteration is the way to break out of a
           // MochiKit forEach loop.
-          if ((lines != null && --lines <= 0) || (!lineDirty && !prevLineDirty && lineNodes > 1 && !cleanLines))
+          if ((endTime != null && time() >= endTime) || (!lineDirty && !prevLineDirty && lineNodes > 1 && !cleanLines))
             throw StopIteration;
           prevLineDirty = lineDirty; lineDirty = false; lineNodes = 0;
           parts.next();
@@ -1284,8 +1283,7 @@ var Editor = (function(){
       // The function returns some status information that is used by
       // hightlightDirty to determine whether and where it has to
       // continue.
-      return {left: lines,
-              node: parts.getNonEmpty(),
+      return {node: parts.getNonEmpty(),
               dirty: lineDirty};
     }
   };

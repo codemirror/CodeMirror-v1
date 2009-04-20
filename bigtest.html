@@ -1,7 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <script src="js/codemirror.js" type="text/javascript"></script>
-    <script src="js/mirrorframe.js" type="text/javascript"></script>
     <title>CodeMirror: JavaScript demonstration</title>
     <link rel="stylesheet" type="text/css" href="css/docs.css"/>
   </head>
@@ -1281,8 +1280,8 @@ var Editor = (function(){
 
 <script type="text/javascript">
   var textarea = document.getElementById('code');
-  var editor = new MirrorFrame(CodeMirror.replace(textarea), {
-    height: "350px",
+  var editor = new CodeMirror(CodeMirror.replace(textarea), {
+    height: "750px",
     width: "100%",
     content: textarea.value,
     parserfile: ["tokenizejavascript.js", "parsejavascript.js"],

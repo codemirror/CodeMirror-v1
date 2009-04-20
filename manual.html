@@ -198,23 +198,23 @@
       a single file to reduce latency, or add some functionality, you
       might have to adjust that.</dd>
       
-      <dt><code>linesPerPass</code></dt><dd>Specifies the maximum
-      amount of lines that the highlighter tries to colour in one
-      shot. Setting this too high will cause the code to 'freeze' the
-      browser for noticeable intervals. Defaults to 30.</dd>
-
       <dt><code>passDelay</code></dt><dd>Gives the amount of
       milliseconds between colouring passes. Defaults to 200.</dd>
+
+      <dt><code>passTime</code></dt><dd>Specifies the maximum amount
+      of time that the highlighter will spend in one shot. Setting
+      this too high will cause the editor to 'freeze' the browser for
+      noticeable intervals. Defaults to 50.</dd>
 
       <dt><code>continuousScanning</code></dt><dd>Configure continuous
       scanning of the document. When <code>false</code>, scanning is
       disabled. When set to a number, say <code>N</code>, a
-      'background' process will scan <code>linesPerPass</code> (see
-      above) lines of the document every <code>N</code> milliseconds,
-      regardless of whether anything changed. This makes sure
-      non-local changes propagate through the document, and will help
-      keep everything consistent. It does add extra processing cost,
-      even for an idle editor. Default value is
+      'background' process will scan the document for
+      <code>passTime</code> (see above) milliseconds every
+      <code>N</code> milliseconds, regardless of whether anything
+      changed. This makes sure non-local changes propagate through the
+      document, and will help keep everything consistent. It does add
+      extra processing cost, even for an idle editor. Default value is
       <code>false</code>.</dd>
 
       <dt><code>autoMatchParens</code></dt><dd>When <code>true</code>,
