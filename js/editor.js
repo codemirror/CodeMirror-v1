@@ -445,6 +445,9 @@ var Editor = (function(){
       if (this.options.autoMatchParens)
         addEventHandler(document.body, "click", method(this, "scheduleParenBlink"));
     }
+    else if (!options.textWrapping) {
+      container.style.whiteSpace = "nowrap";
+    }
   }
 
   function isSafeKey(code) {
