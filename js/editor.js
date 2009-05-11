@@ -956,10 +956,11 @@ var Editor = (function(){
       if (end.nodeName != "BR") end = endOfLine(end, this.container);
 
       do {
-        if (current) this.highlight(before, current, true);
+        var next = endOfLine(current, this.container);
+        if (current) this.highlight(before, next, true);
         this.indentLineAfter(current, direction);
         before = current;
-        current = endOfLine(current, this.container);
+        current = next;
       } while (current != end);
       select.setCursorPos(this.container, {node: start, offset: 0}, {node: end, offset: 0});
     },

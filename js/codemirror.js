@@ -45,6 +45,7 @@ var CodeMirror = (function(){
     autoMatchParens: false,
     parserConfig: null,
     tabMode: "indent", // or "spaces", "default", "shift"
+    reindentOnLoad: false,
     activeTokens: null,
     cursorActivity: null,
     lineNumbers: false,
@@ -155,6 +156,7 @@ var CodeMirror = (function(){
     init: function() {
       if (this.options.initCallback) this.options.initCallback(this);
       if (this.options.lineNumbers) applyLineNumbers(this.frame);
+      if (this.options.reindentOnLoad) this.reindent();
     },
 
     getCode: function() {return this.editor.getCode();},
