@@ -56,12 +56,25 @@
 
 <button onclick="highlight()">Run highlighter</button>
 
-<pre id="output"></pre>
+<div>
+<div id="numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>
+<pre id="output" style="font-family: monospace"></pre>
+</div>
 
 <script type="text/javascript">
+  // Simple hack to demonstrate adding line numbers. Just pass the DOM node as
+  // the second argument to highlightText when you don't need those
   function highlight() {
-    document.getElementById("output").innerHTML = "";
-    highlightText(document.getElementById("code").value, document.getElementById("output"));
+    var lineNo = 1, output = document.getElementById("output"), numbers = document.getElementById("numbers");
+    output.innerHTML = numbers.innerHTML = "";
+
+    function addLine(line) {
+      numbers.appendChild(document.createTextNode(String(lineNo++)));
+      numbers.appendChild(document.createElement("BR"));
+      for (var i = 0; i < line.length; i++) output.appendChild(line[i]);
+      output.appendChild(document.createElement("BR"));
+    }
+    highlightText(document.getElementById("code").value, addLine);
   }
 </script>
 

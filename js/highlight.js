@@ -1,8 +1,11 @@
 // Minimal framing needed to use CodeMirror-style parsers to highlight
 // code. Load this along with tokenize.js, stringstream.js, and your
-// parser. Then call highlightText, passing a string, a dom node in
-// which to append the tokens, and optionally (not needed if you only
-// loaded one parser) a parser object.
+// parser. Then call highlightText, passing a string as the first
+// argument, and as the second argument either a callback function
+// that will be called with an array of SPAN nodes for every line in
+// the code, or a DOM node to which to append these spans, and
+// optionally (not needed if you only loaded one parser) a parser
+// object.
 
 // Stuff from util.js that the parsers are using.
 var StopIteration = {toString: function() {return "StopIteration"}};
@@ -33,19 +36,36 @@ var indentUnit = 2;
     };
   }
 
-  window.highlightText = function(string, output, parser) {
+  window.highlightText = function(string, callback, parser) {
     var parser = (parser || Editor.Parser).make(stringStream(normaliseString(string)));
+    var line = [];
+    if (callback.nodeType == 1) {
+      var node = callback;
+      callback = function(line) {
+        for (var i = 0; i < line.length; i++)
+          node.appendChild(line[i]);
+        node.appendChild(document.createElement("BR"));
+      };
+    }
+
     try {
       while (true) {
         var token = parser.next();
-        var span = document.createElement("SPAN");
-        span.className = token.style;
-        span.appendChild(document.createTextNode(token.value));
-        output.appendChild(span);
+        if (token.value == "\n") {
+          callback(line);
+          line = [];
+        }
+        else {
+          var span = document.createElement("SPAN");
+          span.className = token.style;
+          span.appendChild(document.createTextNode(token.value));
+          line.push(span);
+        }
       }
     }
     catch (e) {
       if (e != StopIteration) throw e;
     }
+    if (line.length) callback(line);
   }
 })();
