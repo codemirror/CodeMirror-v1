@@ -855,6 +855,7 @@ var Editor = (function(){
     // highlight them in green for a moment, or red if no proper match
     // was found.
     blinkParens: function(jump) {
+      if (!window.select) return;
       // Clear the event property.
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
       this.parenEvent = null;

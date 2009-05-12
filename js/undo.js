@@ -52,8 +52,9 @@ History.prototype = {
   // Schedule a commit (if no other touches come in for commitDelay
   // milliseconds).
   scheduleCommit: function() {
+    var self = this;
     this.parent.clearTimeout(this.commitTimeout);
-    this.commitTimeout = this.parent.setTimeout(method(this, "tryCommit"), this.commitDelay);
+    this.commitTimeout = this.parent.setTimeout(function(){self.tryCommit();}, this.commitDelay);
   },
 
   // Mark a node as touched. Null is a valid argument.
@@ -144,6 +145,7 @@ History.prototype = {
 
   // Commit unless there are pending dirty nodes.
   tryCommit: function() {
+    if (!window.History) return; // Stop when frame has been unloaded
     if (this.editor.highlightDirty()) this.commit();
     else this.scheduleCommit();
   },
