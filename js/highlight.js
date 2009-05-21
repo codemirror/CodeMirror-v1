@@ -9,9 +9,6 @@
 
 // Stuff from util.js that the parsers are using.
 var StopIteration = {toString: function() {return "StopIteration"}};
-function matcher(regexp){
-  return function(value){return regexp.test(value);};
-}
 
 var Editor = {};
 var indentUnit = 2;

@@ -44,7 +44,7 @@ var XMLParser = Editor.Parser = (function() {
         }
         else if (source.equals("?")) {
           source.next();
-          source.nextWhile(matcher(/[\w\._\-]/));
+          source.nextWhileMatches(/[\w\._\-]/);
           setState(inBlock("xml-processing", "?>"));
           return "xml-processing";
         }
@@ -62,7 +62,7 @@ var XMLParser = Editor.Parser = (function() {
         return "xml-entity";
       }
       else {
-        source.nextWhile(matcher(/[^&<\n]/));
+        source.nextWhileMatches(/[^&<\n]/);
         return "xml-text";
       }
     }
@@ -86,7 +86,7 @@ var XMLParser = Editor.Parser = (function() {
         return null;
       }
       else {
-        source.nextWhile(matcher(/[^\s\u00a0=<>\"\'\/?]/));
+        source.nextWhileMatches(/[^\s\u00a0=<>\"\'\/?]/);
         return "xml-name";
       }
     }

@@ -31,7 +31,8 @@ function map(iter, f) {
 }
 
 // Create a predicate function that tests a string againsts a given
-// regular expression.
+// regular expression. No longer used but might be used by 3rd party
+// parsers.
 function matcher(regexp){
   return function(value){return regexp.test(value);};
 }

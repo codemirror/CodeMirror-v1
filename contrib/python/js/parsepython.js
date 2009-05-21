@@ -60,7 +60,7 @@ var PythonParser = Editor.Parser = (function() {
         }
         if (conf.pythonVersion == 3) {
             py = py3;
-            stringStarters = /['"rbRB]/;
+            stringStarters = /[\'\"rbRB]/;
             stringTypes = /[rb]/;
             doubleDelimiters.push('\\-\\>');
         } else {
@@ -161,24 +161,24 @@ var PythonParser = Editor.Parser = (function() {
                         case 'o':
                         case 'O':
                             source.next();
-                            source.nextWhile(matcher(/[0-7]/));
+                            source.nextWhileMatches(/[0-7]/);
                             return filterPossible(LITERALCLASS, ERRORCLASS);
                         case 'x':
                         case 'X':
                             source.next();
-                            source.nextWhile(matcher(/[0-9A-Fa-f]/));
+                            source.nextWhileMatches(/[0-9A-Fa-f]/);
                             return filterPossible(LITERALCLASS, ERRORCLASS);
                         case 'b':
                         case 'B':
                             source.next();
-                            source.nextWhile(matcher(/[01]/));
+                            source.nextWhileMatches(/[01]/);
                             return filterPossible(LITERALCLASS, ERRORCLASS);
                     }
                 }
-                source.nextWhile(matcher(/\d/));
+                source.nextWhileMatches(/\d/);
                 if (source.peek() == '.') {
                     source.next();
-                    source.nextWhile(matcher(/\d/));
+                    source.nextWhileMatches(/\d/);
                 }
                 // Grab an exponent
                 if (source.peek().toLowerCase() == 'e') {
@@ -187,7 +187,7 @@ var PythonParser = Editor.Parser = (function() {
                         source.next();
                     }
                     if (/\d/.test(source.peek())) {
-                        source.nextWhile(matcher(/\d/));
+                        source.nextWhileMatches(/\d/);
                     } else {
                         return filterPossible(ERRORCLASS);
                     }
@@ -251,7 +251,7 @@ var PythonParser = Editor.Parser = (function() {
             }
             // Handle Identifier
             if (identifierStarters.test(ch)) {
-                source.nextWhile(matcher(/[\w\d]/));
+                source.nextWhileMatches(/[\w\d]/);
                 word = source.get();
                 if (wordOperators.test(word)) {
                     type = OPERATORCLASS;
@@ -264,7 +264,7 @@ var PythonParser = Editor.Parser = (function() {
                     while (source.peek() == '.') {
                         source.next();
                         if (identifierStarters.test(source.peek())) {
-                            source.nextWhile(matcher(/[\w\d]/));
+                            source.nextWhileMatches(/[\w\d]/);
                         } else {
                             type = ERRORCLASS;
                             break;

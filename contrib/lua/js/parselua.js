@@ -119,11 +119,11 @@ var LUAParser = Editor.Parser = (function() {
       }
 
      else if (/\d/.test(ch)) {
-        source.nextWhile(matcher(/[\w.%]/));
+        source.nextWhileMatches(/[\w.%]/);
         return "lua-number";
       }
       else {
-        source.nextWhile(matcher(/[\w\\\-_.]/));
+        source.nextWhileMatches(/[\w\\\-_.]/);
         return "lua-identifier";
       }
     }

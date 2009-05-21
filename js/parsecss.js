@@ -5,7 +5,7 @@ var CSSParser = Editor.Parser = (function() {
     function normal(source, setState) {
       var ch = source.next();
       if (ch == "@") {
-        source.nextWhile(matcher(/\w/));
+        source.nextWhileMatches(/\w/);
         return "css-at";
       }
       else if (ch == "/" && source.equals("*")) {
@@ -28,16 +28,16 @@ var CSSParser = Editor.Parser = (function() {
         return null;
       }
       else if (ch == "#") {
-        source.nextWhile(matcher(/\w/));
+        source.nextWhileMatches(/\w/);
         return "css-hash";
       }
       else if (ch == "!") {
-        source.nextWhile(matcher(/[ \t]/));
-        source.nextWhile(matcher(/\w/));
+        source.nextWhileMatches(/[ \t]/);
+        source.nextWhileMatches(/\w/);
         return "css-important";
       }
       else if (/\d/.test(ch)) {
-        source.nextWhile(matcher(/[\w.%]/));
+        source.nextWhileMatches(/[\w.%]/);
         return "css-unit";
       }
       else if (/[,.+>*\/]/.test(ch)) {
@@ -47,7 +47,7 @@ var CSSParser = Editor.Parser = (function() {
         return "css-punctuation";
       }
       else {
-        source.nextWhile(matcher(/[\w\\\-_]/));
+        source.nextWhileMatches(/[\w\\\-_]/);
         return "css-identifier";
       }
     }

@@ -264,7 +264,7 @@ var Editor = (function(){
     this.valid = !!string;
 
     // Create a matcher function based on the kind of string we have.
-    var target = string.split("\n"), self = this;;
+    var target = string.split("\n"), self = this;
     this.matches = (target.length == 1) ?
       // For one-line strings, searching can be done simply by calling
       // indexOf on the current line.

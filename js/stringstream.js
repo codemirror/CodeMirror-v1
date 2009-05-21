@@ -77,7 +77,7 @@ window.stringStream = function(source){
       var found = false;
 
       var _accum = accum, _pos = pos;
-      if (skipSpaces) this.nextWhile(matcher(/[\s\u00a0]/));
+      if (skipSpaces) this.nextWhileMatches(/[\s\u00a0]/);
 
       while (true) {
         var end = pos + str.length, left = current.length - pos;
@@ -116,7 +116,17 @@ window.stringStream = function(source){
       return (next !== null && test(next));
     },
     nextWhile: function(test) {
-      while (this.applies(test))
+      var next;
+      while ((next = this.peek()) !== null && test(next))
+        this.next();
+    },
+    matches: function(re) {
+      var next = this.peek();
+      return (next !== null && re.test(next));
+    },
+    nextWhileMatches: function(re) {
+      var next;
+      while ((next = this.peek()) !== null && re.test(next))
         this.next();
     },
     equals: function(ch) {

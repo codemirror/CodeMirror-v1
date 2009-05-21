@@ -762,11 +762,10 @@ var tokenizePHP = (function() {
 
   }();
 
-  // Helper regexp matchers.
-  var isOperatorChar = matcher(/[+*&%\/=<>!?.|-]/);
-  var isDigit = matcher(/[0-9]/);
-  var isHexDigit = matcher(/[0-9A-Fa-f]/);
-  var isWordChar = matcher(/[\w\$_]/);
+  // Helper regexps
+  var isOperatorChar = /[+*&%\/=<>!?.|-]/;
+  var isHexDigit = /[0-9A-Fa-f]/;
+  var isWordChar = /[\w\$_]/;
 
   // Wrapper around phpToken that helps maintain parser state (whether
   // we are inside of a multi-line comment)
@@ -787,28 +786,28 @@ var tokenizePHP = (function() {
   function phpToken(inside, source, setInside) {
     function readHexNumber(){
       source.next();  // skip the 'x'
-      source.nextWhile(isHexDigit);
+      source.nextWhileMatches(isHexDigit);
       return {type: "number", style: "php-atom"};
     }
 
     function readNumber() {
-      source.nextWhile(isDigit);
+      source.nextWhileMatches(/[0-9]/);
       if (source.equals(".")){
         source.next();
-        source.nextWhile(isDigit);
+        source.nextWhileMatches(/[0-9]/);
       }
       if (source.equals("e") || source.equals("E")){
         source.next();
         if (source.equals("-"))
           source.next();
-        source.nextWhile(isDigit);
+        source.nextWhileMatches(/[0-9]/);
       }
       return {type: "number", style: "php-atom"};
     }
     // Read a word and look it up in the keywords array. If found, it's a
     // keyword of that type; otherwise it's a PHP T_STRING.
     function readWord() {
-      source.nextWhile(isWordChar);
+      source.nextWhileMatches(isWordChar);
       var word = source.get();
       var known = keywords.hasOwnProperty(word) && keywords.propertyIsEnumerable(word) && keywords[word];
       // since we called get(), tokenize::take won't get() anything. Thus, we must set token.content
@@ -816,7 +815,7 @@ var tokenizePHP = (function() {
       {type: "t_string", style: "php-t_string", content: word};
     }
     function readVariable() {
-      source.nextWhile(isWordChar);
+      source.nextWhileMatches(isWordChar);
       var word = source.get();
       // in PHP, '$this' is a reserved word, but 'this' isn't. You can have function this() {...}
       if (word == "$this")
@@ -900,12 +899,12 @@ var tokenizePHP = (function() {
         // on our first invocation after reading the <<<, we must determine the closing identifier
         if (source.equals("'")) {
           // nowdoc
-          source.nextWhile(isWordChar);
+          source.nextWhileMatches(isWordChar);
           identifier = "'" + source.get() + "'";
           source.next();  // consume the closing "'"
-        } else if (source.applies(matcher(/[A-Za-z_]/))) {
+        } else if (source.matches(/[A-Za-z_]/)) {
           // heredoc
-          source.nextWhile(isWordChar);
+          source.nextWhileMatches(isWordChar);
           identifier = source.get();
         } else {
           // syntax error
@@ -927,7 +926,7 @@ var tokenizePHP = (function() {
           setInside(null);
         } else {
           token.type = "string_not_terminated";
-          source.nextWhile(matcher(/[^\n]/));
+          source.nextWhileMatches(/[^\n]/);
           token.content = source.get();
         }
       }
@@ -935,7 +934,7 @@ var tokenizePHP = (function() {
     }
 
     function readOperator() {
-      source.nextWhile(isOperatorChar);
+      source.nextWhileMatches(isOperatorChar);
       return {type: "operator", style: "php-operator"};
     }
     function readStringSingleQuoted() {
@@ -977,7 +976,7 @@ var tokenizePHP = (function() {
     }
     else if (ch == "0" && (source.equals("x") || source.equals("X")))
       return readHexNumber();
-    else if (isDigit(ch))
+    else if (/[0-9]/.test(ch))
       return readNumber();
     else if (ch == "/") {
       if (source.equals("*"))
@@ -995,7 +994,7 @@ var tokenizePHP = (function() {
       else
         return readOperator();
     }
-    else if (isOperatorChar(ch))
+    else if (isOperatorChar.test(ch))
       return readOperator();
     else
       return readWord();
