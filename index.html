@@ -15,7 +15,7 @@
 
 <div class="top">
   <h1>CodeMirror</h1>
-  <h2 class="underline">In-browser code editing made slightly less painful</h2>
+  <h2 class="underline">In-browser code editing made almost bearable</h2>
 </div>
 <div style="float: right; padding-left: 10px;">
   <form action="https://www.paypal.com/cgi-bin/webscr" method="post" id="paypal">
@@ -40,14 +40,12 @@
   </div>
 </div>
 
-<p>CodeMirror is a JavaScript program that can be used to create a
+<p>CodeMirror is a JavaScript library that can be used to create a
 relatively pleasant editor interface for code-like content &#x2015;
 computer programs, HTML markup, and similar. If a parser has been
 written for the language you are editing (see below for a list of
-supported languages), the code will be prettily coloured, and
-indentation will be taken care of for you, meaning the cursor will be
-placed at the right position when you press enter, and it is possible
-to re-indent blocks of code automatically.</p>
+supported languages), the code will be coloured, and the editor will
+help you with indentation.</p>
 
 <p>To get a look at CodeMirror, see the test pages for the various
 parsers...</p>
@@ -78,6 +76,14 @@ parsers...</p>
 </ul>
 
 <h2>Releases</h2>
+
+<p class="rel"><em>30-05-2009</em>: <a
+href="http://marijn.haverbeke.nl/codemirror/codemirror-0.62.zip">Version
+0.62</a>: Introduces <a href="contrib/python/index.html">Python</a>
+and <a href="contrib/lua/index.html">Lua</a> parsers. Add
+<code>setParser</code> (on-the-fly mode changing) and
+<code>clearHistory</code> methods. Make parsing passes time-based
+instead of lines-based (see the <code>passTime</code> option).</p>
 
 <p class="rel"><em>04-03-2009</em>: <a
 href="http://marijn.haverbeke.nl/codemirror/codemirror-0.61.zip">Version
@@ -114,32 +120,6 @@ href="http://marijn.haverbeke.nl/codemirror/codemirror-0.57.zip">Version
 0.57</a>: A CSS parser and a nice tokenizer framework, bugfixes in the
 XML parser, a few browser-issue workarounds, one of which should fix
 the age-old Firefox cursor-showing-on-wrong line bug.</p>
-
-<p class="rel"><em>25-04-2008</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.56.zip">Version
-0.56</a>: Fixes for some minor bugs, no new features.</p>
-
-<p class="rel"><em>30-03-2008</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.55.zip">Version
-0.55</a>: Fixes a bug that broke redo, adds <code>readOnly</code>
-option.</p>
-
-<p class="rel"><em>10-03-2008</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.54.zip">Version
-0.54</a>: Some new utility functions and options (see
-<code>fromTextArea</code>, <code>saveFunction</code>,
-<code>initCallback</code>, <code>textWrapping</code>,
-<code>disableSpellcheck</code>, <code>jumpToLine</code>, and
-<code>reindent</code> in the <a href="manual.html">manual</a>), many
-bugfixes, and some cleaning up and shrinking of the codebase (<a
-href="http://www.mochikit.com">MochiKit</a> is no longer used).</p>
-
-<p class="rel"><em>26-01-2008</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.53.zip">Version
-0.53</a>: Adds support for continuous scanning, search/replace,
-undo/redo, jump-to-line, selection getting and setting. See <a
-href="manual.html">the manual</a> for details. Also fixes a bucket of
-bugs.</p>
 
 <h2 id="supported">Supported browsers</h2>
 
