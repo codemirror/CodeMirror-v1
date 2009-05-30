@@ -30,6 +30,7 @@ var CodeMirror = (function(){
     path: "",
     parserfile: [],
     basefiles: ["util.js", "stringstream.js", "select.js", "undo.js", "editor.js", "tokenize.js"],
+    iframeClass: null,
     passDelay: 200,
     passTime: 50,
     continuousScanning: false,
@@ -110,6 +111,7 @@ var CodeMirror = (function(){
     setDefaults(options, CodeMirrorConfig);
 
     var frame = this.frame = document.createElement("IFRAME");
+    if (options.iframeClass) frame.className = options.iframeClass;
     frame.frameBorder = 0;
     frame.src = "javascript:false;";
     frame.style.border = "0";
