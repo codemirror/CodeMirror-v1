@@ -689,7 +689,7 @@ var Editor = (function(){
         this.handleTab(true);
         event.stop();
       }
-      else if (code == 36 && !event.shiftKey) { // home
+      else if (code == 36 && !event.shiftKey && !event.ctrlKey) { // home
         if (this.home())
           event.stop();
       }
