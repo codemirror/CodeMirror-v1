@@ -713,7 +713,7 @@ var Editor = (function(){
           select.scrollToNode(this.history.redo());
           event.stop();
         }
-        else if (code == 90 || code == 8) { // Z, backspace
+        else if (code == 90 || (safari && code == 8)) { // Z, backspace
           select.scrollToNode(this.history.undo());
           event.stop();
         }
