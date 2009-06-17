@@ -81,6 +81,11 @@ var CodeMirror = (function(){
 
     var nextNum = 1, barWidth = null;
     function sizeBar() {
+      if (!frame.offsetWidth || !win.Editor) {
+        for (var cur = frame; cur.parentNode; cur = cur.parentNode)
+          if (cur != document) clearInterval(sizeInterval);
+      }
+
       if (nums.offsetWidth != barWidth) {
         barWidth = nums.offsetWidth;
         nums.style.left = "-" + (frame.parentNode.style.marginLeft = barWidth + "px");
@@ -98,7 +103,7 @@ var CodeMirror = (function(){
     sizeBar();
     update();
     win.addEventHandler(win, "scroll", update);
-    setInterval(sizeBar, 500);
+    var sizeInterval = setInterval(sizeBar, 500);
   }
 
   function CodeMirror(place, options) {
