@@ -27,10 +27,51 @@ var select = {};
     return topLevelNodeAt(node.previousSibling, top);
   }
 
+  var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
+
+  select.scrollToNode = function(element) {
+    if (!element) return;
+    var doc = element.ownerDocument, body = doc.body,
+      win = (doc.defaultView || doc.parentWindow),
+      html = doc.documentElement;
+
+    // In Opera, BR elements *always* have a scrollTop property of zero. Go Opera.
+    var compensateHack = 0;
+    while (element && !element.offsetTop) {
+      compensateHack++;
+      element = element.previousSibling;
+    }
+
+    var y = compensateHack * (element ? element.offsetHeight : 0), x = 0, pos = element;
+    while (pos && pos.offsetParent) {
+      y += pos.offsetTop;
+      // Don't count X offset for <br> nodes
+      if (pos.nodeName == "BR")
+        x += pos.offsetLeft;
+      pos = pos.offsetParent;
+    }
+
+    var scroll_x = body.scrollLeft || html.scrollLeft || 0,
+        scroll_y = body.scrollTop || html.scrollTop || 0,
+        screen_x = x - scroll_x, screen_y = y - scroll_y, scroll = false;
+
+    if (screen_x < 0 || screen_x > (win.innerWidth || html.clientWidth || 0) - 50) {
+      scroll_x = x;
+      scroll = true;
+    }
+    if (screen_y < 0 || screen_y > (win.innerHeight || html.clientHeight || 0) - 50) {
+      scroll_y = y;
+      scroll = true;
+    }
+    if (scroll) win.scrollTo(scroll_x, scroll_y);
+  };
+
+  select.scrollToCursor = function(container) {
+    select.scrollToNode(select.selectionTopNode(container, true) || container.firstChild);
+  };
+
   // Used to prevent restoring a selection when we do not need to.
   var currentSelection = null;
-
-  var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
 
   select.snapshotChanged = function() {
     if (currentSelection) currentSelection.changed = true;
@@ -284,18 +325,6 @@ var select = {};
         range.setEndPoint("EndToEnd", rangeAt(to));
       range.select();
     }
-
-    // Make sure the cursor is visible.
-    select.scrollToCursor = function(container) {
-      var selection = container.ownerDocument.selection;
-      if (!selection) return null;
-      selection.createRange().scrollIntoView();
-    };
-
-    select.scrollToNode = function(node) {
-      if (!node) return;
-      node.scrollIntoView();
-    };
 
     // Some hacks for storing and re-storing the selection when the editor loses and regains focus.
     select.selectionCoords = function (win) {
@@ -556,42 +585,6 @@ var select = {};
       to = to || from;
       if (setPoint(to.node, to.offset, "End") && setPoint(from.node, from.offset, "Start"))
         selectRange(range, win);
-    };
-
-    select.scrollToNode = function(element) {
-      if (!element) return;
-      var doc = element.ownerDocument, body = doc.body, win = doc.defaultView, html = doc.documentElement;
-      
-      // In Opera, BR elements *always* have a scrollTop property of zero. Go Opera.
-      while (element && !element.offsetTop)
-        element = element.previousSibling;
-
-      var y = 0, x = 0, pos = element;
-      while (pos && pos.offsetParent) {
-        y += pos.offsetTop;
-        // Don't count X offset for <br> nodes
-        if (pos.nodeName == "BR")
-          x += pos.offsetLeft;
-        pos = pos.offsetParent;
-      }
-
-      var scroll_x = body.scrollLeft || html.scrollLeft || 0,
-          scroll_y = body.scrollTop || html.scrollTop || 0,
-          screen_x = x - scroll_x, screen_y = y - scroll_y, scroll = false;
-
-      if (screen_x < 0 || screen_x > win.innerWidth - 30) {
-        scroll_x = x;
-        scroll = true;
-      }
-      if (screen_y < 0 || screen_y > win.innerHeight - 30) {
-        scroll_y = y;
-        scroll = true;
-      }
-      if (scroll) win.scrollTo(scroll_x, scroll_y);
-    };
-
-    select.scrollToCursor = function(container) {
-      select.scrollToNode(select.selectionTopNode(container, true) || container.firstChild);
     };
   }
 })();
