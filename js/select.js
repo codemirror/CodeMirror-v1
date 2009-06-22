@@ -46,7 +46,7 @@ var select = {};
     while (pos && pos.offsetParent) {
       y += pos.offsetTop;
       // Don't count X offset for <br> nodes
-      if (pos.nodeName == "BR")
+      if (pos.nodeName != "BR")
         x += pos.offsetLeft;
       pos = pos.offsetParent;
     }
