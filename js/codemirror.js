@@ -82,8 +82,12 @@ var CodeMirror = (function(){
     var nextNum = 1, barWidth = null;
     function sizeBar() {
       if (!frame.offsetWidth || !win.Editor) {
-        for (var cur = frame; cur.parentNode; cur = cur.parentNode)
-          if (cur != document) clearInterval(sizeInterval);
+        for (var cur = frame; cur.parentNode; cur = cur.parentNode) {
+          if (cur != document) {
+            clearInterval(sizeInterval);
+            return;
+          }
+        }
       }
 
       if (nums.offsetWidth != barWidth) {
