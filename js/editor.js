@@ -840,6 +840,8 @@ var Editor = (function(){
         select.focusAfterNode(next, this.container);
       else
         select.focusAfterNode(cur, this.container);
+
+      select.scrollToCursor(this.container);
       return true;
     },
 

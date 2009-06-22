@@ -565,15 +565,28 @@ var select = {};
       while (element && !element.offsetTop)
         element = element.previousSibling;
 
-      var y = 0, pos = element;
+      var y = 0, x = 0, pos = element;
       while (pos && pos.offsetParent) {
         y += pos.offsetTop;
+        // Don't count X offset for <br> nodes
+        if (pos.nodeName == "BR")
+          x += pos.offsetLeft;
         pos = pos.offsetParent;
       }
 
-      var screen_y = y - (body.scrollTop || html.scrollTop || 0);
-      if (screen_y < 0 || screen_y > win.innerHeight - 30)
-        win.scrollTo(body.scrollLeft || html.scrollLeft || 0, y);
+      var scroll_x = body.scrollLeft || html.scrollLeft || 0,
+          scroll_y = body.scrollTop || html.scrollTop || 0,
+          screen_x = x - scroll_x, screen_y = y - scroll_y, scroll = false;
+
+      if (screen_x < 0 || screen_x > win.innerWidth - 30) {
+        scroll_x = x;
+        scroll = true;
+      }
+      if (screen_y < 0 || screen_y > win.innerHeight - 30) {
+        scroll_y = y;
+        scroll = true;
+      }
+      if (scroll) win.scrollTo(scroll_x, scroll_y);
     };
 
     select.scrollToCursor = function(container) {
