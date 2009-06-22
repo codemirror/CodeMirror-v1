@@ -48,10 +48,10 @@ var select = {};
   // have been used to replace another node).
   select.snapshotReplaceNode = function(from, to, length, offset) {
     if (!currentSelection) return;
-    currentSelection.changed = true;
 
     function replace(point) {
       if (from == point.node) {
+        currentSelection.changed = true;
         if (length && point.offset > length) {
           point.offset -= length;
         }
@@ -67,10 +67,10 @@ var select = {};
 
   select.snapshotMove = function(from, to, distance, relative, ifAtStart) {
     if (!currentSelection) return;
-    currentSelection.changed = true;
 
     function move(point) {
       if (from == point.node && (!ifAtStart || point.offset == 0)) {
+        currentSelection.changed = true;
         point.node = to;
         if (relative) point.offset = Math.max(0, point.offset + distance);
         else point.offset = distance;
@@ -141,10 +141,11 @@ var select = {};
 
     select.selectMarked = function() {
       if (!currentSelection || !currentSelection.changed) return;
+      var win = currentSelection.window, doc = win.document;
 
       function makeRange(point) {
-        var range = currentSelection.window.document.body.createTextRange();
-        var node = point.node;
+        var range = doc.body.createTextRange(),
+            node = point.node;
         if (!node) {
           range.moveToElementText(currentSelection.window.document.body);
           range.collapse(false);
@@ -322,7 +323,7 @@ var select = {};
         range2.moveToPoint(coords.end.x, coords.end.y);
         range1.setEndPoint("EndToStart", range2);
         range1.select();
-      } catch(e) {alert(e.message);}
+      } catch(e) {}
     };
   }
   // W3C model
