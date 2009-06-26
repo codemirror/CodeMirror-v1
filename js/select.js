@@ -55,7 +55,7 @@ var select = {};
         scroll_y = body.scrollTop || html.scrollTop || 0,
         screen_x = x - scroll_x, screen_y = y - scroll_y, scroll = false;
 
-    if (screen_x < 0 || screen_x > (win.innerWidth || html.clientWidth || 0) - 50) {
+    if (screen_x < 0 || screen_x > (win.innerWidth || html.clientWidth || 0)) {
       scroll_x = x;
       scroll = true;
     }
