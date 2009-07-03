@@ -315,7 +315,7 @@ var Editor = (function(){
       // Set the cursor's position one character after the given
       // position.
       function saveAfter(pos) {
-        if (self.history.textAfter(pos.node).length < pos.offset) {
+        if (self.history.textAfter(pos.node).length > pos.offset) {
           self.line = pos.node;
           self.offset = pos.offset + 1;
         }
