@@ -32,15 +32,21 @@ var select = {};
   select.scrollToNode = function(element) {
     if (!element) return;
     var doc = element.ownerDocument, body = doc.body,
-      win = (doc.defaultView || doc.parentWindow),
-      html = doc.documentElement;
-
-    // In Opera, BR elements *always* have a scrollTop property of zero. Go Opera.
+        win = (doc.defaultView || doc.parentWindow),
+        html = doc.documentElement,
+        atEnd = !element.nextSibling || !element.nextSibling.nextSibling
+                || !element.nextSibling.nextSibling.nextSibling;
+    // In Opera (and recent Webkit versions), BR elements *always*
+    // have a scrollTop property of zero.
     var compensateHack = 0;
     while (element && !element.offsetTop) {
       compensateHack++;
       element = element.previousSibling;
     }
+    // atEnd is another kludge for these browsers -- if the cursor is
+    // at the end of the document, and the node doesn't have an
+    // offset, just scroll to the end.
+    if (compensateHack == 0) atEnd = false;
 
     var y = compensateHack * (element ? element.offsetHeight : 0), x = 0, pos = element;
     while (pos && pos.offsetParent) {
@@ -59,8 +65,8 @@ var select = {};
       scroll_x = x;
       scroll = true;
     }
-    if (screen_y < 0 || screen_y > (win.innerHeight || html.clientHeight || 0) - 50) {
-      scroll_y = y;
+    if (screen_y < 0 || atEnd || screen_y > (win.innerHeight || html.clientHeight || 0) - 50) {
+      scroll_y = atEnd ? 1e10 : y;
       scroll = true;
     }
     if (scroll) win.scrollTo(scroll_x, scroll_y);
