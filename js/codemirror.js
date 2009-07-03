@@ -107,6 +107,7 @@ var CodeMirror = (function(){
     sizeBar();
     update();
     win.addEventHandler(win, "scroll", update);
+    win.addEventHandler(win, "resize", update);
     var sizeInterval = setInterval(sizeBar, 500);
   }
 
