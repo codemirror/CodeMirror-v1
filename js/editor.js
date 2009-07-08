@@ -69,12 +69,12 @@ var Editor = (function(){
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
-  function simplifyDOM(root) {
+  function simplifyDOM(root, atEnd) {
     var doc = root.ownerDocument;
     var result = [];
     var leaving = true;
 
-    function simplifyNode(node) {
+    function simplifyNode(node, top) {
       if (node.nodeType == 3) {
         var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/[\r\u200b]/g, "").replace(/\n/g, " "));
         if (text.length) leaving = false;
@@ -88,12 +88,13 @@ var Editor = (function(){
         forEach(node.childNodes, simplifyNode);
         if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
           leaving = true;
-          result.push(doc.createElement("BR"));
+          if (!atEnd || !top)
+            result.push(doc.createElement("BR"));
         }
       }
     }
 
-    simplifyNode(root);
+    simplifyNode(root, true);
     return result;
   }
 
@@ -145,9 +146,9 @@ var Editor = (function(){
     // Extract the text and newlines from a DOM node, insert them into
     // the document, and yield the textual content. Used to replace
     // non-normalized nodes.
-    function writeNode(node, c){
+    function writeNode(node, c, end) {
       var toYield = [];
-      forEach(simplifyDOM(node), function(part) {
+      forEach(simplifyDOM(node, end), function(part) {
         toYield.push(insertPart(part));
       });
       return yield(toYield.join(""), c);
@@ -179,9 +180,10 @@ var Editor = (function(){
         return yield("\n", c);
       }
       else {
+        var end = !node.nextSibling;
         point = pointAt(node);
         removeElement(node);
-        return writeNode(node, c);
+        return writeNode(node, c, end);
       }
     }
 
