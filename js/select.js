@@ -234,17 +234,41 @@ var select = {};
         if (range.compareEndPoints("StartToStart", range2) == 1)
           return topLevelNodeAt(around, container);
       }
-      // Fall-back hack
-      try {range.pasteHTML("<span id='xxx-temp-xxx'></span>");}
-      catch (e) {return false;}
 
-      var temp = container.ownerDocument.getElementById("xxx-temp-xxx");
-      if (temp) {
-        var result = topLevelNodeBefore(temp, container);
-        removeElement(temp);
-        return result;
+      // Move the start of a range to the start of a node,
+      // compensating for the fact that you can't call
+      // moveToElementText with text nodes.
+      function moveToNodeStart(range, node) {
+        if (node.nodeType == 3) {
+          var count = 0, cur = node.previousSibling;
+          while (cur && cur.nodeType == 3) {
+            count += cur.nodeValue.length;
+            cur = cur.previousSibling;
+          }
+          if (cur) {
+            try{range.moveToElementText(cur);}
+            catch(e){alert(cur + " " + cur.nodeType + " " + (cur && cur.outerHTML));}
+            range.collapse(false);
+          }
+          else range.moveToElementText(node.parentNode);
+          if (count) range.move("character", count);
+        }
+        else range.moveToElementText(node);
       }
-      return false;
+
+      // Do a binary search through the container object, comparing
+      // the start of each node to the selection
+      var start = 0, end = container.childNodes.length;
+      while (start != end) {
+        var middle = Math.ceil((end + start) / 2), node = container.childNodes[middle];
+        if (!node) return false; // Don't ask. IE6 manages this sometimes.
+        moveToNodeStart(range2, node);
+        if (range.compareEndPoints("StartToStart", range2) == 1)
+          start = middle;
+        else
+          end = middle - 1;
+      }
+      return container.childNodes[start] || null;
     };
 
     // Place the cursor after this.start. This is only useful when
