@@ -225,14 +225,13 @@ var select = {};
       var selection = container.ownerDocument.selection;
       if (!selection) return false;
 
-      var range = selection.createRange();
+      var range = selection.createRange(), range2 = range.duplicate();
       range.collapse(start);
       var around = range.parentElement();
       if (around && isAncestor(container, around)) {
         // Only use this node if the selection is not at its start.
-        var range2 = range.duplicate();
         range2.moveToElementText(around);
-        if (range.compareEndPoints("StartToStart", range2) == -1)
+        if (range.compareEndPoints("StartToStart", range2) == 1)
           return topLevelNodeAt(around, container);
       }
       // Fall-back hack
