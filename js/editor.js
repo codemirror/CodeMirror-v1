@@ -729,7 +729,7 @@ var Editor = (function(){
     // Check for characters that should re-indent the current line,
     // and prevent Opera from handling enter and tab anyway.
     keyPress: function(event) {
-      var electric = Editor.Parser.electricChars;
+      var electric = Editor.Parser.electricChars, self = this;
       // Hack for Opera, and Firefox on OS X, in which stopping a
       // keydown event does not prevent the associated keypress event
       // from happening, so we have to cancel enter and tab again
@@ -739,7 +739,7 @@ var Editor = (function(){
           (event.keyCode == 32 && event.shiftKey && this.options.tabMode == "default"))
         event.stop();
       else if (electric && electric.indexOf(event.character) != -1)
-        this.parent.setTimeout(method(this, "indentAtCursor"), 0);
+        this.parent.setTimeout(function(){self.indentAtCursor(null);}, 0);
     },
 
     // Mark the node at the cursor dirty when a non-safe key is
