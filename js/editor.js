@@ -565,7 +565,7 @@ var Editor = (function(){
       if (!start || !end) return;
 
       end = this.replaceRange(start, end, text);
-      select.setCursorPos(this.container, start, end);
+      select.setCursorPos(this.container, end);
     },
 
     reroutePasteEvent: function() {
@@ -582,13 +582,13 @@ var Editor = (function(){
 
       var self = this;
       this.parent.setTimeout(function() {
+        self.capturingPaste = false;
         self.win.focus();
         if (self.selectionSnapshot) // IE hack
           self.win.select.selectCoords(self.win, self.selectionSnapshot);
         var text = te.value;
         if (text) self.replaceSelection(text);
         removeElement(te);
-        self.capturingPaste = false;
       }, 10);
     },
 
