@@ -569,7 +569,7 @@ var Editor = (function(){
     },
 
     reroutePasteEvent: function() {
-      if (this.capturingPaste) return;
+      if (this.capturingPaste || window.opera) return;
       this.capturingPaste = true;
       var te = parent.document.createElement("TEXTAREA");
       te.style.position = "absolute";
