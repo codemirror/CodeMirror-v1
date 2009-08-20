@@ -217,25 +217,6 @@ var Editor = (function(){
 
   function time() {return new Date().getTime();}
 
-  // Replace all DOM nodes in the current selection with new ones.
-  // Needed to prevent issues in IE where the old DOM nodes can be
-  // pasted back into the document, still holding their old undo
-  // information.
-  function scrubPasted(container, start, start2) {
-    var end = select.selectionTopNode(container, true),
-        doc = container.ownerDocument;
-    if (start != null && start.parentNode != container) start = start2;
-    if (start === false) start = null;
-    if (start == end || !end || !container.firstChild) return;
-
-    var clear = traverseDOM(start ? start.nextSibling : container.firstChild);
-    while (end.parentNode == container) try{clear.next();}catch(e){break;}
-    forEach(clear.nodes, function(node) {
-      var newNode = node.nodeName == "BR" ? doc.createElement("BR") : makePartSpan(node.currentText, doc);
-      container.replaceChild(newNode, node);
-    });
-  }
-
   // Client interface for searching the content of the editor. Create
   // these by calling CodeMirror.getSearchCursor. To use, call
   // findNext on the resulting object -- this returns a boolean
@@ -426,23 +407,10 @@ var Editor = (function(){
 
       function cursorActivity() {self.cursorActivity(false);}
       addEventHandler(document.body, "mouseup", cursorActivity);
-      addEventHandler(document.body, "paste", function(event) {
-        cursorActivity();
-        if (internetExplorer) {
-          var text = null;
-          try {text = window.clipboardData.getData("Text");}catch(e){}
-          if (text != null) {
-            self.replaceSelection(text);
-            event.stop();
-          }
-          else {
-            var start = select.selectionTopNode(self.container, true),
-                start2 = start && start.previousSibling;
-            setTimeout(function(){scrubPasted(self.container, start, start2);}, 0);
-          }
-        }
-      });
+      addEventHandler(document.body, "paste", cursorActivity);
       addEventHandler(document.body, "cut", cursorActivity);
+
+      addEventHandler(document.body, "beforepaste", method(this, "reroutePasteEvent"));
 
       if (this.options.autoMatchParens)
         addEventHandler(document.body, "click", method(this, "scheduleParenBlink"));
@@ -600,6 +568,30 @@ var Editor = (function(){
       select.setCursorPos(this.container, start, end);
     },
 
+    reroutePasteEvent: function() {
+      if (this.capturingPaste) return;
+      this.capturingPaste = true;
+      var te = parent.document.createElement("TEXTAREA");
+      te.style.position = "absolute";
+      te.style.left = "-500px";
+      te.style.width = "10px";
+      te.style.top = nodeTop(frameElement) + "px";
+      parent.document.body.appendChild(te);
+      parent.focus();
+      te.focus();
+
+      var self = this;
+      this.parent.setTimeout(function() {
+        self.win.focus();
+        if (self.selectionSnapshot) // IE hack
+          self.win.select.selectCoords(self.win, self.selectionSnapshot);
+        var text = te.value;
+        if (text) self.replaceSelection(text);
+        removeElement(te);
+        self.capturingPaste = false;
+      }, 10);
+    },
+
     replaceRange: function(from, to, text) {
       var lines = asEditorLines(text);
       lines[0] = this.history.textAfter(from.node).slice(0, from.offset) + lines[0];
@@ -722,6 +714,9 @@ var Editor = (function(){
         else if (code == 83 && this.options.saveFunction) { // S
           this.options.saveFunction();
           event.stop();
+        }
+        else if (code == 86) { // V
+          this.reroutePasteEvent();
         }
       }
     },
