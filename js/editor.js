@@ -407,8 +407,22 @@ var Editor = (function(){
 
       function cursorActivity() {self.cursorActivity(false);}
       addEventHandler(document.body, "mouseup", cursorActivity);
-      addEventHandler(document.body, "paste", cursorActivity);
       addEventHandler(document.body, "cut", cursorActivity);
+
+      addEventHandler(document.body, "paste", function(event) {
+        cursorActivity();
+        var text = null;
+        try {
+          var clipboardData = event.clipboardData || window.clipboardData;
+          if (clipboardData) text = clipboardData.getData('Text');
+        }
+        catch(e) {}
+        if (text !== null) {
+          alert(text);
+          self.replaceSelection(text);
+          event.stop();
+        }
+      });
 
       addEventHandler(document.body, "beforepaste", method(this, "reroutePasteEvent"));
 
