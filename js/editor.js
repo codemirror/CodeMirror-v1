@@ -418,7 +418,6 @@ var Editor = (function(){
         }
         catch(e) {}
         if (text !== null) {
-          alert(text);
           self.replaceSelection(text);
           event.stop();
         }
