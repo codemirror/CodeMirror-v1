@@ -247,7 +247,7 @@ var select = {};
           }
           if (cur) {
             try{range.moveToElementText(cur);}
-            catch(e){alert(cur + " " + cur.nodeType + " " + (cur && cur.outerHTML));}
+            catch(e){}
             range.collapse(false);
           }
           else range.moveToElementText(node.parentNode);
@@ -258,8 +258,8 @@ var select = {};
 
       // Do a binary search through the container object, comparing
       // the start of each node to the selection
-      var start = 0, end = container.childNodes.length;
-      while (start != end) {
+      var start = 0, end = container.childNodes.length - 1;
+      while (start < end) {
         var middle = Math.ceil((end + start) / 2), node = container.childNodes[middle];
         if (!node) return false; // Don't ask. IE6 manages this sometimes.
         moveToNodeStart(range2, node);
