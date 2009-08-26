@@ -579,6 +579,7 @@ var Editor = (function(){
 
       end = this.replaceRange(start, end, text);
       select.setCursorPos(this.container, end);
+      webkitLastLineHack(this.container);
     },
 
     reroutePasteEvent: function() {
