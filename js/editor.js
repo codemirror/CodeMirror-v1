@@ -573,6 +573,7 @@ var Editor = (function(){
     // Replace the selection with another piece of text.
     replaceSelection: function(text) {
       this.history.commit();
+
       var start = select.cursorPos(this.container, true),
           end = select.cursorPos(this.container, false);
       if (!start || !end) return;
@@ -675,7 +676,7 @@ var Editor = (function(){
       if (this.options.autoMatchParens)
         this.scheduleParenBlink();
 
-      // The variouschecks for !altKey are there because AltGr sets both
+      // The various checks for !altKey are there because AltGr sets both
       // ctrlKey and altKey to true, and should not be recognised as
       // Control.
       if (code == 13) { // enter
@@ -1063,7 +1064,7 @@ var Editor = (function(){
 
       if (!this.options.readOnly) select.markSelection(this.win);
       var start, endTime = force ? null : time() + this.options.passTime;
-      while (time() < endTime && (start = this.getDirtyNode())) {
+      while ((time() < endTime || force) && (start = this.getDirtyNode())) {
         var result = this.highlight(start, endTime);
         if (result && result.node && result.dirty)
           this.addDirtyNode(result.node);
@@ -1157,13 +1158,15 @@ var Editor = (function(){
 
       function maybeTouch(node) {
         if (node) {
-          if (lineDirty || node.nextSibling != node.oldNextSibling)
+          var old = node.oldNextSibling;
+          if (lineDirty || old === undefined || node.nextSibling != old)
             self.history.touch(node);
           node.oldNextSibling = node.nextSibling;
         }
         else {
-          if (lineDirty || self.container.firstChild != self.container.oldFirstChild)
-            self.history.touch(node);
+          var old == self.container.oldFirstChild;
+          if (lineDirty || old === undefined || self.container.firstChild != old)
+            self.history.touch(null);
           self.container.oldFirstChild = self.container.firstChild;
         }
       }
