@@ -1164,7 +1164,7 @@ var Editor = (function(){
           node.oldNextSibling = node.nextSibling;
         }
         else {
-          var old == self.container.oldFirstChild;
+          var old = self.container.oldFirstChild;
           if (lineDirty || old === undefined || self.container.firstChild != old)
             self.history.touch(null);
           self.container.oldFirstChild = self.container.firstChild;
