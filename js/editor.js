@@ -531,7 +531,7 @@ var Editor = (function(){
             before = cur;
             break;
           }
-          var text = (cur.innerText || cur.textContent || cur.nodeValue || "");
+          var text = nodeText(cur);
           if (text.length > position) {
             before = cur.nextSibling;
             content = text.slice(0, position) + content + text.slice(position);
