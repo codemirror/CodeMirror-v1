@@ -175,7 +175,7 @@ var CodeMirror = (function(){
 
     getCode: function() {return this.editor.getCode();},
     setCode: function(code) {this.editor.importCode(code);},
-    selection: function() {return this.editor.selectedText();},
+    selection: function() {this.focus(); return this.editor.selectedText();},
     reindent: function() {this.editor.reindent();},
     reindentSelection: function() {this.editor.reindentSelection(null);},
 

@@ -247,13 +247,17 @@ var select = {};
           }
           if (cur) {
             try{range.moveToElementText(cur);}
-            catch(e){}
+            catch(e){return false;}
             range.collapse(false);
           }
           else range.moveToElementText(node.parentNode);
           if (count) range.move("character", count);
         }
-        else range.moveToElementText(node);
+        else {
+          try{range.moveToElementText(node);}
+          catch(e){return false;}
+        }
+        return true;
       }
 
       // Do a binary search through the container object, comparing
@@ -262,7 +266,7 @@ var select = {};
       while (start < end) {
         var middle = Math.ceil((end + start) / 2), node = container.childNodes[middle];
         if (!node) return false; // Don't ask. IE6 manages this sometimes.
-        moveToNodeStart(range2, node);
+        if (!moveToNodeStart(range2, node)) return false;
         if (range.compareEndPoints("StartToStart", range2) == 1)
           start = middle;
         else
