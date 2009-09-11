@@ -429,8 +429,9 @@ var select = {};
     };
 
     select.selectMarked = function () {
-      if (!currentSelection || !currentSelection.changed) return;
-      var win = currentSelection.window, range = win.document.createRange();
+      var cs = currentSelection;
+      if (!(cs && (cs.changed || (webkit && cs.start.node == cs.end.node)))) return;
+      var win = cs.window, range = win.document.createRange();
 
       function setPoint(point, which) {
         if (point.node) {
@@ -446,8 +447,8 @@ var select = {};
         }
       }
 
-      setPoint(currentSelection.end, "End");
-      setPoint(currentSelection.start, "Start");
+      setPoint(cs.end, "End");
+      setPoint(cs.start, "Start");
       selectRange(range, win);
     };
 
