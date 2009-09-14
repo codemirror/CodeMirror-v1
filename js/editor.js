@@ -366,8 +366,6 @@ var Editor = (function(){
     this.dirty = [];
     if (options.content)
       this.importCode(options.content);
-    else // FF acts weird when the editable document is completely empty
-      container.appendChild(this.doc.createElement("BR"));
 
     if (!options.readOnly) {
       if (options.continuousScanning !== false) {
