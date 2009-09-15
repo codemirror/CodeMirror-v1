@@ -123,3 +123,12 @@ function nodeTop(node) {
   }
   return top;
 }
+
+function isBR(node) {
+  var nn = node.nodeName;
+  return nn == "BR" || nn == "br";
+}
+function isSpan(node) {
+  var nn = node.nodeName;
+  return nn == "SPAN" || nn == "span";
+}

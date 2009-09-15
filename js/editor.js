@@ -80,13 +80,13 @@ var Editor = (function(){
         if (text.length) leaving = false;
         result.push(node);
       }
-      else if (node.nodeName == "BR" && node.childNodes.length == 0) {
+      else if (isBR(node) && node.childNodes.length == 0) {
         leaving = true;
         result.push(node);
       }
       else {
         forEach(node.childNodes, simplifyNode);
-        if (!leaving && newlineElements.hasOwnProperty(node.nodeName)) {
+        if (!leaving && newlineElements.hasOwnProperty(node.nodeName.toUpperCase())) {
           leaving = true;
           if (!atEnd || !top)
             result.push(doc.createElement("BR"));
@@ -175,7 +175,7 @@ var Editor = (function(){
         nodeQueue.push(node);
         return yield(node.currentText, c);
       }
-      else if (node.nodeName == "BR") {
+      else if (isBR(node)) {
         nodeQueue.push(node);
         return yield("\n", c);
       }
@@ -195,23 +195,20 @@ var Editor = (function(){
 
   // Determine the text size of a processed node.
   function nodeSize(node) {
-    if (node.nodeName == "BR")
-      return 1;
-    else
-      return node.currentText.length;
+    return isBR(node) ? 1 : node.currentText.length;
   }
 
   // Search backwards through the top-level nodes until the next BR or
   // the start of the frame.
   function startOfLine(node) {
-    while (node && node.nodeName != "BR") node = node.previousSibling;
+    while (node && !isBR(node)) node = node.previousSibling;
     return node;
   }
   function endOfLine(node, container) {
     if (!node) node = container.firstChild;
-    else if (node.nodeName == "BR") node = node.nextSibling;
+    else if (isBR(node)) node = node.nextSibling;
 
-    while (node && node.nodeName != "BR") node = node.nextSibling;
+    while (node && !isBR(node)) node = node.nextSibling;
     return node;
   }
 
@@ -504,7 +501,7 @@ var Editor = (function(){
       this.checkLine(line);
       var accum = [];
       for (line = line ? line.nextSibling : this.container.firstChild;
-           line && line.nodeName != "BR"; line = line.nextSibling)
+           line && !isBR(line); line = line.nextSibling)
         accum.push(nodeText(line));
       return cleanText(accum.join(""));
     },
@@ -841,10 +838,10 @@ var Editor = (function(){
 
     home: function() {
       var cur = select.selectionTopNode(this.container, true), start = cur;
-      if (cur === false || !(!cur || cur.isPart || cur.nodeName == "BR") || !this.container.firstChild)
+      if (cur === false || !(!cur || cur.isPart || isBR(cur)) || !this.container.firstChild)
         return false;
 
-      while (cur && cur.nodeName != "BR") cur = cur.previousSibling;
+      while (cur && !isBR(cur)) cur = cur.previousSibling;
       var next = cur ? cur.nextSibling : this.container.firstChild;
       if (next && next != start && next.isPart && hasClass(next, "whitespace"))
         select.focusAfterNode(next, this.container);
@@ -899,7 +896,7 @@ var Editor = (function(){
       function tryFindMatch() {
         var stack = [], ch, ok = true;;
         for (var runner = cursor; runner; runner = dir ? runner.nextSibling : runner.previousSibling) {
-          if (runner.className == className && runner.nodeName == "SPAN" && (ch = paren(runner))) {
+          if (runner.className == className && isSpan(runner) && (ch = paren(runner))) {
             if (forward(ch) == dir)
               stack.push(ch);
             else if (!stack.length)
@@ -908,7 +905,7 @@ var Editor = (function(){
               ok = false;
             if (!stack.length) break;
           }
-          else if (runner.dirty || runner.nodeName != "SPAN" && runner.nodeName != "BR") {
+          else if (runner.dirty || !isSpan(runner) && !isBR(runner)) {
             return {node: runner, status: "dirty"};
           }
         }
@@ -966,7 +963,7 @@ var Editor = (function(){
     // selection.
     indentRegion: function(start, end, direction) {
       var current = (start = startOfLine(start)), before = start && startOfLine(start.previousSibling);
-      if (end.nodeName != "BR") end = endOfLine(end, this.container);
+      if (!isBR(end)) end = endOfLine(end, this.container);
 
       do {
         var next = endOfLine(current, this.container);
@@ -1125,7 +1122,7 @@ var Editor = (function(){
       // Backtrack to the first node before from that has a partial
       // parse stored.
       while (from && (!from.parserFromHere || from.dirty)) {
-        if (maxBacktrack != null && from.nodeName == "BR" && (--maxBacktrack) < 0)
+        if (maxBacktrack != null && isBR(from) && (--maxBacktrack) < 0)
           return false;
         from = from.previousSibling;
       }
@@ -1206,7 +1203,7 @@ var Editor = (function(){
           // Allow empty nodes when they are alone on a line, needed
           // for the FF cursor bug workaround (see select.js,
           // insertNewlineAtCursor).
-          while (part && part.nodeName == "SPAN" && part.currentText == "") {
+          while (part && isSpan(part) && part.currentText == "") {
             var old = part;
             this.remove();
             part = this.get();
@@ -1228,7 +1225,7 @@ var Editor = (function(){
         if (token.value == "\n"){
           // The idea of the two streams actually staying synchronized
           // is such a long shot that we explicitly check.
-          if (part.nodeName != "BR")
+          if (!isBR(part))
             throw "Parser out of sync. Expected BR.";
 
           if (part.dirty || !part.indentation) lineDirty = true;
@@ -1256,7 +1253,7 @@ var Editor = (function(){
           parts.next();
         }
         else {
-          if (part.nodeName != "SPAN")
+          if (!isSpan(part))
             throw "Parser out of sync. Expected SPAN.";
           if (part.dirty)
             lineDirty = true;
