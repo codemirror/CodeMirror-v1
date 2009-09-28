@@ -109,6 +109,7 @@ History.prototype = {
       from = end;
     }
     this.pushChains([chain], from == null && to == null);
+    if (this.onChange) this.onChange();
   },
 
   pushChains: function(chains, doNotHighlight) {
