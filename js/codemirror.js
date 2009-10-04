@@ -152,7 +152,7 @@ var CodeMirror = (function(){
       html.push("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + file + "\"/>");
     });
     forEach(options.basefiles.concat(options.parserfile), function(file) {
-      html.push("<script type=\"text/javascript\" src=\"" + options.path + file + "\"></script>");
+      html.push("<script type=\"text/javascript\" src=\"" + options.path + file + "\"><" + "/script>");
     });
     html.push("</head><body style=\"border-width: 0;\" class=\"editbox\" spellcheck=\"" +
               (options.disableSpellcheck ? "false" : "true") + "\"></body></html>");
