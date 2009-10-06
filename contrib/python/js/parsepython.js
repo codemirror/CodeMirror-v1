@@ -193,7 +193,7 @@ var PythonParser = Editor.Parser = (function() {
                     }
                 }
                 // Grab a complex number
-                if (source.peek().toLowerCase() == 'j') {
+                if (source.matches(/j/i)) {
                     source.next();
                 }
 
