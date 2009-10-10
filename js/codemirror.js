@@ -183,7 +183,7 @@ var CodeMirror = (function(){
     focus: function() {
       this.win.focus();
       if (this.editor.selectionSnapshot) // IE hack
-        this.win.select.selectCoords(this.win, this.editor.selectionSnapshot);
+        this.win.select.setBookmark(this.win.document.body, this.editor.selectionSnapshot);
     },
     replaceSelection: function(text) {
       this.focus();

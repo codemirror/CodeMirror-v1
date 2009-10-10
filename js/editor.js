@@ -595,7 +595,7 @@ var Editor = (function(){
         self.capturingPaste = false;
         self.win.focus();
         if (self.selectionSnapshot) // IE hack
-          self.win.select.selectCoords(self.win, self.selectionSnapshot);
+          self.win.select.setBookmark(self.container, self.selectionSnapshot);
         var text = te.value;
         if (text) self.replaceSelection(text);
         removeElement(te);
@@ -980,7 +980,7 @@ var Editor = (function(){
     cursorActivity: function(safe) {
       if (internetExplorer) {
         this.container.createTextRange().execCommand("unlink");
-        this.selectionSnapshot = select.selectionCoords(this.win);
+        this.selectionSnapshot = select.getBookmark(this.container);
       }
 
       var activity = this.options.cursorActivity;
