@@ -418,8 +418,6 @@ var Editor = (function(){
         }
       });
 
-      addEventHandler(document.body, "beforepaste", method(this, "reroutePasteEvent"));
-
       if (this.options.autoMatchParens)
         addEventHandler(document.body, "click", method(this, "scheduleParenBlink"));
     }
@@ -724,6 +722,9 @@ var Editor = (function(){
         else if (code == 83 && this.options.saveFunction) { // S
           this.options.saveFunction();
           event.stop();
+        }
+        else if (internetExplorer && code == 86) {
+          this.reroutePasteEvent();
         }
       }
     },
