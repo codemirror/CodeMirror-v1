@@ -447,17 +447,18 @@
       <dt><code>reindentSelection()</code></dt><dd>Automatically
       re-indent the selected lines.</dd>
 
-      <dt><code>getSearchCursor(string, atCursor)</code> &#8594;
-      <code>cursor</code></dt><dd>The first argument indicates the
-      string that should be searched for, and the second indicates
+      <dt><code>getSearchCursor(string, atCursor, caseFold)</code>
+      &#8594; <code>cursor</code></dt><dd>The first argument indicates
+      the string that should be searched for, and the second indicates
       whether searching should start at the cursor (<code>true</code>)
-      or at the start of the document (<code>false</code>). Returns an
-      object that provides an interface for searching. Call its
-      <code>findNext()</code> method to search for an occurrence of
-      the given string. This returns <code>true</code> if something is
-      found, or <code>false</code> if the end of document is reached.
-      When an occurrence has been found, you can call
-      <code>select()</code> to select it, or
+      or at the start of the document (<code>false</code>). When
+      <code>caseFold</code> is true, the search will be
+      case-insensivive. Returns an object that provides an interface
+      for searching. Call its <code>findNext()</code> method to search
+      for an occurrence of the given string. This returns
+      <code>true</code> if something is found, or <code>false</code>
+      if the end of document is reached. When an occurrence has been
+      found, you can call <code>select()</code> to select it, or
       <code>replace(string)</code> to replace it with a given string.
       Note that letting the user change the document, or
       programmatically changing it in any way except for calling

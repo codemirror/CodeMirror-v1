@@ -193,8 +193,8 @@ var CodeMirror = (function(){
     replaceChars: function(text, start, end) {
       this.editor.replaceChars(text, start, end);
     },
-    getSearchCursor: function(string, fromCursor) {
-      return this.editor.getSearchCursor(string, fromCursor);
+    getSearchCursor: function(string, fromCursor, caseFold) {
+      return this.editor.getSearchCursor(string, fromCursor, caseFold);
     },
 
     undo: function() {this.editor.history.undo();},
