@@ -206,6 +206,8 @@ var CodeMirror = (function(){
     ungrabKeys: function() {this.editor.ungrabKeys();},
 
     setParser: function(name) {this.editor.setParser(name);},
+    setSpellcheck: function(on) {this.win.document.body.spellcheck = on;},
+    setTextWrapping: function(on) {this.win.document.body.style.whiteSpace = on ? "" : "nowrap";},
 
     cursorPosition: function(start) {this.focusIfIE(); return this.editor.cursorPosition(start);},
     firstLine: function() {return this.editor.firstLine();},
