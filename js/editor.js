@@ -862,8 +862,8 @@ var Editor = (function(){
       return true;
     },
 
-    // Some browsers (Chrome) don't manage to handle end properly in
-    // the face of vertical scrolling.
+    // Some browsers (Opera) don't manage to handle the end key
+    // properly in the face of vertical scrolling.
     end: function() {
       var cur = select.selectionTopNode(this.container, true);
       if (cur === false) return false;
