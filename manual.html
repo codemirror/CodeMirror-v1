@@ -233,7 +233,9 @@
       'save page' dialog. Defaults to <code>null</code>.</dd>
 
       <dt><code>undoDepth</code></dt><dd>Maximum length of the undo
-      history. Default is 50.</dd>
+      history. Default is 50. This setting is changeable with the
+      <code>setUndoDepth(depth)</code> method on CodeMirror
+      instances.</dd>
 
       <dt><code>onChange</code></dt><dd>An optional function of zero
       arguments that gets called whenever the document is changed.
@@ -251,11 +253,13 @@
       <dt><code>disableSpellcheck</code></dt><dd>Should the editor
       disable spell-checking on browsers that support it (Firefox 2+).
       Default is <code>true</code>, since for most code spell-checking
-      is useless.</dd>
+      is useless. Can be changed with the
+      <code>setSpellCheck(on)</code> method.</dd>
 
       <dt><code>textWrapping</code></dt><dd>Can be used to disable or
       enable text-wrapping in the editor frame. Default is
-      <code>true</code>.</dd>
+      <code>true</code>. Changeable with the
+      <code>setTextWrapping(on)</code> method.</dd>
 
       <dt><code>lineNumbers</code></dt><dd>Show line numbers to the
       left of the editor. This requires you to specify a style for the
@@ -267,11 +271,13 @@
       an absolute ('pt' or 'px') font size. This option defaults to
       <code>false</code>. When enabling this, you have to disable
       <code>textWrapping</code>, since the line numbers don't take
-      wrapped lines into account.</dd>
+      wrapped lines into account. Changeable with the
+      <code>setLineNumbers(on)</code> method.</dd>
 
       <dt><code>indentUnit</code></dt><dd>An integer that specifies
       the amount of spaces one 'level' of indentation should add.
-      Default is <code>2</code>.</dd>
+      Default is <code>2</code>. Changeable in a running editor using
+      the <code>setIndentUnit(spaces)</code> method.</dd>
 
       <dt><code>tabMode</code></dt><dd>Determines what the effect of
       pressing tab is. Possibilities are:
@@ -289,7 +295,9 @@
         current line (or selection) one <code>indentUnit</code>
         deeper, pressing shift-tab or ctrl-tab (whichever your browser
         does not interfere with), un-indents it.</dd>
-      </dl></dd>
+      </dl>
+      This option can be changed at run-time using the
+      <code>setTabMode(mode)</code> method.</dd>
 
       <dt><code>reindentOnLoad</code></dt><dd>When <code>true</code>,
       this causes the content of the editor to be reindented
@@ -505,14 +513,6 @@
       Then call this function with a string containing the name of the
       parser you want to switch to (see the parser script file to find
       the name, it'll be something like <code>CSSParser</code>).</dd>
-
-      <dt><code>setSpellcheck(on)</code></dt><dd>Turn spell-checking
-      on and off. Only works on browsers that support
-      <code>document.body.spellcheck</code>.</dd>
-      <dt><code>setTextWrapping(on)</code></dt><dd>Turn text-wrapping
-      on and off.</dd>
-      <dt><code>setLineNumbers(on)</code></dt><dd>Switch between
-      visible line numbers and no line numbers.</dd>
     </dl>
 
     <p>For detailed interaction with the content of the editor,
