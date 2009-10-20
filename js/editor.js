@@ -697,8 +697,10 @@ var Editor = (function(){
         event.stop();
       }
       else if (code == 36 && !event.shiftKey && !event.ctrlKey) { // home
-        if (this.home())
-          event.stop();
+        if (this.home()) event.stop();
+      }
+      else if (code == 35 && !event.shiftKey && !event.ctrlKey) { // end
+        if (this.end()) event.stop();
       }
       else if ((code == 219 || code == 221) && event.ctrlKey && !event.altKey) { // [, ]
         this.blinkParens(event.shiftKey);
@@ -842,6 +844,8 @@ var Editor = (function(){
         this.reindentSelection(direction);
     },
 
+    // Custom home behaviour that doesn't land the cursor in front of
+    // leading whitespace unless pressed twice.
     home: function() {
       var cur = select.selectionTopNode(this.container, true), start = cur;
       if (cur === false || !(!cur || cur.isPart || isBR(cur)) || !this.container.firstChild)
@@ -854,6 +858,18 @@ var Editor = (function(){
       else
         select.focusAfterNode(cur, this.container);
 
+      select.scrollToCursor(this.container);
+      return true;
+    },
+
+    // Some browsers (Chrome) don't manage to handle end properly in
+    // the face of vertical scrolling.
+    end: function() {
+      var cur = select.selectionTopNode(this.container, true);
+      if (cur === false) return false;
+      cur = endOfLine(cur, this.container);
+      if (!cur) return false;
+      select.focusAfterNode(cur.previousSibling, this.container);
       select.scrollToCursor(this.container);
       return true;
     },
