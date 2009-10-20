@@ -53,36 +53,34 @@ var CodeMirror = (function(){
     indentUnit: 2
   });
 
-  function wrapLineNumberDiv(place) {
-    return function(node) {
-      var container = document.createElement("DIV"),
-          nums = document.createElement("DIV"),
-          scroller = document.createElement("DIV");
-      container.style.position = "relative";
-      nums.style.position = "absolute";
-      nums.style.height = "100%";
-      if (nums.style.setExpression) {
-        try {nums.style.setExpression("height", "this.previousSibling.offsetHeight + 'px'");}
-        catch(e) {} // Seems to throw 'Not Implemented' on some IE8 versions
-      }
-      nums.style.top = "0px";
-      nums.style.overflow = "hidden";
-      place(container);
-      container.appendChild(node);
-      container.appendChild(nums);
-      scroller.className = "CodeMirror-line-numbers";
-      nums.appendChild(scroller);
+  function addLineNumberDiv(container) {
+    var nums = document.createElement("DIV"),
+        scroller = document.createElement("DIV");
+    nums.style.position = "absolute";
+    nums.style.height = "100%";
+    if (nums.style.setExpression) {
+      try {nums.style.setExpression("height", "this.previousSibling.offsetHeight + 'px'");}
+      catch(e) {} // Seems to throw 'Not Implemented' on some IE8 versions
     }
+    nums.style.top = "0px";
+    nums.style.overflow = "hidden";
+    container.appendChild(nums);
+    scroller.className = "CodeMirror-line-numbers";
+    nums.appendChild(scroller);
+    return nums;
   }
 
-  function applyLineNumbers(frame) {
+  function activateLineNumbers(frame, nums) {
     var win = frame.contentWindow, doc = win.document,
-        nums = frame.nextSibling, scroller = nums.firstChild;
+        scroller = nums.firstChild;
 
     var nextNum = 1, barWidth = null;
     function sizeBar() {
       for (var root = frame; root.parentNode; root = root.parentNode);
-      if (root != document || !win.Editor) {
+      if (!nums.parentNode || root != document || !win.Editor) {
+        // Clear event handlers
+        onScroll();
+        onResize();
         clearInterval(sizeInterval);
         return;
       }
@@ -101,11 +99,11 @@ var CodeMirror = (function(){
       }
       nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
     }
+    var onScroll = win.addEventHandler(win, "scroll", update, true),
+        onResize = win.addEventHandler(win, "resize", update, true),
+        sizeInterval = setInterval(sizeBar, 500);
     sizeBar();
     update();
-    win.addEventHandler(win, "scroll", update);
-    win.addEventHandler(win, "resize", update);
-    var sizeInterval = setInterval(sizeBar, 500);
   }
 
   function CodeMirror(place, options) {
@@ -128,12 +126,13 @@ var CodeMirror = (function(){
     // always add it, redundant as it sounds.
     frame.style.display = "block";
 
-    if (place.appendChild) {
-      var node = place;
-      place = function(n){node.appendChild(n);};
-    }
-    if (options.lineNumbers) place = wrapLineNumberDiv(place);
-    place(frame);
+    var div = this.wrapping = document.createElement("DIV");
+    div.style.position = "relative";
+    div.className = "CodeMirror-wrapping";
+    if (place.appendChild) place.appendChild(div);
+    else place(div);
+    div.appendChild(frame);
+    if (options.lineNumbers) this.lineNumbers = addLineNumberDiv(div);
 
     // Link back to this object, so that the editor can fetch options
     // and add a reference to itself.
@@ -166,7 +165,7 @@ var CodeMirror = (function(){
   CodeMirror.prototype = {
     init: function() {
       if (this.options.initCallback) this.options.initCallback(this);
-      if (this.options.lineNumbers) applyLineNumbers(this.frame);
+      if (this.lineNumbers) activateLineNumbers(this.frame, this.lineNumbers);
       if (this.options.reindentOnLoad) this.reindent();
     },
 
@@ -208,6 +207,17 @@ var CodeMirror = (function(){
     setParser: function(name) {this.editor.setParser(name);},
     setSpellcheck: function(on) {this.win.document.body.spellcheck = on;},
     setTextWrapping: function(on) {this.win.document.body.style.whiteSpace = on ? "" : "nowrap";},
+    setLineNumbers: function(on) {
+      if (on && !this.lineNumbers) {
+        this.lineNumbers = addLineNumberDiv(this.wrapping);
+        activateLineNumbers(this.frame, this.lineNumbers);
+      }
+      else if (!on && this.lineNumbers) {
+        this.wrapping.removeChild(this.lineNumbers);
+        this.wrapping.style.marginLeft = "";
+        this.lineNumbers = null;
+      }
+    },
 
     cursorPosition: function(start) {this.focusIfIE(); return this.editor.cursorPosition(start);},
     firstLine: function() {return this.editor.firstLine();},

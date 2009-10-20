@@ -407,13 +407,25 @@
     <p>To be as flexible as possible, CodeMirror implements a very
     plain editable field, without any accompanying buttons, bells, and
     whistles. <code>CodeMirror</code> objects do, however, provide a
-    number of methods that make it possible to add extra functionality
-    around the editor. <a
-    href="js/mirrorframe.js"><code>mirrorframe.js</code></a> provides a
-    basic example of their usage.</p>
+    number of methods and properties that make it possible to add
+    extra functionality around the editor. <a
+    href="js/mirrorframe.js"><code>mirrorframe.js</code></a> provides
+    a basic example of their usage.</p>
+
+    <h3>Properties</h3>
 
     <dl>
+      <dt><code>frame</code></dt><dd>The editable frame.</dd>
+      <dt><code>win</code></dt><dd>The window of the editable frame.
+      Mostly useful for attaching event handlers.</dd>
+      <dt><code>wrapping</code></dt><dd>The <code>DIV</code> element
+      wrapped around the frame. This always has a CSS class of
+      <code>CodeMirror-wrapping</code>.</dd>
+    </dl>
 
+    <h3>Methods</h3>
+
+    <dl>
       <dt><code>getCode()</code> &#8594;
       <code>string</code></dt><dd>Returns the current content of the
       editor, as a string.</dd>
@@ -497,9 +509,10 @@
       <dt><code>setSpellcheck(on)</code></dt><dd>Turn spell-checking
       on and off. Only works on browsers that support
       <code>document.body.spellcheck</code>.</dd>
-
       <dt><code>setTextWrapping(on)</code></dt><dd>Turn text-wrapping
       on and off.</dd>
+      <dt><code>setLineNumbers(on)</code></dt><dd>Switch between
+      visible line numbers and no line numbers.</dd>
     </dl>
 
     <p>For detailed interaction with the content of the editor,
