@@ -207,6 +207,9 @@ var CodeMirror = (function(){
     setParser: function(name) {this.editor.setParser(name);},
     setSpellcheck: function(on) {this.win.document.body.spellcheck = on;},
     setTextWrapping: function(on) {this.win.document.body.style.whiteSpace = on ? "" : "nowrap";},
+    setIndentUnit: function(unit) {this.win.indentUnit = unit;},
+    setUndoDepth: function(depth) {this.editor.history.maxDepth = depth;},
+    setTabMode: function(mode) {this.options.tabMode = mode;},
     setLineNumbers: function(on) {
       if (on && !this.lineNumbers) {
         this.lineNumbers = addLineNumberDiv(this.wrapping);
