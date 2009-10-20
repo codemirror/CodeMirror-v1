@@ -419,6 +419,7 @@ var Editor = (function(){
         catch(e) {}
         if (text !== null) {
           self.replaceSelection(text);
+          select.scrollToCursor(this.container);
           event.stop();
         }
       });
@@ -600,7 +601,10 @@ var Editor = (function(){
         if (self.selectionSnapshot) // IE hack
           self.win.select.setBookmark(self.container, self.selectionSnapshot);
         var text = te.value;
-        if (text) self.replaceSelection(text);
+        if (text) {
+          self.replaceSelection(text);
+          select.scrollToCursor(this.container);
+        }
         removeElement(te);
       }, 10);
     },
