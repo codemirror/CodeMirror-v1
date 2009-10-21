@@ -587,7 +587,7 @@ var Editor = (function(){
       this.capturingPaste = true;
       var te = parent.document.createElement("TEXTAREA");
       te.style.position = "absolute";
-      te.style.left = "-20px";
+      te.style.left = "-10000px";
       te.style.width = "10px";
       te.style.top = nodeTop(frameElement) + "px";
       window.frameElement.CodeMirror.wrapping.appendChild(te);

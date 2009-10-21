@@ -128,7 +128,6 @@ var CodeMirror = (function(){
 
     var div = this.wrapping = document.createElement("DIV");
     div.style.position = "relative";
-    div.style.overflow = "hidden";
     div.className = "CodeMirror-wrapping";
     if (place.appendChild) place.appendChild(div);
     else place(div);
