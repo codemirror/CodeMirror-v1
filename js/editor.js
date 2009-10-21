@@ -587,10 +587,10 @@ var Editor = (function(){
       this.capturingPaste = true;
       var te = parent.document.createElement("TEXTAREA");
       te.style.position = "absolute";
-      te.style.left = "-500px";
+      te.style.left = "-20px";
       te.style.width = "10px";
       te.style.top = nodeTop(frameElement) + "px";
-      parent.document.body.appendChild(te);
+      window.frameElement.CodeMirror.wrapping.appendChild(te);
       parent.focus();
       te.focus();
 
@@ -603,7 +603,7 @@ var Editor = (function(){
         var text = te.value;
         if (text) {
           self.replaceSelection(text);
-          select.scrollToCursor(this.container);
+          select.scrollToCursor(self.container);
         }
         removeElement(te);
       }, 10);
