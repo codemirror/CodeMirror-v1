@@ -78,9 +78,9 @@ var CodeMirror = (function(){
     function sizeBar() {
       for (var root = frame; root.parentNode; root = root.parentNode);
       if (!nums.parentNode || root != document || !win.Editor) {
-        // Clear event handlers
-        onScroll();
-        onResize();
+        // Clear event handlers (their nodes might already be collected, so try/catch)
+        try{onScroll();}catch(e){}
+        try{onResize();}catch(e){}
         clearInterval(sizeInterval);
         return;
       }
