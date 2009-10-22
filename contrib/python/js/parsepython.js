@@ -16,7 +16,7 @@ var PythonParser = Editor.Parser = (function() {
     var singleOperators = '+-*/%&|^~<>';
     var doubleOperators = wordRegexp(['==', '!=', '\\<=', '\\>=', '\\<\\>',
                                       '\\<\\<', '\\>\\>', '\\/\\/', '\\*\\*']);
-    var singleDelimiters = '()[]{}@,:.`=;';
+    var singleDelimiters = '()[]{}@,:`=;';
     var doubleDelimiters = ['\\+=', '\\-=', '\\*=', '/=', '%=', '&=', '\\|=',
                             '\\^='];
     var tripleDelimiters = wordRegexp(['//=','\\>\\>=','\\<\\<=','\\*\\*=']);
@@ -104,10 +104,10 @@ var PythonParser = Editor.Parser = (function() {
             }
             // Handle special chars
             if (ch == '\\') {
-                if (source.peek() != '\n') {
+                if (!source.endOfLine()) {
                     var whitespace = true;
                     while (!source.endOfLine()) {
-                        if(!(/\s/.test(source.next()))) {
+                        if(!(/[\s\u00a0]/.test(source.next()))) {
                             whitespace = false;
                         }
                     }
@@ -118,13 +118,14 @@ var PythonParser = Editor.Parser = (function() {
                 return 'py-special';
             }
             // Handle operators and delimiters
-            if (singleStarters.indexOf(ch) != -1) {
+            if (singleStarters.indexOf(ch) != -1 || (ch == "." && !source.matches(/\d/))) {
                 if (doubleStarters.indexOf(source.peek()) != -1) {
                     temp = ch + source.peek();
                     // It must be a double delimiter or operator or triple delimiter
                     if (doubleOperators.test(temp)) {
                         source.next();
-                        if (tripleDelimiters.test(temp + source.peek())) {
+                        var nextChar = source.peek();
+                        if (nextChar && tripleDelimiters.test(temp + nextChar)) {
                             source.next();
                             return DELIMITERCLASS;
                         } else {
@@ -136,17 +137,13 @@ var PythonParser = Editor.Parser = (function() {
                     }
                 }
                 // It must be a single delimiter or operator
-                if (singleOperators.indexOf(ch) != -1) {
+                if (singleOperators.indexOf(ch) != -1 || ch == ".") {
                     return OPERATORCLASS;
                 } else if (singleDelimiters.indexOf(ch) != -1) {
-                    if (ch == '@' && /\w/.test(source.peek())) {
-                        possible = {style:'py-decorator',
-                                    content: source.get()};
-                        ch = source.next();
-                    } else if (ch == '.' && /\d/.test(source.peek())) {
-                        possible = {style:LITERALCLASS,
-                                    content: source.get()};
-                        ch = source.next();
+                    if (ch == '@' && source.matches(/\w/)) {
+                        source.nextWhileMatches(/[\w\d_]/);
+                        return {style:'py-decorator',
+                                content: source.get()};
                     } else {
                         return DELIMITERCLASS;
                     }
@@ -155,7 +152,7 @@ var PythonParser = Editor.Parser = (function() {
                 }
             }
             // Handle number literals
-            if (/\d/.test(ch)) {
+            if (/\d/.test(ch) || (ch == "." && source.matches(/\d/))) {
                 if (ch === '0' && !source.endOfLine()) {
                     switch (source.peek()) {
                         case 'o':
@@ -176,7 +173,7 @@ var PythonParser = Editor.Parser = (function() {
                     }
                 }
                 source.nextWhileMatches(/\d/);
-                if (source.peek() == '.') {
+                if (ch != '.' && source.peek() == '.') {
                     source.next();
                     source.nextWhileMatches(/\d/);
                 }
@@ -186,7 +183,7 @@ var PythonParser = Editor.Parser = (function() {
                     if (source.peek() == '+' || source.peek() == '-') {
                         source.next();
                     }
-                    if (/\d/.test(source.peek())) {
+                    if (source.matches(/\d/)) {
                         source.nextWhileMatches(/\d/);
                     } else {
                         return filterPossible(ERRORCLASS);
@@ -251,7 +248,7 @@ var PythonParser = Editor.Parser = (function() {
             }
             // Handle Identifier
             if (identifierStarters.test(ch)) {
-                source.nextWhileMatches(/[\w\d]/);
+                source.nextWhileMatches(/[\w\d_]/);
                 word = source.get();
                 if (wordOperators.test(word)) {
                     type = OPERATORCLASS;
@@ -263,7 +260,7 @@ var PythonParser = Editor.Parser = (function() {
                     type = IDENTIFIERCLASS;
                     while (source.peek() == '.') {
                         source.next();
-                        if (identifierStarters.test(source.peek())) {
+                        if (source.matches(identifierStarters)) {
                             source.nextWhileMatches(/[\w\d]/);
                         } else {
                             type = ERRORCLASS;
