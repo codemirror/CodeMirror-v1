@@ -418,9 +418,9 @@ var Editor = (function(){
         }
         catch(e) {}
         if (text !== null) {
+          event.stop();
           self.replaceSelection(text);
           select.scrollToCursor(this.container);
-          event.stop();
         }
       });
 
