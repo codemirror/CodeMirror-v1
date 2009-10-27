@@ -353,8 +353,7 @@ var Editor = (function(){
     this.doc = document;
     var container = this.container = this.doc.body;
     this.win = window;
-    this.history = new History(container, options.undoDepth, options.undoDelay,
-                               this, options.onChange);
+    this.history = new History(container, options.undoDepth, options.undoDelay, this);
     var self = this;
 
     if (!Editor.Parser)
@@ -368,6 +367,7 @@ var Editor = (function(){
     this.dirty = [];
     if (options.content)
       this.importCode(options.content);
+    this.history.onChange = options.onChange;
 
     if (!options.readOnly) {
       if (options.continuousScanning !== false) {
