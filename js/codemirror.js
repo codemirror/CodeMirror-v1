@@ -120,8 +120,8 @@ var CodeMirror = (function(){
     frame.frameBorder = 0;
     frame.src = "javascript:false;";
     frame.style.border = "0";
-    frame.style.width = options.width;
-    frame.style.height = options.height;
+    frame.style.width = '100%';
+    frame.style.height = '100%';
     // display: block occasionally suppresses some Firefox bugs, so we
     // always add it, redundant as it sounds.
     frame.style.display = "block";
@@ -129,6 +129,9 @@ var CodeMirror = (function(){
     var div = this.wrapping = document.createElement("DIV");
     div.style.position = "relative";
     div.className = "CodeMirror-wrapping";
+    div.style.width = options.width;
+    div.style.height = options.height;
+
     if (place.appendChild) place.appendChild(div);
     else place(div);
     div.appendChild(frame);
