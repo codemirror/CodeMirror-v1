@@ -33,6 +33,10 @@ var CodeMirror = (function(){
     iframeClass: null,
     passDelay: 200,
     passTime: 50,
+    // GBEDDOW PATCH START
+    lineNumbersDelay: 200,
+    lineNumbersTime: 50,
+    // GBEDDOW PATCH END
     continuousScanning: false,
     saveFunction: null,
     onChange: null,
@@ -70,11 +74,44 @@ var CodeMirror = (function(){
     return nums;
   }
 
-  function activateLineNumbers(frame, nums) {
+  // GBEDDOW PATCH START
+  function activateLineNumbers(frame, nums, options) {
+  // GBEDDOW PATCH END
     var win = frame.contentWindow, doc = win.document,
         scroller = nums.firstChild;
 
     var nextNum = 1, barWidth = null;
+
+    // GBEDDOW PATCH START
+    var lineNumberDivIndex = 0, docDivIndex = 0;
+    var cssLineHeight, cssFontSize;
+    if (window.getComputedStyle) {
+      cssLineHeight = window.getComputedStyle(scroller, null).getPropertyValue("LINE-HEIGHT");
+      cssFontSize = window.getComputedStyle(scroller, null).getPropertyValue("FONT-SIZE");
+    } else if (scroller.currentStyle) {
+      cssLineHeight = scroller.currentStyle["lineHeight"];
+      cssFontSize = scroller.currentStyle["fontSize"];
+    }
+
+    // line number div line-height "normal" (the default) or number (multiplier) or px only; pt, cm, etc. and percent not supported
+    var lineHeight;
+    if (cssLineHeight.indexOf("px") != -1)
+      lineHeight = parseFloat(cssLineHeight);
+    else {
+      var fontSize;
+      if (cssFontSize.indexOf("pt") != -1)
+        fontSize = parseFloat(cssFontSize) * 4 / 3; // approximation; close enough for purposes here
+      else
+        fontSize = parseFloat(cssFontSize);
+      var multiplier;
+      if (cssLineHeight == "normal")
+        multiplier = (window.opera ? 1.0 : 1.2); //1.0=opera; 1.2=most other browsers; if not working, set explicitly in your css
+      else
+        multiplier = parseFloat(cssLineHeight);
+      lineHeight = fontSize * multiplier;
+    }
+    // GBEDDOW PATCH END
+
     function sizeBar() {
       for (var root = frame; root.parentNode; root = root.parentNode);
       if (!nums.parentNode || root != document || !win.Editor) {
@@ -90,20 +127,79 @@ var CodeMirror = (function(){
         nums.style.left = "-" + (frame.parentNode.style.marginLeft = barWidth + "px");
       }
     }
-    function update() {
-      var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
-      for (var n = Math.ceil(diff / 10); n > 0; n--) {
-        var div = document.createElement("DIV");
-        div.appendChild(document.createTextNode(nextNum++));
-        scroller.appendChild(div);
+    // GBEDDOW PATCH START
+    function update(remaining) {
+      if (!options.textWrapping) {
+        var diff = 20 + Math.max(doc.body.offsetHeight, frame.offsetHeight) - scroller.offsetHeight;
+        for (var n = Math.ceil(diff / 10); n > 0; n--) {
+          var div = document.createElement("DIV");
+          div.appendChild(document.createTextNode(nextNum++));
+          scroller.appendChild(div);
+        }
+      } else {
+        if (!remaining) { nextNum = 1; lineNumberDivIndex = 0; docDivIndex = 0; }
+        //console.log("update: remaining=" + remaining + " nextNum=" + nextNum);
+        var height = 0, offsetTop = 0, offsetHeight = 0;
+        if (doc.body.childNodes.length > 1) {
+          // process sequences of one or more SPAN nodes delimited by BR nodes
+          for (var endTime = new Date().getTime() + options.lineNumbersTime; docDivIndex < doc.body.childNodes.length; docDivIndex++) {
+            var node = doc.body.childNodes[docDivIndex];
+          	if (node.nodeName == "SPAN") {
+              if (height == 0) {
+                height = node.offsetHeight;
+                offsetTop = node.offsetTop;
+                offsetHeight = node.offsetHeight;
+              }
+              if (node.offsetTop > offsetTop || node.offsetHeight > offsetHeight) {
+                height += node.offsetHeight - (doc.body.childNodes[docDivIndex-1].offsetTop + doc.body.childNodes[docDivIndex-1].offsetHeight - node.offsetTop);
+                offsetTop = node.offsetTop;
+                offsetHeight = node.offsetHeight;
+              }
+          	} else if (node.nodeName == "BR") {
+          		setLineNumbers(scroller, height <= 0 ? 1 : (lineHeight <= 0 ? 1 : Math.round(height / lineHeight)));
+              height = 0;
+              if (options.lineNumbersTime && new Date().getTime() > endTime) {
+                //console.log("update: nextNum=" + nextNum + " - out of time - return early & reschedule remaining");
+                docDivIndex++;
+                return true;
+              }
+          	}
+          }
+        }
+    		setLineNumbers(scroller, height <= 0 ? 1 : (lineHeight <= 0 ? 1 : Math.round(height / lineHeight)));
+        for (var extra = 0; extra < 50; extra++)
+    		  setLineNumbers(scroller, 1);
       }
       nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0;
+      //console.log("update: FINISHED");
+      return false;
     }
-    var onScroll = win.addEventHandler(win, "scroll", update, true),
-        onResize = win.addEventHandler(win, "resize", update, true),
-        sizeInterval = setInterval(sizeBar, 500);
+    function setLineNumbers(parent, n) {
+      for (var i = 0; i < n; i++, lineNumberDivIndex++) {
+        if (lineNumberDivIndex < parent.childNodes.length) {
+          parent.childNodes[lineNumberDivIndex].innerHTML = (i == 0 ? nextNum++ : "-");
+        } else {
+          var div = document.createElement("DIV");
+          div.appendChild(document.createTextNode(i == 0 ? nextNum++ : "-"));
+          parent.appendChild(div);
+        }
+      }
+    }
+    function sizeAndUpdate(remaining) {
+      sizeBar();
+      return update(remaining);
+    }
     sizeBar();
-    update();
+    win.frameElement.CodeMirror.editor.scheduleUpdateLineNumbers(false, options.lineNumbersDelay);
+
+    var onScroll = win.addEventHandler(win, "scroll", function(){
+        nums.scrollTop = doc.body.scrollTop || doc.documentElement.scrollTop || 0; }, true),
+      onResize = win.addEventHandler(win, "resize", function(){
+        win.frameElement.CodeMirror.editor.scheduleUpdateLineNumbers(false, options.lineNumbersDelay); }, true),
+      sizeInterval = setInterval(sizeBar, 500);
+
+    return sizeAndUpdate;
+    // GBEDDOW PATCH END
   }
 
   function CodeMirror(place, options) {
@@ -168,7 +264,9 @@ var CodeMirror = (function(){
   CodeMirror.prototype = {
     init: function() {
       if (this.options.initCallback) this.options.initCallback(this);
-      if (this.lineNumbers) activateLineNumbers(this.frame, this.lineNumbers);
+      // GBEDDOW PATCH START
+      if (this.options.lineNumbers) this.editor.updateSomeLineNumbers = activateLineNumbers(this.frame, this.lineNumbers, this.options);
+      // GBEDDOW PATCH END
       if (this.options.reindentOnLoad) this.reindent();
     },
 

@@ -1052,7 +1052,39 @@ var Editor = (function(){
       var self = this;
       this.parent.clearTimeout(this.highlightTimeout);
       this.highlightTimeout = this.parent.setTimeout(function(){self.highlightDirty();}, this.options.passDelay);
+      // GBEDDOW PATCH START
+      if (this.options.lineNumbers && this.options.textWrapping) this.scheduleUpdateLineNumbers(false, this.options.lineNumbersDelay);
+      // GBEDDOW PATCH END
     },
+
+    // GBEDDOW PATCH START
+    // Cause a line number pass to happen in options.lineNumberDelay
+    // milliseconds. Clear the existing timeout, if one exists. This
+    // way, the passes do not happen while the user is typing, and
+    // should be as unobtrusive as possible.
+    scheduleUpdateLineNumbers: function(remaining, delay) {
+      // Timeouts are routed through the parent window, because on
+      // some browsers designMode windows do not fire timeouts.
+      var self = this;
+      this.parent.clearTimeout(this.updateLineNumbersTimeout);
+      this.updateLineNumbersTimeout = this.parent.setTimeout(function(){
+          self.updateLineNumbers(remaining);
+      }, delay);
+    },
+
+    // Start updating line numbers until options.lineNumbersTime
+    // milliseconds have gone by. If there are line numbers
+    // left after this function has spent all its lines,
+    // it schedules another update to finish the job.
+    updateLineNumbers: function(remaining) {
+      // Prevent FF from raising an error when it is firing timeouts
+      // on a page that's no longer loaded.
+      if (!window.select) return;
+      if (this.updateSomeLineNumbers(remaining)) {
+        this.scheduleUpdateLineNumbers(true, 0);
+      }
+    },
+    // GBEDDOW PATCH END
 
     // Fetch one dirty node, and remove it from the dirty set.
     getDirtyNode: function() {
