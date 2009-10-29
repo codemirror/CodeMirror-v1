@@ -124,6 +124,11 @@ var Editor = (function(){
     }
     var point = null;
 
+    // This an Opera-specific hack -- always insert an empty span
+    // between two BRs, because Opera's cursor code gets terribly
+    // confused when the cursor is between two BRs.
+    var afterBR = true;
+
     // Insert a normalized node at the current point. If it is a text
     // node, wrap it in a <span>, and give that span a currentText
     // property -- this is used to cache the nodeValue, because
@@ -136,6 +141,12 @@ var Editor = (function(){
         select.snapshotChanged();
         part = makePartSpan(part, owner);
         text = part.currentText;
+        afterBR = false;
+      }
+      else {
+        if (afterBR && window.opera)
+          point(makePartSpan(""), owner);
+        afterBR = true;
       }
       part.dirty = true;
       nodeQueue.push(part);
@@ -173,10 +184,14 @@ var Editor = (function(){
 
       if (partNode(node)){
         nodeQueue.push(node);
+        afterBR = false;
         return yield(node.currentText, c);
       }
       else if (isBR(node)) {
+        if (afterBR && window.opera)
+          node.parentNode.insertBefore(makePartSpan("", owner), node);
         nodeQueue.push(node);
+        afterBR = true;
         return yield("\n", c);
       }
       else {
@@ -1202,6 +1217,11 @@ var Editor = (function(){
           stream = stringStream(traversal),
           parsed = from ? from.parserFromHere(stream) : Editor.Parser.make(stream);
 
+      function surroundedByBRs(node) {
+        return (node.previousSibling == null || isBR(node.previousSibling)) &&
+               (node.nextSibling == null || isBR(node.nextSibling));
+      }
+
       // parts is an interface to make it possible to 'delay' fetching
       // the next DOM node until we are completely done with the one
       // before it. This is necessary because often the next node is
@@ -1233,12 +1253,22 @@ var Editor = (function(){
           // for the FF cursor bug workaround (see select.js,
           // insertNewlineAtCursor).
           while (part && isSpan(part) && part.currentText == "") {
-            var old = part;
-            this.remove();
-            part = this.get();
-            // Adjust selection information, if any. See select.js for details.
-            select.snapshotMove(old.firstChild, part && (part.firstChild || part), 0);
+            // Leave empty nodes that are alone on a line alone in
+            // Opera, since that browsers doesn't deal well with
+            // having 2 BRs in a row.
+            if (window.opera && surroundedByBRs(part)) {
+              this.next();
+              part = this.get();
+            }
+            else {
+              var old = part;
+              this.remove();
+              part = this.get();
+              // Adjust selection information, if any. See select.js for details.
+              select.snapshotMove(old.firstChild, part && (part.firstChild || part), 0);
+            }
           }
+          
           return part;
         }
       };
