@@ -293,7 +293,7 @@ var CodeMirror = (function(){
             addNum(next++);
             for (; node && !win.isBR(node); node = node.nextSibling) {
               var bott = node.offsetTop + node.offsetHeight;
-              while (bott - 3 > pos) addNum(".");
+              while (bott - 3 > pos) addNum("&nbsp;");
             }
             if (node) node = node.nextSibling;
             if (new Date().getTime() > endTime) {
