@@ -322,11 +322,13 @@ var CodeMirror = (function(){
           pending = setTimeout(start, self.options.lineNumberDelay);
         }
         self.updateNumbers = update;
-        var onScroll = win.addEventHandler(win, "scroll", doScroll, true);
+        var onScroll = win.addEventHandler(win, "scroll", doScroll, true),
+            onResize = win.addEventHandler(win, "resize", update, true);
         clear = function(){
-          onScroll();
           if (pending) clearTimeout(pending);
           if (self.updateNumbers == update) self.updateNumbers == null;
+          onScroll();
+          onResize();
         };
       }
       (this.options.textWrapping ? wrapping : nonWrapping)();
