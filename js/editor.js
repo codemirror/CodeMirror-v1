@@ -1052,12 +1052,9 @@ var Editor = (function(){
       var self = this;
       this.parent.clearTimeout(this.highlightTimeout);
       this.highlightTimeout = this.parent.setTimeout(function(){self.highlightDirty();}, this.options.passDelay);
-      // GBEDDOW PATCH START
       if (this.options.lineNumbers && this.options.textWrapping) this.scheduleUpdateLineNumbers(false, this.options.lineNumbersDelay);
-      // GBEDDOW PATCH END
     },
 
-    // GBEDDOW PATCH START
     // Cause a line number pass to happen in options.lineNumberDelay
     // milliseconds. Clear the existing timeout, if one exists. This
     // way, the passes do not happen while the user is typing, and
@@ -1084,7 +1081,6 @@ var Editor = (function(){
         this.scheduleUpdateLineNumbers(true, 0);
       }
     },
-    // GBEDDOW PATCH END
 
     // Fetch one dirty node, and remove it from the dirty set.
     getDirtyNode: function() {
