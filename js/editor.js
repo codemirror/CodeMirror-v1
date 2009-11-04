@@ -711,8 +711,8 @@ var Editor = (function(){
         }
         event.stop();
       }
-      else if (code == 9 && this.options.tabMode != "default") { // tab
-        this.handleTab(!event.ctrlKey && !event.shiftKey);
+      else if (code == 9 && this.options.tabMode != "default" && !event.ctrlKey) { // tab
+        this.handleTab(!event.shiftKey);
         event.stop();
       }
       else if (code == 32 && event.shiftKey && this.options.tabMode == "default") { // space
