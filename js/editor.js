@@ -145,7 +145,7 @@ var Editor = (function(){
       }
       else {
         if (afterBR && window.opera)
-          point(makePartSpan(""), owner);
+          point(makePartSpan("", owner));
         afterBR = true;
       }
       part.dirty = true;
