@@ -326,7 +326,7 @@ var CodeMirror = (function(){
             onResize = win.addEventHandler(win, "resize", update, true);
         clear = function(){
           if (pending) clearTimeout(pending);
-          if (self.updateNumbers == update) self.updateNumbers == null;
+          if (self.updateNumbers == update) self.updateNumbers = null;
           onScroll();
           onResize();
         };
