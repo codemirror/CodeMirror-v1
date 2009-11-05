@@ -1114,7 +1114,7 @@ var Editor = (function(){
           // If the node has been coloured in the meantime, or is no
           // longer in the document, it should not be returned.
           while (found && found.parentNode != this.container)
-            found = found.parentNode
+            found = found.parentNode;
           if (found && (found.dirty || found.nodeType == 3))
             return found;
         } catch (e) {}
