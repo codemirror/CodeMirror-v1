@@ -319,7 +319,7 @@ var CodeMirror = (function(){
         var pending = null;
         function update() {
           if (pending) clearTimeout(pending);
-          pending = setTimeout(start, self.options.lineNumberDelay);
+          start();
         }
         self.updateNumbers = update;
         var onScroll = win.addEventHandler(win, "scroll", doScroll, true),
