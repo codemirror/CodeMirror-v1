@@ -1086,6 +1086,10 @@ var Editor = (function(){
       this.dirty.push(node);
     },
 
+    allClean: function() {
+      return !this.dirty.length;
+    },
+
     // Cause a highlight pass to happen in options.passDelay
     // milliseconds. Clear the existing timeout, if one exists. This
     // way, the passes do not happen while the user is typing, and
