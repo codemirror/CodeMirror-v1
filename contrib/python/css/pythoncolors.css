@@ -1,3 +1,7 @@
+html {
+  cursor: text;
+}
+
 .editbox {
   padding: .4em;
   margin: 0;

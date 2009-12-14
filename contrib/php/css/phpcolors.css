@@ -6,6 +6,10 @@ Yahoo! Inc. under the BSD (revised) open source license
 @author Dan Vlad Dascalescu <dandv@yahoo-inc.com>
 */
 
+html {
+  cursor: text;
+}
+
 .editbox {
   margin: .4em;
   padding: 0;
