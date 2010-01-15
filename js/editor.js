@@ -438,7 +438,7 @@ var Editor = (function(){
         if (text !== null) {
           event.stop();
           self.replaceSelection(text);
-          select.scrollToCursor(this.container);
+          select.scrollToCursor(self.container);
         }
       });
 
