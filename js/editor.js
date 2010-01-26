@@ -520,7 +520,6 @@ var Editor = (function(){
     },
 
     lineContent: function(line) {
-      this.checkLine(line);
       var accum = [];
       for (line = line ? line.nextSibling : this.container.firstChild;
            line && !isBR(line); line = line.nextSibling)
@@ -533,6 +532,18 @@ var Editor = (function(){
       this.replaceRange({node: line, offset: 0},
                         {node: line, offset: this.history.textAfter(line).length},
                         content);
+      this.addDirtyNode(line);
+      this.scheduleHighlight();
+    },
+
+    removeLine: function(line) {
+      var node = line ? line.nextSibling : this.container.firstChild;
+      while (node) {
+        var next = node.nextSibling;
+        removeElement(node);
+        if (isBR(node)) break;
+        node = next;
+      }
       this.addDirtyNode(line);
       this.scheduleHighlight();
     },
