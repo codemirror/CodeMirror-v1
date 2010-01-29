@@ -7,6 +7,7 @@
 var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
 var webkit = /AppleWebKit/.test(navigator.userAgent);
 var safari = /Apple Computers, Inc/.test(navigator.vendor);
+var gecko = /gecko\/(\d{8})/i.test(navigator.userAgent);
 
 // Make sure a string does not contain two consecutive 'collapseable'
 // whitespace characters.
@@ -426,6 +427,11 @@ var Editor = (function(){
       function cursorActivity() {self.cursorActivity(false);}
       addEventHandler(document.body, "mouseup", cursorActivity);
       addEventHandler(document.body, "cut", cursorActivity);
+
+      // workaround for a gecko bug [?] where going forward and then
+      // back again breaks designmode (no more cursor)
+      if (gecko)
+        addEventHandler(this.win, "pagehide", function(){self.unloaded = true;});
 
       addEventHandler(document.body, "paste", function(event) {
         cursorActivity();
@@ -1058,6 +1064,13 @@ var Editor = (function(){
     // Find the node that the cursor is in, mark it as dirty, and make
     // sure a highlight pass is scheduled.
     cursorActivity: function(safe) {
+      // pagehide event hack above
+      if (this.unloaded) {
+        this.win.document.designMode = "off";
+        this.win.document.designMode = "on";
+        this.unloaded = false;
+      }
+
       if (internetExplorer) {
         this.container.createTextRange().execCommand("unlink");
         this.selectionSnapshot = select.getBookmark(this.container);
@@ -1408,6 +1421,6 @@ var Editor = (function(){
 
 addEventHandler(window, "load", function() {
   var CodeMirror = window.frameElement.CodeMirror;
-  CodeMirror.editor = new Editor(CodeMirror.options);
+  var e = CodeMirror.editor = new Editor(CodeMirror.options);
   this.parent.setTimeout(method(CodeMirror, "init"), 0);
 });
