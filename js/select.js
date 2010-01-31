@@ -419,8 +419,7 @@ var select = {};
       // this occurs is when a selection is deleted or overwitten. we
       // check for that here.
       function focusIssue() {
-        return cs.start.node == cs.end.node && cs.start.offset == 0 &&
-          cs.end.offset == (cs.end.node ? cs.end.node.nodeValue.length : 0);
+        return cs.start.node == cs.end.node && cs.start.offset == 0 && cs.end.offset == 0;
       }
       if (!cs || !(cs.changed || (webkit && focusIssue()))) return;
       var win = cs.window, range = win.document.createRange();
