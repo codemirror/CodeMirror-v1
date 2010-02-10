@@ -625,7 +625,8 @@ var Editor = (function(){
       te.style.left = "-10000px";
       te.style.width = "10px";
       te.style.top = nodeTop(frameElement) + "px";
-      window.frameElement.CodeMirror.wrapping.appendChild(te);
+      var wrap = window.frameElement.CodeMirror.wrapping;
+      wrap.parentNode.insertBefore(te, wrap);
       parent.focus();
       te.focus();
 
