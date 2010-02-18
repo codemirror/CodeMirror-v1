@@ -277,6 +277,7 @@ var CodeMirror = (function(){
         var onScroll = win.addEventHandler(win, "scroll", update, true),
             onResize = win.addEventHandler(win, "resize", update, true);
         clear = function(){onScroll(); onResize();};
+        update();
       }
       function wrapping() {
         var node, lineNum, next, pos;
