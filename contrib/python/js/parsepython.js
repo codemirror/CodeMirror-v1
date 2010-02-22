@@ -320,18 +320,19 @@ var PythonParser = Editor.Parser = (function() {
         };
     })();
 
-    function parsePython(source) {
+    function parsePython(source, basecolumn) {
         if (!keywords) {
             configure({});
         }
+        basecolumn = basecolumn || 0;
 
         var tokens = tokenizePython(source);
         var lastToken = null;
-        var column = 0;
+        var column = basecolumn;
         var context = {prev: null,
                        endOfScope: false,
                        startNewScope: false,
-                       level: 0,
+                       level: basecolumn,
                        next: null,
                        type: NORMALCONTEXT
                        };
@@ -432,13 +433,13 @@ var PythonParser = Editor.Parser = (function() {
                                     context.next = null;
                                 }
                             }
-                        } else if (context.level !== 0 &&
+                        } else if (context.level !== basecolumn &&
                                    context.type == NORMALCONTEXT) {
-                            while (0 !== context.level) {
+                            while (basecolumn !== context.level) {
                                 popContext();
                             }
 
-                            if (context.level !== 0) {
+                            if (context.level !== basecolumn) {
                                 context = tempCtx;
                                 if (config.strictErrors) {
                                     token.style = ERRORCLASS;
@@ -499,7 +500,7 @@ var PythonParser = Editor.Parser = (function() {
                         break;
                     case '\n':
                         // Reset our column
-                        column = 0;
+                        column = basecolumn;
                         // Make any scope changes
                         if (context.endOfScope) {
                             context.endOfScope = false;
