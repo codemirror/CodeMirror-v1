@@ -448,7 +448,7 @@ var select = {};
       var selection = window.getSelection();
       selection.removeAllRanges();
       selection.addRange(range);
-    };
+    }
     function selectionRange(window) {
       var selection = window.getSelection();
       if (!selection || selection.rangeCount == 0)

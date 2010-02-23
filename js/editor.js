@@ -111,7 +111,7 @@ var Editor = (function(){
   // See the story.html file for some short remarks about the use of
   // continuation-passing style in this iterator.
   function traverseDOM(start){
-    function yield(value, c){cc = c; return value;}
+    function _yield(value, c){cc = c; return value;}
     function push(fun, arg, c){return function(){return fun(arg, c);};}
     function stop(){cc = stop; throw StopIteration;};
     var cc = push(scanNode, start, stop);
@@ -167,7 +167,7 @@ var Editor = (function(){
       forEach(simplifyDOM(node, end), function(part) {
         toYield.push(insertPart(part));
       });
-      return yield(toYield.join(""), c);
+      return _yield(toYield.join(""), c);
     }
 
     // Check whether a node is a normalized <span> element.
@@ -190,14 +190,14 @@ var Editor = (function(){
       if (partNode(node)){
         nodeQueue.push(node);
         afterBR = false;
-        return yield(node.currentText, c);
+        return _yield(node.currentText, c);
       }
       else if (isBR(node)) {
         if (afterBR && window.opera)
           node.parentNode.insertBefore(makePartSpan("", owner), node);
         nodeQueue.push(node);
         afterBR = true;
-        return yield("\n", c);
+        return _yield("\n", c);
       }
       else {
         var end = !node.nextSibling;
@@ -289,8 +289,8 @@ var Editor = (function(){
 
         var line = self.history.nodeAfter(self.line);
         for (var i = 1; i < target.length - 1; i++) {
-          var line = cleanText(self.history.textAfter(line));
-          if ((self.caseFold ? line.toLowerCase() : line) != target[i])
+          var lineText = cleanText(self.history.textAfter(line));
+          if ((self.caseFold ? lineText.toLowerCase() : lineText) != target[i])
             return false;
           line = self.history.nodeAfter(line);
         }
@@ -865,7 +865,7 @@ var Editor = (function(){
     highlightAtCursor: function() {
       var pos = select.selectionTopNode(this.container, true);
       var to = select.selectionTopNode(this.container, false);
-      if (pos === false || to === false) return;
+      if (pos === false || to === false) return false;
 
       select.markSelection(this.win);
       if (this.highlight(pos, endOfLine(to, this.container), true, 20) === false)
@@ -983,7 +983,7 @@ var Editor = (function(){
       // have to scan, we just try, and when we find dirty nodes we
       // abort, parse them, and re-try.
       function tryFindMatch() {
-        var stack = [], ch, ok = true;;
+        var stack = [], ch, ok = true;
         for (var runner = cursor; runner; runner = dir ? runner.nextSibling : runner.previousSibling) {
           if (runner.className == className && isSpan(runner) && (ch = paren(runner))) {
             if (forward(ch) == dir)
@@ -1153,7 +1153,7 @@ var Editor = (function(){
     highlightDirty: function(force) {
       // Prevent FF from raising an error when it is firing timeouts
       // on a page that's no longer loaded.
-      if (!window.select) return;
+      if (!window.select) return false;
 
       if (!this.options.readOnly) select.markSelection(this.win);
       var start, endTime = force ? null : time() + this.options.passTime;
@@ -1216,7 +1216,7 @@ var Editor = (function(){
       var endTime = (typeof target == "number" ? target : null);
 
       if (!container.firstChild)
-        return;
+        return false;
       // Backtrack to the first node before from that has a partial
       // parse stored.
       while (from && (!from.parserFromHere || from.dirty)) {
@@ -1226,7 +1226,7 @@ var Editor = (function(){
       }
       // If we are at the end of the document, do nothing.
       if (from && !from.nextSibling)
-        return;
+        return false;
 
       // Check whether a part (<span> node) and the corresponding token
       // match.

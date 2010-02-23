@@ -47,7 +47,7 @@ if (!Array.prototype.indexOf)
     }
     return -1;
   };
-};
+}
 
 
 var PHPParser = Editor.Parser = (function() {
@@ -71,7 +71,7 @@ var PHPParser = Editor.Parser = (function() {
     // Parent scope, if any.
     this.prev = prev;
     this.info = info;
-  };
+  }
 
   // PHP indentation rules
   function indentPHP(lexical) {
@@ -89,7 +89,7 @@ var PHPParser = Editor.Parser = (function() {
       else
         return lexical.indented + (closing ? 0 : indentUnit);
     };
-  };
+  }
 
   // The parser-iterator-producing function itself.
   function parsePHP(input, basecolumn) {
@@ -333,7 +333,7 @@ var PHPParser = Editor.Parser = (function() {
     function commasep(what){
       function proceed(token) {
         if (token.type == ",") cont(what, proceed);
-      };
+      }
       return function commaSeparated() {
         pass(what, proceed);
       };
