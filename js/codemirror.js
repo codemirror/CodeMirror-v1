@@ -170,6 +170,10 @@ var CodeMirror = (function(){
     historySize: function() {return this.editor.history.historySize();},
     clearHistory: function() {this.editor.history.clear();},
 
+// vvv RAZ
+    setUserKeyHandler: function(callback) {this.editor.setUserKeyHandler(callback);},
+// ^^^ RAZ
+    
     grabKeys: function(callback, filter) {this.editor.grabKeys(callback, filter);},
     ungrabKeys: function() {this.editor.ungrabKeys();},
 
