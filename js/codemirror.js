@@ -268,7 +268,7 @@ var CodeMirror = (function(){
         var nextNum = 1;
         function update() {
           var target = 50 + Math.max(body.offsetHeight, frame.offsetHeight);
-          while (scroller.offsetHeight < target) {
+          while (scroller.offsetHeight < target && (!scroller.firstChild || scroller.offsetHeight)) {
             scroller.appendChild(document.createElement("DIV"));
             scroller.lastChild.innerHTML = nextNum++;
           }
@@ -306,7 +306,8 @@ var CodeMirror = (function(){
           }
           // While there are un-processed number DIVs, or the scroller is smaller than the frame...
           var target = 50 + Math.max(body.offsetHeight, frame.offsetHeight);
-          while (lineNum || scroller.offsetHeight < target) addNum(next++);
+          while (lineNum || (scroller.offsetHeight < target && (!scroller.firstChild || scroller.offsetHeight)))
+            addNum(next++);
           doScroll();
         }
         function start() {
