@@ -832,7 +832,7 @@ var tokenizePHP = (function() {
         var next = source.next();
         if (next == end && !escaped)
           return false;
-        escaped = next == "\\";
+        escaped = next == "\\" && !escaped;
       }
       return escaped;
     }
@@ -881,7 +881,7 @@ var tokenizePHP = (function() {
           newInside = null;  // we're outside of the string now
           break;
         }
-        escaped = (next == "\\");
+        escaped = (next == "\\" && !escaped);
       }
       setInside(newInside);
       return {
