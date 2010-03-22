@@ -270,7 +270,7 @@ var CodeMirror = (function(){
       function nonWrapping() {
         var nextNum = 1;
         function update() {
-          var target = 50 + Math.max(body.offsetHeight, frame.offsetHeight);
+          var target = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0));
           while (scroller.offsetHeight < target && (!scroller.firstChild || scroller.offsetHeight)) {
             scroller.appendChild(document.createElement("DIV"));
             scroller.lastChild.innerHTML = nextNum++;
@@ -308,7 +308,7 @@ var CodeMirror = (function(){
             }
           }
           // While there are un-processed number DIVs, or the scroller is smaller than the frame...
-          var target = 50 + Math.max(body.offsetHeight, frame.offsetHeight);
+          var target = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0));
           while (lineNum || (scroller.offsetHeight < target && (!scroller.firstChild || scroller.offsetHeight)))
             addNum(next++);
           doScroll();
