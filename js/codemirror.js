@@ -52,7 +52,8 @@ var CodeMirror = (function(){
     activeTokens: null,
     cursorActivity: null,
     lineNumbers: false,
-    indentUnit: 2
+    indentUnit: 2,
+    domain: null
   });
 
   function addLineNumberDiv(container) {
@@ -72,42 +73,7 @@ var CodeMirror = (function(){
     return nums;
   }
 
-  function CodeMirror(place, options) {
-    // Backward compatibility for deprecated options.
-    if (options.dumbTabs) options.tabMode = "spaces";
-    else if (options.normalTab) options.tabMode = "default";
-
-    // Use passed options, if any, to override defaults.
-    this.options = options = options || {};
-    setDefaults(options, CodeMirrorConfig);
-
-    var frame = this.frame = document.createElement("IFRAME");
-    if (options.iframeClass) frame.className = options.iframeClass;
-    frame.frameBorder = 0;
-    frame.src = "javascript:false;";
-    frame.style.border = "0";
-    frame.style.width = '100%';
-    frame.style.height = '100%';
-    // display: block occasionally suppresses some Firefox bugs, so we
-    // always add it, redundant as it sounds.
-    frame.style.display = "block";
-
-    var div = this.wrapping = document.createElement("DIV");
-    div.style.position = "relative";
-    div.className = "CodeMirror-wrapping";
-    div.style.width = options.width;
-    div.style.height = options.height;
-
-    if (place.appendChild) place.appendChild(div);
-    else place(div);
-    div.appendChild(frame);
-    if (options.lineNumbers) this.lineNumbers = addLineNumberDiv(div);
-
-    // Link back to this object, so that the editor can fetch options
-    // and add a reference to itself.
-    frame.CodeMirror = this;
-    this.win = frame.contentWindow;
-
+  function frameHTML(options) {
     if (typeof options.parserfile == "string")
       options.parserfile = [options.parserfile];
     if (typeof options.stylesheet == "string")
@@ -124,11 +90,48 @@ var CodeMirror = (function(){
     });
     html.push("</head><body style=\"border-width: 0;\" class=\"editbox\" spellcheck=\"" +
               (options.disableSpellcheck ? "false" : "true") + "\"></body></html>");
+    return html.join("");
+  }
 
-    var doc = this.win.document;
-    doc.open();
-    doc.write(html.join(""));
-    doc.close();
+  function CodeMirror(place, options) {
+    // Backward compatibility for deprecated options.
+    if (options.dumbTabs) options.tabMode = "spaces";
+    else if (options.normalTab) options.tabMode = "default";
+
+    // Use passed options, if any, to override defaults.
+    this.options = options = options || {};
+    setDefaults(options, CodeMirrorConfig);
+
+    var frame = this.frame = document.createElement("IFRAME");
+    if (options.iframeClass) frame.className = options.iframeClass;
+    frame.frameBorder = 0;
+    frame.style.border = "0";
+    frame.style.width = '100%';
+    frame.style.height = '100%';
+    // display: block occasionally suppresses some Firefox bugs, so we
+    // always add it, redundant as it sounds.
+    frame.style.display = "block";
+
+    var div = this.wrapping = document.createElement("DIV");
+    div.style.position = "relative";
+    div.className = "CodeMirror-wrapping";
+    div.style.width = options.width;
+    div.style.height = options.height;
+
+    // Link back to this object, so that the editor can fetch options
+    // and add a reference to itself.
+    frame.CodeMirror = this;
+    this.html = frameHTML(options);
+    frame.src = "javascript:(function(){document.open();" +
+      (options.domain ? "document.domain=\"" + options.domain + "\";" : "") +
+      "document.write(window.frameElement.CodeMirror.html);document.close();})()";
+
+    if (place.appendChild) place.appendChild(div);
+    else place(div);
+    div.appendChild(frame);
+    if (options.lineNumbers) this.lineNumbers = addLineNumberDiv(div);
+
+    this.win = frame.contentWindow;
   }
 
   CodeMirror.prototype = {

@@ -320,6 +320,11 @@
       <dt><code>readOnly</code></dt><dd>When set to <code>true</code>,
       the document is not editable.</dd>
 
+      <dt><code>domain</code></dt><dd>Can be set to the value
+      <code>document.domain</code> should have inside of the iframe.
+      Used to prevent access issues in IE, where this value isn't
+      automatically inherited by iframes.</dd>
+
       <dt><code>initCallback</code></dt><dd>If set to a function, this
       will be called (with the editor object as its argument) after
       the editor has finished initialising.</dd>
