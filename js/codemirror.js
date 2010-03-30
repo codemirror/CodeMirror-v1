@@ -93,6 +93,8 @@ var CodeMirror = (function(){
     return html.join("");
   }
 
+  var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
+
   function CodeMirror(place, options) {
     // Backward compatibility for deprecated options.
     if (options.dumbTabs) options.tabMode = "spaces";
@@ -121,10 +123,15 @@ var CodeMirror = (function(){
     // Link back to this object, so that the editor can fetch options
     // and add a reference to itself.
     frame.CodeMirror = this;
-    this.html = frameHTML(options);
-    frame.src = "javascript:(function(){document.open();" +
-      (options.domain ? "document.domain=\"" + options.domain + "\";" : "") +
-      "document.write(window.frameElement.CodeMirror.html);document.close();})()";
+    if (options.domain && internetExplorer) {
+      this.html = frameHTML(options);
+      frame.src = "javascript:(function(){document.open();" +
+        (options.domain ? "document.domain=\"" + options.domain + "\";" : "") +
+        "document.write(window.frameElement.CodeMirror.html);document.close();})()";
+    }
+    else {
+      frame.src = "javascript:false";
+    }
 
     if (place.appendChild) place.appendChild(div);
     else place(div);
@@ -132,6 +139,11 @@ var CodeMirror = (function(){
     if (options.lineNumbers) this.lineNumbers = addLineNumberDiv(div);
 
     this.win = frame.contentWindow;
+    if (!options.domain || !internetExplorer) {
+      this.win.document.open();
+      this.win.document.write(frameHTML(options));
+      this.win.document.close();
+    }
   }
 
   CodeMirror.prototype = {
