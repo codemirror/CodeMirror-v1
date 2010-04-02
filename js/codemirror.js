@@ -280,18 +280,24 @@ var CodeMirror = (function(){
       var sizeInterval = setInterval(sizeBar, 500);
 
       function nonWrapping() {
-        var nextNum = 1;
+        var nextNum = 1, pending;
         function update() {
           var target = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0));
+          var endTime = new Date().getTime() + self.options.lineNumberTime;
           while (scroller.offsetHeight < target && (!scroller.firstChild || scroller.offsetHeight)) {
             scroller.appendChild(document.createElement("DIV"));
             scroller.lastChild.innerHTML = nextNum++;
+            if (new Date().getTime() > endTime) {
+              if (pending) clearTimeout(pending);
+              pending = setTimeout(update, self.options.lineNumberDelay);
+              break;
+            }
           }
           doScroll();
         }
         var onScroll = win.addEventHandler(win, "scroll", update, true),
             onResize = win.addEventHandler(win, "resize", update, true);
-        clear = function(){onScroll(); onResize();};
+        clear = function(){onScroll(); onResize(); if (pending) clearTimeout(pending);};
         update();
       }
       function wrapping() {
