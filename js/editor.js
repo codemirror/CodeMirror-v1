@@ -855,7 +855,8 @@ var Editor = (function(){
           if (start) insertAfter(whiteSpace, start);
           else this.container.insertBefore(whiteSpace, this.container.firstChild);
         }
-        if (firstText) select.snapshotMove(firstText.firstChild, whiteSpace.firstChild, curIndent, false, true);
+        var fromNode = firstText && (firstText.firstChild || firstText);
+        select.snapshotMove(fromNode, whiteSpace.firstChild, newIndent, false, true);
       }
       if (indentDiff != 0) this.addDirtyNode(start);
     },
