@@ -514,6 +514,11 @@ var Editor = (function(){
       return startOfLine(line.previousSibling);
     },
 
+    visibleLineCount: function() {
+      var line = this.container.firstChild;
+      return Math.floor(this.container.clientHeight / line.offsetHeight);
+    },
+
     selectLines: function(startLine, startOffset, endLine, endOffset) {
       this.checkLine(startLine);
       var start = {node: startLine, offset: startOffset}, end = null;
@@ -742,6 +747,12 @@ var Editor = (function(){
       else if (code == 35 && !event.shiftKey && !event.ctrlKey) { // end
         if (this.end()) event.stop();
       }
+      else if (code == 33 && !event.shiftKey && !event.ctrlKey) { // PgUp
+        if (this.pageUp()) event.stop();
+      }
+      else if (code == 34 && !event.shiftKey && !event.ctrlKey) {  // PgDn
+        if (this.pageDown()) event.stop();
+      }
       else if ((code == 219 || code == 221) && event.ctrlKey && !event.altKey) { // [, ]
         this.highlightParens(event.shiftKey, true);
         event.stop();
@@ -914,6 +925,34 @@ var Editor = (function(){
       return true;
     },
 
+    pageUp: function() {
+      var line = this.cursorPosition().line;
+      if (line === false) return false;
+      var linesPerPage = this.visibleLineCount() - 1;
+      for (var i = 0; i < linesPerPage; i++) {
+        line = this.prevLine(line);
+        if (line === false) break;
+      }
+      if (i == 0) return false; // Already at first line
+      select.setCursorPos(this.container, {node: line, offset: 0});
+      select.scrollToCursor(this.container);
+      return true;
+    },
+
+    pageDown: function() {
+      var line = this.cursorPosition().line;
+      if (line === false) return false;
+      var linesPerPage = this.visibleLineCount() - 1;
+      for (var i = 0; i < linesPerPage; i++) {
+        var nextLine = this.nextLine(line);
+        if (nextLine === false) break;
+        line = nextLine;
+      }
+      if (i == 0) return false; // Already at last line
+      select.setCursorPos(this.container, {node: line, offset: 0});
+      select.scrollToCursor(this.container);
+      return true;
+    },
     // Delay (or initiate) the next paren highlight event.
     scheduleParenHighlight: function() {
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
