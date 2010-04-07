@@ -516,7 +516,10 @@ var Editor = (function(){
 
     visibleLineCount: function() {
       var line = this.container.firstChild;
-      return Math.floor(this.container.clientHeight / line.offsetHeight);
+      var innerHeight = (window.innerHeight
+                         || document.documentElement.clientHeight
+                         || document.body.clientHeight);
+      return Math.floor(innerHeight / line.offsetHeight);
     },
 
     selectLines: function(startLine, startOffset, endLine, endOffset) {
@@ -928,8 +931,9 @@ var Editor = (function(){
     pageUp: function() {
       var line = this.cursorPosition().line;
       if (line === false) return false;
-      var linesPerPage = this.visibleLineCount() - 1;
-      for (var i = 0; i < linesPerPage; i++) {
+      // Try to keep one line on the screen.
+      var scrollAmount = this.visibleLineCount() - 2;
+      for (var i = 0; i < scrollAmount; i++) {
         line = this.prevLine(line);
         if (line === false) break;
       }
@@ -942,8 +946,9 @@ var Editor = (function(){
     pageDown: function() {
       var line = this.cursorPosition().line;
       if (line === false) return false;
-      var linesPerPage = this.visibleLineCount() - 1;
-      for (var i = 0; i < linesPerPage; i++) {
+      // Try to move to the last line of the current page.
+      var scrollAmount = this.visibleLineCount() - 2;
+      for (var i = 0; i < scrollAmount; i++) {
         var nextLine = this.nextLine(line);
         if (nextLine === false) break;
         line = nextLine;
@@ -953,6 +958,7 @@ var Editor = (function(){
       select.scrollToCursor(this.container);
       return true;
     },
+
     // Delay (or initiate) the next paren highlight event.
     scheduleParenHighlight: function() {
       if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
