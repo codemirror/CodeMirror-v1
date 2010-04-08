@@ -750,10 +750,11 @@ var Editor = (function(){
       else if (code == 35 && !event.shiftKey && !event.ctrlKey) { // end
         if (this.end()) event.stop();
       }
-      else if (code == 33 && !event.shiftKey && !event.ctrlKey) { // PgUp
+      // Only in Firefox is the default behavior for PgUp/PgDn correct.
+      else if (code == 33 && !event.shiftKey && !event.ctrlKey && !gecko) { // PgUp
         if (this.pageUp()) event.stop();
       }
-      else if (code == 34 && !event.shiftKey && !event.ctrlKey) {  // PgDn
+      else if (code == 34 && !event.shiftKey && !event.ctrlKey && !gecko) {  // PgDn
         if (this.pageDown()) event.stop();
       }
       else if ((code == 219 || code == 221) && event.ctrlKey && !event.altKey) { // [, ]
