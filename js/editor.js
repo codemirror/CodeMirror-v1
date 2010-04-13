@@ -516,6 +516,8 @@ var Editor = (function(){
 
     visibleLineCount: function() {
       var line = this.container.firstChild;
+      while (line && isBR(line)) line = line.nextSibling; // BR heights are unreliable
+      if (!line) return false;
       var innerHeight = (window.innerHeight
                          || document.documentElement.clientHeight
                          || document.body.clientHeight);
@@ -930,10 +932,10 @@ var Editor = (function(){
     },
 
     pageUp: function() {
-      var line = this.cursorPosition().line;
-      if (line === false) return false;
+      var line = this.cursorPosition().line, scrollAmount = this.visibleLineCount();
+      if (line === false || scrollAmount === false) return false;
       // Try to keep one line on the screen.
-      var scrollAmount = this.visibleLineCount() - 2;
+      scrollAmount -= 2;
       for (var i = 0; i < scrollAmount; i++) {
         line = this.prevLine(line);
         if (line === false) break;
@@ -945,10 +947,10 @@ var Editor = (function(){
     },
 
     pageDown: function() {
-      var line = this.cursorPosition().line;
-      if (line === false) return false;
+      var line = this.cursorPosition().line, scrollAmount = this.visibleLineCount();
+      if (line === false || scrollAmount === false) return false;
       // Try to move to the last line of the current page.
-      var scrollAmount = this.visibleLineCount() - 2;
+      scrollAmount -= 2;
       for (var i = 0; i < scrollAmount; i++) {
         var nextLine = this.nextLine(line);
         if (nextLine === false) break;
