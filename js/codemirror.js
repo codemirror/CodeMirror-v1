@@ -241,14 +241,16 @@ var CodeMirror = (function(){
       }
       return num;
     },
-
-    // Old number-based line interface
-    jumpToLine: function(n) {
-      this.selectLines(this.nthLine(n), 0);
+    jumpToLine: function(line) {
+      if (typeof line == "number") line = this.nthLine(line);
+      this.selectLines(line, 0);
       this.win.focus();
     },
-    currentLine: function() {
-      return this.lineNumber(this.cursorPosition().line);
+    currentLine: function() { // Deprecated, but still there for backward compatibility
+      return this.lineNumber(this.cursorLine());
+    },
+    cursorLine: function() {
+      return this.cursorPosition().line;
     },
 
     activateLineNumbers: function() {

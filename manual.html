@@ -462,15 +462,6 @@
       <dt><code>focus()</code></dt><dd>Gives focus to the editor
       frame.</dd>
 
-      <dt><code>currentLine()</code> &#8594;
-      <code>number</code></dt><dd>Returns the line on which the cursor
-      is currently sitting. <span class="warn">(Deprecated, see the
-      line-based interface below)</span></dd>
-
-      <dt><code>jumpToLine(number)</code></dt><dd>Moves the cursor to
-      the start of the given line. <span
-      class="warn">(Deprecated)</span></dd>
-
       <dt><code>selection()</code> &#8594;
       <code>string</code></dt><dd>Returns the text that is currently
       selected in the editor.</dd>
@@ -551,6 +542,9 @@
       character}</code> object representing the cursor position.
       <code>start</code> defaults to <code>true</code> and determines
       if the startpoint or the endpoint of the selection is used.</dd>
+      <dt><code>cursorLine()</code> &#8594;
+      <code>handle</code></dt><dd>Returns the line on which the cursor
+      is currently sitting.</dd>
       <dt><code>firstLine()</code> &#8594;
       <code>handle</code></dt><dd>Get the first line of the
       document.</dd>
@@ -577,6 +571,8 @@
       <dt><code>lineNumber(handle)</code> &#8594;
       <code>number</code></dt><dd>Ask which line of the document
       (1-based) the given line is.</dd>
+      <dt><code>jumpToLine(handle)</code></dt><dd>Moves the cursor to
+      the start of the given line.</dd>
       <dt><code>selectLines(startHandle, startOffset,
       endHandle, endOffset)</code></dt><dd>Move the selection to a
       specific point. <code>endHandle</code> and
