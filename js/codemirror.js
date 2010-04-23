@@ -119,6 +119,12 @@ var CodeMirror = (function(){
     div.className = "CodeMirror-wrapping";
     div.style.width = options.width;
     div.style.height = options.height;
+    // This is used by Editor.reroutePasteEvent
+    var teHack = this.textareaHack = document.createElement("TEXTAREA");
+    div.appendChild(teHack);
+    teHack.style.position = "absolute";
+    teHack.style.left = "-10000px";
+    teHack.style.width = "10px";
 
     // Link back to this object, so that the editor can fetch options
     // and add a reference to itself.

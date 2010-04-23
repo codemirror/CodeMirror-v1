@@ -630,14 +630,9 @@ var Editor = (function(){
     reroutePasteEvent: function() {
       if (this.capturingPaste || window.opera) return;
       this.capturingPaste = true;
-      var te = parent.document.createElement("TEXTAREA");
-      te.style.position = "absolute";
-      te.style.left = "-10000px";
-      te.style.width = "10px";
-      te.style.top = nodeTop(frameElement) + "px";
-      var wrap = window.frameElement.CodeMirror.wrapping;
-      wrap.parentNode.insertBefore(te, wrap);
+      var te = window.frameElement.CodeMirror.textareaHack;
       parent.focus();
+      te.value = "";
       te.focus();
 
       var self = this;
@@ -651,7 +646,6 @@ var Editor = (function(){
           self.replaceSelection(text);
           select.scrollToCursor(self.container);
         }
-        removeElement(te);
       }, 10);
     },
 
