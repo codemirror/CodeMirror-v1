@@ -190,6 +190,18 @@ var CodeMirror = (function(){
 
     setParser: function(name) {this.editor.setParser(name);},
     setSpellcheck: function(on) {this.win.document.body.spellcheck = on;},
+    setStylesheet: function(name) {
+      var links = this.win.document.getElementsByTagName("link");
+      for (var x = 0, link; link = links[x]; x++) {
+        if (link.rel.indexOf('stylesheet') != -1) {
+          if (link.href.substring(link.href.length - name.length) === name) {
+            link.disabled = false;
+          } else {
+            link.disabled = true;
+          }
+        }
+      }
+    },
     setTextWrapping: function(on) {
       if (on == this.options.textWrapping) return;
       this.win.document.body.style.whiteSpace = on ? "" : "nowrap";
