@@ -193,7 +193,7 @@ var CodeMirror = (function(){
     setStylesheet: function(name) {
       var links = this.win.document.getElementsByTagName("link");
       for (var x = 0, link; link = links[x]; x++) {
-        if (link.rel.indexOf('stylesheet') != -1) {
+        if (link.rel.indexOf("stylesheet") != -1) {
           if (link.href.substring(link.href.length - name.length) === name) {
             link.disabled = false;
           } else {
