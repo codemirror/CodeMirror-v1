@@ -60,7 +60,7 @@ var JSParser = Editor.Parser = (function() {
     // semicolon. Actions at the end of the stack go first. It is
     // initialized with an infinitely looping action that consumes
     // whole statements.
-    var cc = [json ? expressions : statements];
+    var cc = [json ? singleExpr : statements];
     // Context contains information about the current local scope, the
     // variables defined in that, and the scopes above it.
     var context = null;
@@ -226,8 +226,8 @@ var JSParser = Editor.Parser = (function() {
     function statements(type){
       return pass(statement, statements);
     }
-    function expressions(type){
-      return pass(expression, expressions);
+    function singleExpr(type){
+      return pass(expression, statements);
     }
     // Dispatches various types of statements based on the type of the
     // current token.
