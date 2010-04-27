@@ -177,10 +177,14 @@
 
     <dl>
 
-      <dt><code>stylesheet</code></dt><dd>The file name of the style-sheet
-      that should be used to colour the code in the editor frame. See <a
+      <dt><code>stylesheet</code></dt><dd>The file name of the
+      style-sheet, or style-sheets, that should be used to colour the
+      code in the editor frame. Can be a string or an array of
+      strings. See <a
       href="css/jscolors.css"><code>jscolors.css</code></a> for an
-      example.</dd>
+      example. The set of active stylesheets can be changed in a
+      running editor with the <code>setStylesheet</code> method, which
+      also takes a string or array of strings as argument.</dd>
 
       <dt><code>path</code></dt><dd>The path that is prefixed to
       script file names when they are loaded into an IFRAME. (Note that
