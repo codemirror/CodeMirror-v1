@@ -196,15 +196,39 @@ var CodeMirror = (function(){
 
     setParser: function(name) {this.editor.setParser(name);},
     setSpellcheck: function(on) {this.win.document.body.spellcheck = on;},
-    setStylesheet: function(name) {
+    setStylesheet: function(names) {
+      if (typeof names === "string") names = [names];
+      var activeStylesheets = {};
+      var matchedNames = {};
       var links = this.win.document.getElementsByTagName("link");
+      // Create hashes of active stylesheets and matched names.
+      // This is O(n^2) but n is expected to be very small.
       for (var x = 0, link; link = links[x]; x++) {
-        if (link.rel.indexOf("stylesheet") != -1) {
-          if (link.href.substring(link.href.length - name.length) === name) {
-            link.disabled = false;
-          } else {
-            link.disabled = true;
+        if (link.rel.indexOf("stylesheet") !== -1) {
+          for (var y = 0; y < names.length; y++) {
+            var name = names[y];
+            if (link.href.substring(link.href.length - name.length) === name) {
+              activeStylesheets[link.href] = true;
+              matchedNames[name] = true;
+            }
           }
+        }
+      }
+      // Activate the selected stylesheets and disable the rest.
+      for (var x = 0, link; link = links[x]; x++) {
+        if (link.rel.indexOf("stylesheet") !== -1) {
+          link.disabled = !(link.href in activeStylesheets);
+        }
+      }
+      // Create any new stylesheets.
+      for (var y = 0; y < names.length; y++) {
+        var name = names[y];
+        if (!(name in matchedNames)) {
+          var link = this.win.document.createElement("link");
+          link.rel = "stylesheet";
+          link.type = "text/css";
+          link.href = name;
+          this.win.document.getElementsByTagName('head')[0].appendChild(link);
         }
       }
     },
