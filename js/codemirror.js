@@ -434,6 +434,15 @@ var CodeMirror = (function(){
         area.form.addEventListener("submit", updateField, false);
       else
         area.form.attachEvent("onsubmit", updateField);
+      var realSubmit = area.form.submit;
+      function wrapSubmit() {
+        updateField();
+        // Can't use realSubmit.apply because IE6 is too stupid
+        area.form.submit = realSubmit;
+        area.form.submit();
+        area.form.submit = wrapSubmit;
+      }
+      area.form.submit = wrapSubmit;
     }
 
     function insert(frame) {
