@@ -26,7 +26,7 @@ var CodeMirror = (function(){
   // options to a specific CodeMirror constructor. See manual.html for
   // their meaning.
   setDefaults(CodeMirrorConfig, {
-    stylesheet: "",
+    stylesheet: [],
     path: "",
     parserfile: [],
     basefiles: ["util.js", "stringstream.js", "select.js", "undo.js", "editor.js", "tokenize.js"],
