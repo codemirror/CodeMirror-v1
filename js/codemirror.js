@@ -324,27 +324,35 @@ var CodeMirror = (function(){
       sizeBar();
       var sizeInterval = setInterval(sizeBar, 500);
 
+      function addLineNumbers() {
+        var lineHeight = scroller.firstChild.offsetHeight;
+        if (lineHeight == 0) return;
+        var lineCount = parseInt(scroller.lastChild.innerHTML);
+        var targetHeight = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0));
+        var targetLineNumber = targetHeight / lineHeight;
+        if (lineCount >= targetLineNumber) return;
+        var divs = [];
+        for (var i = lineCount + 1; i <= targetLineNumber; i++) {
+          divs[i] = "<div>" + i + "</div>";
+        }
+        scroller.innerHTML += divs.join("");
+      }
       function nonWrapping() {
-        var nextNum = 1, pending;
         function update() {
-          var target = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0));
-          var endTime = new Date().getTime() + self.options.lineNumberTime;
-          while (scroller.offsetHeight < target && (!scroller.firstChild || scroller.offsetHeight)) {
-            scroller.appendChild(document.createElement("DIV"));
-            scroller.lastChild.innerHTML = nextNum++;
-            if (new Date().getTime() > endTime) {
-              if (pending) clearTimeout(pending);
-              pending = setTimeout(update, self.options.lineNumberDelay);
-              break;
-            }
-          }
+          addLineNumbers();
           doScroll();
         }
-        var onScroll = win.addEventHandler(win, "scroll", update, true),
+        self.updateNumbers = update;
+        var onScroll = win.addEventHandler(win, "scroll", doScroll, true),
             onResize = win.addEventHandler(win, "resize", update, true);
-        clear = function(){onScroll(); onResize(); if (pending) clearTimeout(pending);};
+        clear = function(){
+          onScroll(); onResize();
+          if (self.updateNumbers == update) self.updateNumbers = null;
+        };
+        scroller.innerHTML = "<div>1</div>";
         update();
       }
+
       function wrapping() {
         var node, lineNum, next, pos;
 
