@@ -291,7 +291,7 @@
     this simplified version:</p>
 
     <pre class="code"><span class="js-keyword">function</span> <span class="js-variable">traverseDOM</span>(<span class="js-variabledef">start</span>){
-  <span class="js-keyword">var</span> <span class="js-variabledef">cc</span> = <span class="js-keyword">function</span>(){<span class="js-variable">scanNode</span>(<span class="js-localvariable">start</span>, <span class="js-variable">stop</span>);};
+  <span class="js-keyword">var</span> <span class="js-variabledef">cc</span> = <span class="js-keyword">function</span>(){<span class="js-keyword">return</span> <span class="js-variable">scanNode</span>(<span class="js-localvariable">start</span>, <span class="js-variable">stop</span>);};
   <span class="js-keyword">function</span> <span class="js-variabledef">stop</span>(){
     <span class="js-localvariable">cc</span> = <span class="js-localvariable">stop</span>;
     <span class="js-keyword">throw</span> <span class="js-variable">StopIteration</span>;
@@ -303,7 +303,7 @@
 
   <span class="js-keyword">function</span> <span class="js-variabledef">scanNode</span>(<span class="js-variabledef">node</span>, <span class="js-variabledef">c</span>){
     <span class="js-keyword">if</span> (<span class="js-localvariable">node</span>.<span class="js-property">nextSibling</span>)
-      <span class="js-keyword">var</span> <span class="js-variabledef">nextc</span> = <span class="js-keyword">function</span>(){<span class="js-localvariable">scanNode</span>(<span class="js-localvariable">node</span>.<span class="js-property">nextSibling</span>, <span class="js-localvariable">c</span>);};
+      <span class="js-keyword">var</span> <span class="js-variabledef">nextc</span> = <span class="js-keyword">function</span>(){<span class="js-keyword">return</span> <span class="js-localvariable">scanNode</span>(<span class="js-localvariable">node</span>.<span class="js-property">nextSibling</span>, <span class="js-localvariable">c</span>);};
     <span class="js-keyword">else</span>
       <span class="js-keyword">var</span> <span class="js-variabledef">nextc</span> = <span class="js-localvariable">c</span>;
 
