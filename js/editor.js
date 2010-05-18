@@ -373,7 +373,7 @@ var Editor = (function(){
     this.doc = document;
     var container = this.container = this.doc.body;
     this.win = window;
-    this.history = new History(container, options.undoDepth, options.undoDelay, this);
+    this.history = new UndoHistory(container, options.undoDepth, options.undoDelay, this);
     var self = this;
 
     if (!Editor.Parser)
