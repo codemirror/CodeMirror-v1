@@ -108,13 +108,7 @@ var Editor = (function(){
   // the nodes. It makes sure that all nodes up to and including the
   // one whose text is being yielded have been 'normalized' to be just
   // <span> and <br> elements.
-  // See the story.html file for some short remarks about the use of
-  // continuation-passing style in this iterator.
   function traverseDOM(start){
-    function _yield(value, c){cc = c; return value;}
-    function push(fun, arg, c){return function(){return fun(arg, c);};}
-    function stop(){cc = stop; throw StopIteration;};
-    var cc = push(scanNode, start, stop);
     var owner = start.ownerDocument;
     var nodeQueue = [];
 
@@ -160,14 +154,13 @@ var Editor = (function(){
     }
 
     // Extract the text and newlines from a DOM node, insert them into
-    // the document, and yield the textual content. Used to replace
+    // the document, and return the textual content. Used to replace
     // non-normalized nodes.
     function writeNode(node, c, end) {
-      var toYield = [];
-      forEach(simplifyDOM(node, end), function(part) {
-        toYield.push(insertPart(part));
-      });
-      return _yield(toYield.join(""), c);
+      var simplified = simplifyDOM(node, end);
+      for (var i = 0; i < simplified.length; i++)
+        simplified[i] = insertPart(simplified[i]);
+      return simplified.join("");
     }
 
     // Check whether a node is a normalized <span> element.
@@ -179,38 +172,36 @@ var Editor = (function(){
       return false;
     }
 
-    // Handle a node. Add its successor to the continuation if there
-    // is one, find out whether the node is normalized. If it is,
-    // yield its content, otherwise, normalize it (writeNode will take
-    // care of yielding).
-    function scanNode(node, c){
-      if (node.nextSibling)
-        c = push(scanNode, node.nextSibling, c);
+    // Advance to next node, return string for current node.
+    function next() {
+      if (!start) throw StopIteration;
+      var node = start;
+      start = node.nextSibling;
 
       if (partNode(node)){
         nodeQueue.push(node);
         afterBR = false;
-        return _yield(node.currentText, c);
+        return node.currentText;
       }
       else if (isBR(node)) {
         if (afterBR && window.opera)
           node.parentNode.insertBefore(makePartSpan("", owner), node);
         nodeQueue.push(node);
         afterBR = true;
-        return _yield("\n", c);
+        return "\n";
       }
       else {
         var end = !node.nextSibling;
         point = pointAt(node);
         removeElement(node);
-        return writeNode(node, c, end);
+        return writeNode(node, end);
       }
     }
 
     // MochiKit iterators are objects with a next function that
     // returns the next value or throws StopIteration when there are
     // no more values.
-    return {next: function(){return cc();}, nodes: nodeQueue};
+    return {next: next, nodes: nodeQueue};
   }
 
   // Determine the text size of a processed node.
