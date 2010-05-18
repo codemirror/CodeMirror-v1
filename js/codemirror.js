@@ -70,6 +70,7 @@ var CodeMirror = (function(){
     container.appendChild(nums);
     scroller.className = "CodeMirror-line-numbers";
     nums.appendChild(scroller);
+    scroller.innerHTML = "<div>1</div>";
     return nums;
   }
 
@@ -324,22 +325,21 @@ var CodeMirror = (function(){
       sizeBar();
       var sizeInterval = setInterval(sizeBar, 500);
 
-      function addLineNumbers() {
+      function ensureEnoughLineNumbers(fill) {
         var lineHeight = scroller.firstChild.offsetHeight;
         if (lineHeight == 0) return;
-        var lineCount = parseInt(scroller.lastChild.innerHTML);
-        var targetHeight = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0));
-        var targetLineNumber = targetHeight / lineHeight;
-        if (lineCount >= targetLineNumber) return;
-        var divs = [];
-        for (var i = lineCount + 1; i <= targetLineNumber; i++) {
-          divs[i] = "<div>" + i + "</div>";
+        var targetHeight = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0)),
+            lastNumber = Math.ceil(targetHeight / lineHeight);
+        for (var i = scroller.childNodes.length; i <= lastNumber; i++) {
+          var div = document.createElement("DIV");
+          div.appendChild(document.createTextNode(fill ? String(i + 1) : "\u00a0"));
+          scroller.appendChild(div);
         }
-        scroller.innerHTML += divs.join("");
       }
+
       function nonWrapping() {
         function update() {
-          addLineNumbers();
+          ensureEnoughLineNumbers(true);
           doScroll();
         }
         self.updateNumbers = update;
@@ -349,43 +349,50 @@ var CodeMirror = (function(){
           onScroll(); onResize();
           if (self.updateNumbers == update) self.updateNumbers = null;
         };
-        scroller.innerHTML = "<div>1</div>";
         update();
       }
 
       function wrapping() {
-        var node, lineNum, next, pos;
+        var node, lineNum, next, pos, changes = [];
 
-        function addNum(n) {
+        function setNum(n) {
+          // Does not typically happen (but can, if you mess with the
+          // document during the numbering)
           if (!lineNum) lineNum = scroller.appendChild(document.createElement("DIV"));
-          lineNum.innerHTML = n;
+          // Changes are accumulated, so that the document layout
+          // doesn't have to be recomputed during the pass
+          changes.push(lineNum); changes.push(n);
           pos = lineNum.offsetHeight + lineNum.offsetTop;
           lineNum = lineNum.nextSibling;
+        }
+        function commitChanges() {
+          for (var i = 0; i < changes.length; i += 2)
+            changes[i].innerHTML = changes[i + 1];
+          changes = [];
         }
         function work() {
           if (!scroller.parentNode || scroller.parentNode != self.lineNumbers) return;
 
           var endTime = new Date().getTime() + self.options.lineNumberTime;
           while (node) {
-            addNum(next++);
+            setNum(next++);
             for (; node && !win.isBR(node); node = node.nextSibling) {
               var bott = node.offsetTop + node.offsetHeight;
-              while (scroller.offsetHeight && bott - 3 > pos) addNum("&nbsp;");
+              while (scroller.offsetHeight && bott - 3 > pos) setNum("&nbsp;");
             }
             if (node) node = node.nextSibling;
             if (new Date().getTime() > endTime) {
+              commitChanges();
               pending = setTimeout(work, self.options.lineNumberDelay);
               return;
             }
           }
-          // While there are un-processed number DIVs, or the scroller is smaller than the frame...
-          var target = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0));
-          while (lineNum || (scroller.offsetHeight < target && (!scroller.firstChild || scroller.offsetHeight)))
-            addNum(next++);
+          commitChanges();
           doScroll();
         }
         function start() {
           doScroll();
+          ensureEnoughLineNumbers(false);
           node = body.firstChild;
           lineNum = scroller.firstChild;
           pos = 0;
