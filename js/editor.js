@@ -90,7 +90,7 @@ var Editor = (function(){
         result.push(node);
       }
       else {
-        forEach(node.childNodes, simplifyNode);
+        for (var n = node.firstChild; n; n = n.nextSibling) simplifyNode(n);
         if (!leaving && newlineElements.hasOwnProperty(node.nodeName.toUpperCase())) {
           leaving = true;
           if (!atEnd || !top)
@@ -156,7 +156,7 @@ var Editor = (function(){
     // Extract the text and newlines from a DOM node, insert them into
     // the document, and return the textual content. Used to replace
     // non-normalized nodes.
-    function writeNode(node, c, end) {
+    function writeNode(node, end) {
       var simplified = simplifyDOM(node, end);
       for (var i = 0; i < simplified.length; i++)
         simplified[i] = insertPart(simplified[i]);
