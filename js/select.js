@@ -48,6 +48,12 @@ var select = {};
     // offset, just scroll to the end.
     if (compensateHack == 0) atEnd = false;
 
+    // WebKit has a bad habit of (sometimes) happily returning bogus
+    // offsets when the document has just been changed. This seems to
+    // always be 5/5, so we don't use those.
+    if (webkit && element && element.offsetTop == 5 && element.offsetLeft == 5)
+      return
+
     var y = compensateHack * (element ? element.offsetHeight : 0), x = 0, pos = element;
     while (pos && pos.offsetParent) {
       y += pos.offsetTop;
