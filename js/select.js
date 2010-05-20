@@ -534,6 +534,20 @@ var select = {};
       range.deleteContents();
       range.insertNode(node);
       webkitLastLineHack(window.document.body);
+
+      // work around weirdness where Opera will magically insert a new
+      // BR node when a BR node inside a span is moved around. makes
+      // sure the BR ends up outside of spans.
+      if (window.opera && isBR(node) && isSpan(node.parentNode)) {
+        var next = node.nextSibling, p = node.parentNode, outer = p.parentNode;
+        outer.insertBefore(node, p.nextSibling);
+        var textAfter = "";
+        for (; next && next.nodeType == 3; next = next.nextSibling) {
+          textAfter += next.nodeValue;
+          removeElement(next);
+        }
+        outer.insertBefore(makePartSpan(textAfter, window.document), node.nextSibling);
+      }
       range = window.document.createRange();
       range.selectNode(node);
       range.collapse(false);
