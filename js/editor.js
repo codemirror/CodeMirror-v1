@@ -233,6 +233,9 @@ var Editor = (function(){
   // actually do something with the found locations.
   function SearchCursor(editor, string, fromCursor, caseFold) {
     this.editor = editor;
+    if (caseFold == undefined) {
+      caseFold = (string == string.toLowerCase());
+    }
     this.caseFold = caseFold;
     if (caseFold) string = string.toLowerCase();
     this.history = editor.history;

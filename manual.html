@@ -486,7 +486,9 @@
       whether searching should start at the cursor (<code>true</code>)
       or at the start of the document (<code>false</code>). When
       <code>caseFold</code> is true, the search will be
-      case-insensivive. Returns an object that provides an interface
+      case-insensitive; if <code>caseFold</code> is unspecified, the
+      search will be case-sensitive if the search string contains
+      uppercase characters. Returns an object that provides an interface
       for searching. Call its <code>findNext()</code> method to search
       for an occurrence of the given string. This returns
       <code>true</code> if something is found, or <code>false</code>
