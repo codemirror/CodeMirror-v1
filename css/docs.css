@@ -48,3 +48,12 @@ pre.code {
 .warn {
   color: #C00;
 }
+
+.CodeMirror-line-numbers {
+  width: 2.2em;
+  text-align: right;
+  margin: .4em;
+  padding: 0;
+  font-family: monospace;
+  font-size: 10pt;
+}
