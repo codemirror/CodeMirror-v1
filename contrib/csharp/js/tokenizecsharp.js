@@ -48,7 +48,7 @@ var tokenizeCSharp = (function() {
       "case": result("case", "keyword"), "default": result("default", "keyword"),
       "true": atom, "false": atom, "null": atom,
       
-      "class": result("class", "keyword"),
+      "class": result("class", "keyword"), "namespace": result("class", "keyword"),
       
       "public": keywordD, "private": keywordD, "protected": keywordD, "internal": keywordD,
       "extern": keywordD, "override": keywordD, "virtual": keywordD, "abstract": keywordD, 
