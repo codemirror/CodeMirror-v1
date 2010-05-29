@@ -582,7 +582,11 @@ var select = {};
         range.setStartAfter(topNode);
       else
         range.setStartBefore(container);
-      return {node: topNode, offset: range.toString().length};
+
+      var text = range.toString();
+      // Don't count characters introduced by webkitLastLineHack (see editor.js)
+      if (webkit) text = text.replace(/\u200b/g, "");
+      return {node: topNode, offset: text.length};
     };
 
     select.setCursorPos = function(container, from, to) {
