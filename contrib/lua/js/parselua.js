@@ -134,7 +134,7 @@ function inSLComment(source, setState) {
       while (!source.endOfLine()) {
 	 	var ch = source.next();
 		var level = 0;
-		if ((ch =="[") && start)
+		if ((ch =="[") && start){
 			while(source.equals("=")){
 			source.next();
 			level++;
@@ -143,6 +143,7 @@ function inSLComment(source, setState) {
        				setState(inMLSomething(level,"lua-comment"));
         			return null;
   				}
+		 }
 		 start = false;	
 	}
 	setState(normal);      		
