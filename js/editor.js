@@ -389,10 +389,11 @@ var Editor = (function(){
       }
 
       function setEditable() {
-        // Use contentEditable instead of designMode on some platforms:
-        // - In IE, designMode frames can not run any scripts.
-        // - In WebKit, spell checking cannot be disabled in designMode frames.
-        if (document.body.contentEditable != undefined && (internetExplorer || webkit))
+        // Use contentEditable instead of designMode on IE, since designMode frames
+        // can not run any scripts. It would be nice if we could use contentEditable
+        // everywhere, but it is significantly flakier than designMode on every
+        // single non-IE browser.
+        if (document.body.contentEditable != undefined && internetExplorer)
           document.body.contentEditable = "true";
         else
           document.designMode = "on";
