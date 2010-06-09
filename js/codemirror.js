@@ -196,7 +196,7 @@ var CodeMirror = (function(){
     grabKeys: function(callback, filter) {this.editor.grabKeys(callback, filter);},
     ungrabKeys: function() {this.editor.ungrabKeys();},
 
-    setParser: function(name) {this.editor.setParser(name);},
+    setParser: function(name, parserConfig) {this.editor.setParser(name, parserConfig);},
     setSpellcheck: function(on) {this.win.document.body.spellcheck = on;},
     setStylesheet: function(names) {
       if (typeof names === "string") names = [names];

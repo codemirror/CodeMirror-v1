@@ -687,8 +687,12 @@ var Editor = (function(){
       this.keyFilter = null;
     },
 
-    setParser: function(name) {
+    setParser: function(name, parserConfig) {
       Editor.Parser = window[name];
+      parserConfig = parserConfig || this.options.parserConfig;
+      if (parserConfig && Editor.Parser.configure)
+        Editor.Parser.configure(parserConfig);
+
       if (this.container.firstChild) {
         forEach(this.container.childNodes, function(n) {
           if (n.nodeType != 3) n.dirty = true;

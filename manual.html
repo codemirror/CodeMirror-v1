@@ -522,12 +522,14 @@
       <dt><code>ungrabKeys()</code></dt><dd>Revert the effect of
       <code>grabKeys</code>.</dd>
 
-      <dt><code>setParser(name)</code></dt><dd>Change the active
-      parser. To use this you'll have to load more than one parser
-      (put the one you want to use as default at the end of the list).
-      Then call this function with a string containing the name of the
-      parser you want to switch to (see the parser script file to find
-      the name, it'll be something like <code>CSSParser</code>).</dd>
+      <dt><code>setParser(name, parserConfig)</code></dt><dd>Change
+      the active parser. To use this you'll have to load more than one
+      parser (put the one you want to use as default at the end of the
+      list). Then call this function with a string containing the name
+      of the parser you want to switch to (see the parser script file
+      to find the name, it'll be something like
+      <code>CSSParser</code>). The second argument is optional, and
+      can be used to pass a new parser configuration object.</dd>
     </dl>
 
     <p>For detailed interaction with the content of the editor,
