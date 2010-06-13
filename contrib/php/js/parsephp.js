@@ -301,6 +301,7 @@ var PHPParser = Editor.Parser = (function() {
       // function call or parenthesized expression: $a = ($b + 1) * 2;
       else if (type == "(") cont(pushlex(")"), commasep(expression), require(")"), poplex, maybeoperator);
       else if (type == "operator") cont(expression);
+      else if (type == "function") lambdadef();
     }
     // Called for places where operators, function calls, or subscripts are
     // valid. Will skip on to the next action if none is found.
@@ -328,6 +329,19 @@ var PHPParser = Editor.Parser = (function() {
     function funcdef() {
       cont(require("t_string"), require("("), pushlex(")"), commasep(funcarg), require(")"), poplex, block);
     }
+    // the declaration or definition of a lambda
+    function lambdadef() {
+      cont(require("("), pushlex(")"), commasep(funcarg), require(")"), maybe_lambda_use, poplex, block);
+    }
+    // optional lambda 'use' statement
+    function maybe_lambda_use(token) {
+      if(token.type == "namespace") {
+        cont(require('('), commasep(funcarg), require(')'));
+      }
+      else {
+        pass(expression);
+      }
+    }
     // Parses a comma-separated list of the things that are recognized
     // by the 'what' argument.
     function commasep(what){
@@ -352,6 +366,8 @@ var PHPParser = Editor.Parser = (function() {
       if (token.type == "t_string") cont(require("variable"), maybedefaultparameter);
       // function foo($string) {...}
       else if (token.type == "variable") cont(maybedefaultparameter);
+      // function foo(&$ref) {...}
+      else if (token.content == "&") cont(require("variable"), maybedefaultparameter);
     }
 
     // A namespace definition or use
