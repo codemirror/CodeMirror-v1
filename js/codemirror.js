@@ -98,13 +98,13 @@ var CodeMirror = (function(){
   var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
 
   function CodeMirror(place, options) {
-    // Backward compatibility for deprecated options.
-    if (options.dumbTabs) options.tabMode = "spaces";
-    else if (options.normalTab) options.tabMode = "default";
-
     // Use passed options, if any, to override defaults.
     this.options = options = options || {};
     setDefaults(options, CodeMirrorConfig);
+
+    // Backward compatibility for deprecated options.
+    if (options.dumbTabs) options.tabMode = "spaces";
+    else if (options.normalTab) options.tabMode = "default";
 
     var frame = this.frame = document.createElement("IFRAME");
     if (options.iframeClass) frame.className = options.iframeClass;
