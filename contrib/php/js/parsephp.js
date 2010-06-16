@@ -276,11 +276,12 @@ var PHPParser = Editor.Parser = (function() {
       else if (type == "{") cont(pushlex("}"), block, poplex);
       else if (type == "function") funcdef();
       // technically, "class implode {...}" is correct, but we'll flag that as an error because it overrides a predefined function
-      else if (type == "class") cont(require("t_string"), expect("{"), pushlex("}"), block, poplex);
+      else if (type == "class") classdef();
       else if (type == "foreach") cont(pushlex("form"), require("("), pushlex(")"), expression, require("as"), require("variable"), /* => $value */ expect(")"), poplex, statement, poplex);
       else if (type == "for") cont(pushlex("form"), require("("), pushlex(")"), expression, require(";"), expression, require(";"), expression, require(")"), poplex, statement, poplex);
       // public final function foo(), protected static $bar;
-      else if (type == "modifier") cont(require(["modifier", "variable", "function"], [null, null, funcdef]));
+      else if (type == "modifier") cont(require(["modifier", "variable", "function", "abstract"], [null, null, funcdef, absfun]));
+      else if (type == "abstract") abs();
       else if (type == "switch") cont(pushlex("form"), require("("), expression, require(")"), pushlex("}", "switch"), require([":", "{"]), block, poplex, poplex);
       else if (type == "case") cont(expression, require(":"));
       else if (type == "default") cont(require(":"));
@@ -341,6 +342,19 @@ var PHPParser = Editor.Parser = (function() {
       else {
         pass(expression);
       }
+    }
+    // the definition of a class
+    function classdef() {
+      cont(require("t_string"), expect("{"), pushlex("}"), block, poplex);
+    }
+    // either funcdef if the current token is "function", or the keyword "function" + funcdef
+    function absfun(token) {
+      if(token.type == "function") funcdef();
+      else cont(require(["function"], [funcdef]));
+    }
+    // the abstract class or function (with optional modifier)
+    function abs(token) {
+      cont(require(["modifier", "function", "class"], [absfun, funcdef, classdef]));
     }
     // Parses a comma-separated list of the things that are recognized
     // by the 'what' argument.

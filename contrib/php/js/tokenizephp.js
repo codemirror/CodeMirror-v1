@@ -120,10 +120,11 @@ var tokenizePHP = (function() {
 
     result["const"] = token("const", "php-keyword");
 
-    ["abstract", "final", "private", "protected", "public", "global", "static"].forEach(function(element, index, array) {
+    ["final", "private", "protected", "public", "global", "static"].forEach(function(element, index, array) {
       result[element] = token("modifier", "php-keyword");
     });
     result["var"] = token("modifier", "php-keyword deprecated");
+    result["abstract"] = token("abstract", "php-keyword");
 
     result["foreach"] = token("foreach", "php-keyword");
     result["as"] = token("as", "php-keyword");
