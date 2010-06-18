@@ -857,6 +857,7 @@ var Editor = (function(){
         if (whiteSpace) {
           whiteSpace.currentText = makeWhiteSpace(newIndent);
           whiteSpace.firstChild.nodeValue = whiteSpace.currentText;
+          select.snapshotMove(whiteSpace.firstChild, whiteSpace.firstChild, indentDiff, true);
         }
         // Otherwise, we have to add a new whitespace node.
         else {
@@ -864,9 +865,9 @@ var Editor = (function(){
           whiteSpace.className = "whitespace";
           if (start) insertAfter(whiteSpace, start);
           else this.container.insertBefore(whiteSpace, this.container.firstChild);
+          select.snapshotMove(firstText && (firstText.firstChild || firstText),
+                              whiteSpace.firstChild, newIndent, false, true);
         }
-        var fromNode = firstText && (firstText.firstChild || firstText);
-        select.snapshotMove(fromNode, whiteSpace.firstChild, newIndent, false, true);
       }
       if (indentDiff != 0) this.addDirtyNode(start);
     },
