@@ -15,7 +15,7 @@ function makeWhiteSpace(n) {
   var buffer = [], nb = true;
   for (; n > 0; n--) {
     buffer.push((nb || n == 1) ? nbsp : " ");
-    nb = !nb;
+    nb ^= true;
   }
   return buffer.join("");
 }

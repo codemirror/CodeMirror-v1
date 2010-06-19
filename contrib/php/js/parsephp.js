@@ -372,16 +372,18 @@ var PHPParser = Editor.Parser = (function() {
       else pass(statement, block);
     }
     function maybedefaultparameter(token){
-      if (token.content == "=") cont(expression);
+      if (token.content == "=") cont(require(["t_string", "string", "number"], [null, null, null]));
+    }
+    function var_or_reference(token) {
+      if(token.type == "variable") cont(maybedefaultparameter);
+      else if(token.content == "&") cont(require("variable"), maybedefaultparameter);
     }
     // support for default arguments: http://us.php.net/manual/en/functions.arguments.php#functions.arguments.default
     function funcarg(token){
-      // function foo(myclass $obj) {...}
-      if (token.type == "t_string") cont(require("variable"), maybedefaultparameter);
-      // function foo($string) {...}
-      else if (token.type == "variable") cont(maybedefaultparameter);
-      // function foo(&$ref) {...}
-      else if (token.content == "&") cont(require("variable"), maybedefaultparameter);
+      // function foo(myclass $obj) {...} or function foo(myclass &objref) {...}
+      if (token.type == "t_string") cont(var_or_reference);
+      // function foo($var) {...} or function foo(&$ref) {...}
+      else var_or_reference(token);
     }
 
     // A namespace definition or use
