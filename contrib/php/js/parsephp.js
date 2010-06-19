@@ -298,11 +298,11 @@ var PHPParser = Editor.Parser = (function() {
       if (atomicTypes.hasOwnProperty(type)) cont(maybeoperator);
       else if (type == "<<<") cont(require("string"), maybeoperator);  // heredoc/nowdoc
       else if (type == "t_string") cont(maybe_double_colon, maybeoperator);
-      else if (type == "keyword c") cont(expression);
+      else if (type == "keyword c" || type == "operator") cont(expression);
+      // lambda
+      else if (type == "function") lambdadef();
       // function call or parenthesized expression: $a = ($b + 1) * 2;
       else if (type == "(") cont(pushlex(")"), commasep(expression), require(")"), poplex, maybeoperator);
-      else if (type == "operator") cont(expression);
-      else if (type == "function") lambdadef();
     }
     // Called for places where operators, function calls, or subscripts are
     // valid. Will skip on to the next action if none is found.
@@ -332,7 +332,7 @@ var PHPParser = Editor.Parser = (function() {
     }
     // the declaration or definition of a lambda
     function lambdadef() {
-      cont(require("("), pushlex(")"), commasep(funcarg), require(")"), maybe_lambda_use, poplex, block);
+      cont(require("("), pushlex(")"), commasep(funcarg), require(")"), maybe_lambda_use, poplex, require("{"), pushlex("}"), block, poplex);
     }
     // optional lambda 'use' statement
     function maybe_lambda_use(token) {
@@ -372,7 +372,7 @@ var PHPParser = Editor.Parser = (function() {
       else pass(statement, block);
     }
     function maybedefaultparameter(token){
-      if (token.content == "=") cont(require(["t_string", "string", "number"], [null, null, null]));
+      if (token.content == "=") cont(require(["t_string", "string", "number"]));
     }
     function var_or_reference(token) {
       if(token.type == "variable") cont(maybedefaultparameter);
