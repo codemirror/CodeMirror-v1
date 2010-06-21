@@ -418,8 +418,15 @@
 
       <dt><code><a
       href="contrib/php/js/parsephp.js">contrib/php/js/parsephp.js</a></code>
-      (<a href="contrib/php/index.html">demo</a>)</dt><dd>PHP
-      parser.</dd>
+      (<a href="contrib/php/index.html">demo</a>)</dt><dd>PHP parser.
+      There is also <code><a
+      href="contrib/php/js/parsephphtmlmixed.js">contrib/php/js/parsephphtmlmixed.js</a></code>,
+      which wraps this parser to allow mixed-mode HTML + PHP parsing.
+      This one takes a configuration parameter <code>opening</code>,
+      which should contain an array of XML processing instruction
+      openings (<code>&lt;?php</code>, <code>&lt;?</code> etc) which
+      can be used to open a PHP block. Default is
+      <code>["&lt;?php"]</code>.</dd>
 
       <dt><code><a
       href="contrib/python/js/parsepython.js">contrib/python/js/parsepython.js</a></code>
