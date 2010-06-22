@@ -658,7 +658,7 @@ var Editor = (function(){
       else if (node && node.nextSibling && !isBR(node.nextSibling))
         return measureFromNode(node.nextSibling, 0);
       else
-        return withTempNode("", function(tmp) {
+        return withTempNode("\u200b", function(tmp) {
           if (node) node.parentNode.insertBefore(tmp, node.nextSibling);
           else self.container.insertBefore(tmp, self.container.firstChild);
           return measureFromNode(tmp, 0);
