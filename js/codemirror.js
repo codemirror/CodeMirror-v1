@@ -296,6 +296,7 @@ var CodeMirror = (function(){
     cursorLine: function() {
       return this.cursorPosition().line;
     },
+    cursorCoords: function(start) {return this.editor.cursorCoords(start);},
 
     activateLineNumbers: function() {
       var frame = this.frame, win = frame.contentWindow, doc = win.document, body = doc.body,

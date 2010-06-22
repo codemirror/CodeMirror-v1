@@ -537,6 +537,14 @@
       to find the name, it'll be something like
       <code>CSSParser</code>). The second argument is optional, and
       can be used to pass a new parser configuration object.</dd>
+
+      <dt><code>cursorCoords(start)</code></dt><dd>Get the coordinates
+      of the cursor in the editor, relative to the top-left corner of
+      the outer document. Normally returns an object with
+      <code>x</code>, <code>y</code>, and <code>yBot</code> (the
+      bottom of the cursor) properties. May return <code>null</code>
+      if the cursor position could not be determined (for example, if
+      the editor is not focused).</dd>
     </dl>
 
     <p>For detailed interaction with the content of the editor,

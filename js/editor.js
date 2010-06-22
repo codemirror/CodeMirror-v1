@@ -623,6 +623,48 @@ var Editor = (function(){
       webkitLastLineHack(this.container);
     },
 
+    cursorCoords: function(start) {
+      var sel = select.cursorPos(this.container, start);
+      if (!sel) return null;
+      var off = sel.offset, node = sel.node, doc = this.win.document, self = this;
+      function measureFromNode(node, xOffset) {
+        var y = 0, x = xOffset;
+        forEach([node, self.win.frameElement], function(n) {
+          while (n) {x += n.offsetLeft; y += n.offsetTop;n = n.offsetParent;}
+        });
+        return {x: x, y: y, yBot: y + node.offsetHeight};
+      }
+      function withTempNode(text, f) {
+        var node = doc.createElement("SPAN");
+        node.appendChild(doc.createTextNode(text));
+        try {return f(node);}
+        finally {if (node.parentNode) node.parentNode.removeChild(node);}
+      }
+
+      while (off) {
+        node = node ? node.nextSibling : this.container.firstChild;
+        var txt = nodeText(node);
+        if (off < txt.length)
+          return withTempNode(txt.substr(0, off), function(tmp) {
+            tmp.style.position = "absolute"; tmp.style.display = "hidden";
+            tmp.className = node.className;
+            self.container.appendChild(tmp);
+            return measureFromNode(node, tmp.offsetWidth);
+          });
+        off -= txt.length;
+      }
+      if (node && !isBR(node))
+        return measureFromNode(node, node.offsetWidth);
+      else if (node && node.nextSibling && !isBR(node.nextSibling))
+        return measureFromNode(node.nextSibling, 0);
+      else
+        return withTempNode("", function(tmp) {
+          if (node) node.parentNode.insertBefore(tmp, node.nextSibling);
+          else self.container.insertBefore(tmp, self.container.firstChild);
+          return measureFromNode(tmp, 0);
+        });
+    },
+
     reroutePasteEvent: function() {
       if (this.capturingPaste || window.opera) return;
       this.capturingPaste = true;
