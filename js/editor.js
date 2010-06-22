@@ -628,7 +628,8 @@ var Editor = (function(){
       if (!sel) return null;
       var off = sel.offset, node = sel.node, doc = this.win.document, self = this;
       function measureFromNode(node, xOffset) {
-        var y = 0, x = xOffset;
+        var y = -(self.win.document.body.scrollTop || self.win.document.documentElement.scrollTop || 0),
+            x = -(self.win.document.body.scrollLeft || self.win.document.documentElement.scrollLeft || 0) + xOffset;
         forEach([node, self.win.frameElement], function(n) {
           while (n) {x += n.offsetLeft; y += n.offsetTop;n = n.offsetParent;}
         });
