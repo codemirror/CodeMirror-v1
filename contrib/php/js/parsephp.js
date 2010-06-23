@@ -271,14 +271,14 @@ var PHPParser = Editor.Parser = (function() {
     // Dispatches various types of statements based on the type of the current token.
     function statement(token){
       var type = token.type;
-      if (type == "keyword a") cont(pushlex("form"), expression, statement, poplex);
+      if (type == "keyword a") cont(pushlex("form"), expression, altsyntax, statement, poplex);
       else if (type == "keyword b") cont(pushlex("form"), statement, poplex);
       else if (type == "{") cont(pushlex("}"), block, poplex);
       else if (type == "function") funcdef();
       // technically, "class implode {...}" is correct, but we'll flag that as an error because it overrides a predefined function
       else if (type == "class") classdef();
-      else if (type == "foreach") cont(pushlex("form"), require("("), pushlex(")"), expression, require("as"), require("variable"), /* => $value */ expect(")"), poplex, statement, poplex);
-      else if (type == "for") cont(pushlex("form"), require("("), pushlex(")"), expression, require(";"), expression, require(";"), expression, require(")"), poplex, statement, poplex);
+      else if (type == "foreach") cont(pushlex("form"), require("("), pushlex(")"), expression, require("as"), require("variable"), /* => $value */ expect(")"), altsyntax, poplex, statement, poplex);
+      else if (type == "for") cont(pushlex("form"), require("("), pushlex(")"), expression, require(";"), expression, require(";"), expression, require(")"), altsyntax, poplex, statement, poplex);
       // public final function foo(), protected static $bar;
       else if (type == "modifier") cont(require(["modifier", "variable", "function", "abstract"], [null, null, funcdef, absfun]));
       else if (type == "abstract") abs();
@@ -394,6 +394,17 @@ var PHPParser = Editor.Parser = (function() {
     function namespacedef(token) {
       pass(require("t_string"), maybe_double_colon_def);
     }
+    
+    function altsyntax(token){
+    	if(token.content==':')
+    		cont(altsyntaxBlock,poplex);
+    }
+    
+    function altsyntaxBlock(token){
+    	if (token.type == "altsyntaxend") cont(require(';'));
+      else pass(statement, altsyntaxBlock);
+    }
+
 
     return parser;
   }

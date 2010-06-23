@@ -115,7 +115,7 @@ var tokenizePHP = (function() {
 
     // http://php.net/manual/en/control-structures.alternative-syntax.php must be followed by a ':'
     ["endif", "endwhile", "endfor", "endforeach", "endswitch", "enddeclare"].forEach(function(element, index, array) {
-      result[element] = token("default", "php-keyword");
+      result[element] = token("altsyntaxend", "php-keyword");
     });
 
     result["const"] = token("const", "php-keyword");

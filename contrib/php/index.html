@@ -232,7 +232,26 @@ EOSTRING
 
 
     };
+    
+    if($something==true):
+    	$test = 'something';
+    endif;
+    
+    for($i=0;$i<2000;$i++):
+    	echo $i;
+    	$k = $k + 1;
+    endfor;
+    
+    foreach(array('one','two') as $key => $value):
+    	echo $number . ' = '. $key;
+    endforeach;
 
+    /* fails if nested */
+    if($nested < 0):
+    	if($fail > 1):
+    		echo 'This fails....';
+    	endif;
+    endif;
     ?>
 
     <r3:cphp>
