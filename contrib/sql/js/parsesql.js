@@ -32,13 +32,13 @@ var SqlParser = Editor.Parser = (function() {
   ]);
 
   var keywords = wordRegexp([
-    "alter", "grant", "revoke", "primary", "key", "table", "start",
+    "alter", "grant", "revoke", "primary", "key", "table", "start", "top",
     "transaction", "select", "update", "insert", "delete", "create", "describe",
     "from", "into", "values", "where", "join", "inner", "left", "natural", "and",
     "or", "in", "not", "xor", "like", "using", "on", "order", "group", "by",
     "asc", "desc", "limit", "offset", "union", "all", "as", "distinct", "set",
     "commit", "rollback", "replace", "view", "database", "separator", "if",
-    "exists", "null", "truncate", "status", "show", "lock", "unique"
+    "exists", "null", "truncate", "status", "show", "lock", "unique", "having"
   ]);
 
   var types = wordRegexp([
@@ -62,6 +62,10 @@ var SqlParser = Editor.Parser = (function() {
       if (ch == "@" || ch == "$") {
         source.nextWhileMatches(/[\w\d]/);
         return "sql-var";
+      }
+      else if (ch == "["){
+	    setState(inAlias(ch))
+	  	return null;
       }
       else if (ch == "\"" || ch == "'" || ch == "`") {
         setState(inLiteral(ch));
@@ -116,6 +120,19 @@ var SqlParser = Editor.Parser = (function() {
           type = "sql-word";
         return {style: type, content: word};
       }
+    }
+
+    function inAlias(quote) {
+	  return function(source, setState) {
+	    while (!source.endOfLine()) {
+		  var ch = source.next();
+		  if (ch == ']') {
+		    setState(normal);
+		    break;
+		  }
+	    }
+	    return "sql-word";
+	  }
     }
 
     function inLiteral(quote) {
