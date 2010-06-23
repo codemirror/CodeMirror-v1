@@ -192,10 +192,10 @@ UndoHistory.prototype = {
   },
 
   notifyEnvironment: function() {
+    if (this.onChange) this.onChange();
     // Used by the line-wrapping line-numbering code.
     if (window.frameElement && window.frameElement.CodeMirror.updateNumbers)
       window.frameElement.CodeMirror.updateNumbers();
-    if (this.onChange) this.onChange();
   },
 
   // Link a chain into the DOM nodes (or the first/last links for null

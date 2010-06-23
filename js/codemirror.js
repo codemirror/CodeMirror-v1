@@ -354,12 +354,13 @@ var CodeMirror = (function(){
       }
 
       function wrapping() {
-        var node, lineNum, next, pos, changes = [];
+        var node, lineNum, next, pos, changes = [], styleNums = self.options.styleNumbers;
 
-        function setNum(n) {
+        function setNum(n, node) {
           // Does not typically happen (but can, if you mess with the
           // document during the numbering)
           if (!lineNum) lineNum = scroller.appendChild(document.createElement("DIV"));
+          if (styleNums) styleNums(lineNum, node, n);
           // Changes are accumulated, so that the document layout
           // doesn't have to be recomputed during the pass
           changes.push(lineNum); changes.push(n);
@@ -376,7 +377,7 @@ var CodeMirror = (function(){
 
           var endTime = new Date().getTime() + self.options.lineNumberTime;
           while (node) {
-            setNum(next++);
+            setNum(next++, node.previousSibling);
             for (; node && !win.isBR(node); node = node.nextSibling) {
               var bott = node.offsetTop + node.offsetHeight;
               while (scroller.offsetHeight && bott - 3 > pos) setNum("&nbsp;");
@@ -418,7 +419,7 @@ var CodeMirror = (function(){
           onResize();
         };
       }
-      (this.options.textWrapping ? wrapping : nonWrapping)();
+      (this.options.textWrapping || this.options.styleNumbers ? wrapping : nonWrapping)();
     }
   };
 
