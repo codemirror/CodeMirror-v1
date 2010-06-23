@@ -24,7 +24,7 @@ function makeWhiteSpace(n) {
 // by the browser, but will not break text-wrapping either.
 function fixSpaces(string) {
   if (string.charAt(0) == " ") string = nbsp + string.slice(1);
-  return string.replace(/\t/g, function(){return makeWhiteSpace(indentUnit);})
+  return string.replace(/\t/g, function() {return makeWhiteSpace(indentUnit);})
     .replace(/[ \u00a0]{2,}/g, function(s) {return makeWhiteSpace(s.length);});
 }
 
@@ -654,9 +654,9 @@ var Editor = (function(){
           });
         off -= txt.length;
       }
-      if (node && !isBR(node))
+      if (node && isSpan(node))
         return measureFromNode(node, node.offsetWidth);
-      else if (node && node.nextSibling && !isBR(node.nextSibling))
+      else if (node && node.nextSibling && isSpan(node.nextSibling))
         return measureFromNode(node.nextSibling, 0);
       else
         return withTempNode("\u200b", function(tmp) {
