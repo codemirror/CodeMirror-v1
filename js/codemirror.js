@@ -66,6 +66,7 @@ var CodeMirror = (function(){
       catch(e) {} // Seems to throw 'Not Implemented' on some IE8 versions
     }
     nums.style.top = "0px";
+    nums.style.left = "0px";
     nums.style.overflow = "hidden";
     container.appendChild(nums);
     scroller.className = "CodeMirror-line-numbers";
@@ -315,7 +316,7 @@ var CodeMirror = (function(){
 
         if (nums.offsetWidth != barWidth) {
           barWidth = nums.offsetWidth;
-          nums.style.left = "-" + (frame.parentNode.style.marginLeft = barWidth + "px");
+          frame.parentNode.style.paddingLeft = barWidth + "px";
         }
       }
       function doScroll() {
