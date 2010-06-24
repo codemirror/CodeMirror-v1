@@ -647,7 +647,7 @@ var Editor = (function(){
         var txt = nodeText(node);
         if (off < txt.length)
           return withTempNode(txt.substr(0, off), function(tmp) {
-            tmp.style.position = "absolute"; tmp.style.display = "hidden";
+            tmp.style.position = "absolute"; tmp.style.visibility = "hidden";
             tmp.className = node.className;
             self.container.appendChild(tmp);
             return measureFromNode(node, tmp.offsetWidth);
