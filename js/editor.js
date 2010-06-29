@@ -167,6 +167,8 @@ var Editor = (function(){
     function partNode(node){
       if (node.isPart && node.childNodes.length == 1 && node.firstChild.nodeType == 3) {
         node.currentText = node.firstChild.nodeValue;
+        if (webkit && /\u200b/.test(node.currentText) && node.nextSibling)
+          node.nodeValue = node.currentText = node.currentText.replace(/\u200b/g, "");
         return !/[\n\t\r]/.test(node.currentText);
       }
       return false;
