@@ -226,7 +226,7 @@ var JSParser = Editor.Parser = (function() {
     function statements(type){
       return pass(statement, statements);
     }
-    function expresions(type){
+    function expressions(type){
       return pass(expression, expressions);
     }
     // Dispatches various types of statements based on the type of the
