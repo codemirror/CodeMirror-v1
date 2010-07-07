@@ -379,6 +379,23 @@ var select = {};
   }
   // W3C model
   else {
+    // Find the node right at the cursor, not one of its
+    // ancestors with a suitable offset. This goes down the DOM tree
+    // until a 'leaf' is reached (or is it *up* the DOM tree?).
+    function innerNode(node, offset) {
+      while (node.nodeType != 3 && !isBR(node)) {
+        var newNode = node.childNodes[offset] || node.nextSibling;
+        offset = 0;
+        while (!newNode && node.parentNode) {
+          node = node.parentNode;
+          newNode = node.nextSibling;
+        }
+        node = newNode;
+        if (!newNode) break;
+      }
+      return {node: node, offset: offset};
+    }
+
     // Store start and end nodes, and offsets within these, and refer
     // back to the selection object from those nodes, so that this
     // object can be updated when the nodes are replaced before the
@@ -390,31 +407,11 @@ var select = {};
       var range = selection.getRangeAt(0);
 
       currentSelection = {
-        start: {node: range.startContainer, offset: range.startOffset},
-        end: {node: range.endContainer, offset: range.endOffset},
+        start: innerNode(range.startContainer, range.startOffset),
+        end: innerNode(range.endContainer, range.endOffset),
         window: win,
         changed: false
       };
-
-      // We want the nodes right at the cursor, not one of their
-      // ancestors with a suitable offset. This goes down the DOM tree
-      // until a 'leaf' is reached (or is it *up* the DOM tree?).
-      function normalize(point){
-        while (point.node.nodeType != 3 && !isBR(point.node)) {
-          var newNode = point.node.childNodes[point.offset] || point.node.nextSibling;
-          point.offset = 0;
-          while (!newNode && point.node.parentNode) {
-            point.node = point.node.parentNode;
-            newNode = point.node.nextSibling;
-          }
-          point.node = newNode;
-          if (!newNode)
-            break;
-        }
-      }
-
-      normalize(currentSelection.start);
-      normalize(currentSelection.end);
     };
 
     select.selectMarked = function () {
@@ -425,7 +422,12 @@ var select = {};
       // this occurs is when a selection is deleted or overwitten. we
       // check for that here.
       function focusIssue() {
-        return cs.start.node == cs.end.node && cs.start.offset == 0 && cs.end.offset == 0;
+        if (cs.start.node == cs.end.node && cs.start.offset == cs.end.offset) {
+          var selection = cs.window.getSelection();
+          if (!selection || selection.rangeCount == 0) return true;
+          var range = selection.getRangeAt(0), point = innerNode(range.startContainer, range.startOffset);
+          return cs.start.node != point.node || cs.start.offset != point.offset;
+        }
       }
       if (!cs || !(cs.changed || (webkit && focusIssue()))) return;
       var win = cs.window, range = win.document.createRange();
