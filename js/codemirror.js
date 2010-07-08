@@ -45,6 +45,7 @@ var CodeMirror = (function(){
     readOnly: false,
     width: "",
     height: "300px",
+    minHeight: 100,
     autoMatchParens: false,
     parserConfig: null,
     tabMode: "indent", // or "spaces", "default", "shift"
@@ -121,7 +122,7 @@ var CodeMirror = (function(){
     div.style.position = "relative";
     div.className = "CodeMirror-wrapping";
     div.style.width = options.width;
-    div.style.height = options.height;
+    div.style.height = (options.height == "dynamic") ? options.minHeight + "px" : options.height;
     // This is used by Editor.reroutePasteEvent
     var teHack = this.textareaHack = document.createElement("TEXTAREA");
     div.appendChild(teHack);
@@ -160,6 +161,7 @@ var CodeMirror = (function(){
       if (this.options.initCallback) this.options.initCallback(this);
       if (this.options.lineNumbers) this.activateLineNumbers();
       if (this.options.reindentOnLoad) this.reindent();
+      if (this.options.height == "dynamic") this.setDynamicHeight();
     },
 
     getCode: function() {return this.editor.getCode();},
@@ -421,6 +423,31 @@ var CodeMirror = (function(){
         };
       }
       (this.options.textWrapping || this.options.styleNumbers ? wrapping : nonWrapping)();
+    },
+
+    setDynamicHeight: function() {
+      var self = this, activity = self.options.cursorActivity, win = self.win, body = win.document.body,
+          lineHeight = null, timeout = null, vmargin = 2 * self.frame.offsetTop;
+      body.style.overflowY = "hidden";
+      win.document.documentElement.style.overflowY = "hidden";
+
+      function updateHeight() {
+        for (var span = body.firstChild, sawBR = false; span; span = span.nextSibling)
+          if (win.isSpan(span) && span.offsetHeight) {
+            lineHeight = span.offsetHeight;
+            if (!sawBR) vmargin = 2 * (self.frame.offsetTop + span.offsetTop + body.offsetTop + (internetExplorer ? 10 : 0));
+            break;
+          }
+        if (lineHeight)
+          self.wrapping.style.height = Math.max(vmargin + lineHeight * (body.getElementsByTagName("BR").length + 1),
+                                                self.options.minHeight) + "px";
+      }
+      setTimeout(updateHeight, 100);
+      self.options.cursorActivity = function(x) {
+        if (activity) activity(x);
+        clearTimeout(timeout);
+        timeout = setTimeout(updateHeight, 200);
+      };
     }
   };
 
