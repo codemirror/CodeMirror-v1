@@ -29,7 +29,7 @@ function fixSpaces(string) {
 }
 
 function cleanText(text) {
-  return text.replace(/\u00a0/g, " ").replace(/\u200b/g, "");
+  return text.replace(/\u00a0/g, " ");
 }
 
 // Create a SPAN node with the expected properties for document part
@@ -65,7 +65,7 @@ var Editor = (function(){
 
     function simplifyNode(node, top) {
       if (node.nodeType == 3) {
-        var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/[\r\u200b]/g, "").replace(/\n/g, " "));
+        var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/\r/g, "").replace(/\n/g, " "));
         if (text.length) leaving = false;
         result.push(node);
       }
