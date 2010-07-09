@@ -430,6 +430,7 @@ var CodeMirror = (function(){
           lineHeight = null, timeout = null, vmargin = 2 * self.frame.offsetTop;
       body.style.overflowY = "hidden";
       win.document.documentElement.style.overflowY = "hidden";
+      this.frame.scrolling = "no";
 
       function updateHeight() {
         for (var span = body.firstChild, sawBR = false; span; span = span.nextSibling)

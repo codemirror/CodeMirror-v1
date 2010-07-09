@@ -261,7 +261,11 @@
 
       <dt><code>width</code>, <code>height</code></dt><dd>The size of
       the editor frame, given as a style-sheet quantities (for example
-      <code>"600px"</code> or <code>"100%"</code>).</dd>
+      <code>"600px"</code> or <code>"100%"</code>). When
+      <code>height</code> is set to <code>dynamic</code>, the editor
+      will automatically resize to fit its contents. In this case, the
+      <code>minHeight</code> option (an integer) is used to determine
+      the minimum height in pixels.</dd>
 
       <dt><code>disableSpellcheck</code></dt><dd>Should the editor
       disable spell-checking on browsers that support it (Firefox 2+).
