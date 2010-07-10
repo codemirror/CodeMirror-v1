@@ -735,7 +735,7 @@ var Editor = (function(){
         return;
       }
 
-      var code = event.keyCode;
+      var code = this.lastKeyDownCode = event.keyCode;
       // Don't scan when the user is typing.
       this.delayScanning();
       // Schedule a paren-highlight event, if configured.
@@ -783,14 +783,14 @@ var Editor = (function(){
       }
       else if (event.metaKey && !event.shiftKey && (code == 37 || code == 39)) { // Meta-left/right
         var cursor = select.selectionTopNode(this.container);
-        if (cursor === false || !this.container.firstChild) return;
-
-        if (code == 37) select.focusAfterNode(startOfLine(cursor), this.container);
-        else {
-          var end = endOfLine(cursor, this.container);
-          select.focusAfterNode(end ? end.previousSibling : this.container.lastChild, this.container);
+        if (cursor !== false && this.container.firstChild) {
+          if (code == 37) select.focusAfterNode(startOfLine(cursor), this.container);
+          else {
+            var end = endOfLine(cursor, this.container);
+            select.focusAfterNode(end ? end.previousSibling : this.container.lastChild, this.container);
+          }
+          event.stop();
         }
-        event.stop();
       }
       else if ((event.ctrlKey || event.metaKey) && !event.altKey) {
         if ((event.shiftKey && code == 90) || code == 89) { // shift-Z, Y
@@ -809,11 +809,13 @@ var Editor = (function(){
           this.reroutePasteEvent();
         }
       }
+      this.keyUpOrPressAfterLastKeyDown = false;
     },
 
     // Check for characters that should re-indent the current line,
     // and prevent Opera from handling enter and tab anyway.
     keyPress: function(event) {
+      this.keyUpOrPressAfterLastKeyDown = true;
       var electric = Editor.Parser.electricChars, self = this;
       // Hack for Opera, and Firefox on OS X, in which stopping a
       // keydown event does not prevent the associated keypress event
@@ -833,6 +835,7 @@ var Editor = (function(){
     // Mark the node at the cursor dirty when a non-safe key is
     // released.
     keyUp: function(event) {
+      this.keyUpOrPressAfterLastKeyDown = true;
       this.cursorActivity(isSafeKey(event.keyCode));
     },
 
@@ -1259,6 +1262,12 @@ var Editor = (function(){
       }
     },
 
+    isIMEOn: function() {
+      // chrome:  keyDown keyCode is 229 while IME on
+      // firefox: no keyUps or keyPresses fires after first keyDown while IME on
+      return this.lastKeyDownCode == 229 || this.keyUpOrPressAfterLastKeyDown === false;
+    },
+
     // The function that does the actual highlighting/colouring (with
     // help from the parser and the DOM normalizer). Its interface is
     // rather overcomplicated, because it is used in different
@@ -1278,7 +1287,7 @@ var Editor = (function(){
       var container = this.container, self = this, active = this.options.activeTokens;
       var endTime = (typeof target == "number" ? target : null);
 
-      if (!container.firstChild)
+      if (!container.firstChild || this.isIMEOn())
         return false;
       // Backtrack to the first node before from that has a partial
       // parse stored.
