@@ -454,6 +454,7 @@ var select = {};
     // Helper for selecting a range object.
     function selectRange(range, window) {
       var selection = window.getSelection();
+      if (!selection) return;
       selection.removeAllRanges();
       selection.addRange(range);
     }
