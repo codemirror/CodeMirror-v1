@@ -29,9 +29,10 @@ var select = {};
 
   var fourSpaces = "\u00a0\u00a0\u00a0\u00a0";
 
-  select.scrollToNode = function(element) {
-    if (!element) return;
-    var doc = element.ownerDocument, body = doc.body,
+  select.scrollToNode = function(node, cursor) {
+    if (!node) return;
+    var element = node,
+        doc = element.ownerDocument, body = doc.body,
         win = (doc.defaultView || doc.parentWindow),
         html = doc.documentElement,
         atEnd = !element.nextSibling || !element.nextSibling.nextSibling
@@ -52,9 +53,10 @@ var select = {};
     // offsets when the document has just been changed. This seems to
     // always be 5/5, so we don't use those.
     if (webkit && element && element.offsetTop == 5 && element.offsetLeft == 5)
-      return
+      return;
 
-    var y = compensateHack * (element ? element.offsetHeight : 0), x = 0, pos = element;
+    var y = compensateHack * (element ? element.offsetHeight : 0), x = 0,
+        width = (node ? node.offsetWidth : 0), pos = element;
     while (pos && pos.offsetParent) {
       y += pos.offsetTop;
       // Don't count X offset for <br> nodes
@@ -65,12 +67,20 @@ var select = {};
 
     var scroll_x = body.scrollLeft || html.scrollLeft || 0,
         scroll_y = body.scrollTop || html.scrollTop || 0,
-        screen_x = x - scroll_x, screen_y = y - scroll_y, scroll = false;
+        scroll = false, screen_width = win.innerWidth || html.clientWidth || 0;
 
-    if (screen_x < 0 || screen_x > (win.innerWidth || html.clientWidth || 0)) {
-      scroll_x = x;
-      scroll = true;
+    if (cursor || width < screen_width) {
+      if (cursor) {
+        var off = select.offsetInNode(win, node), size = nodeText(node).length;
+        if (size) x += width * (off / size);
+      }
+      var screen_x = x - scroll_x;
+      if (screen_x < 0 || screen_x > screen_width) {
+        scroll_x = x;
+        scroll = true;
+      }
     }
+    var screen_y = y - scroll_y;
     if (screen_y < 0 || atEnd || screen_y > (win.innerHeight || html.clientHeight || 0) - 50) {
       scroll_y = atEnd ? 1e6 : y;
       scroll = true;
@@ -79,7 +89,7 @@ var select = {};
   };
 
   select.scrollToCursor = function(container) {
-    select.scrollToNode(select.selectionTopNode(container, true) || container.firstChild);
+    select.scrollToNode(select.selectionTopNode(container, true) || container.firstChild, true);
   };
 
   // Used to prevent restoring a selection when we do not need to.
@@ -222,6 +232,15 @@ var select = {};
       var start = makeRange(currentSelection.start), end = makeRange(currentSelection.end);
       start.setEndPoint("StartToEnd", end);
       start.select();
+    };
+
+    select.offsetInNode = function(win, node) {
+      var sel = win.document.selection;
+      if (!sel) return 0;
+      var range = sel.createRange(), range2 = range.duplicate();
+      try {range2.moveToElementText(node);} catch(e){return 0;}
+      range.setEndPoint("StartToStart", range2);
+      return range.text.length;
     };
 
     // Get the top-level node that one end of the cursor is inside or
@@ -534,6 +553,14 @@ var select = {};
     select.somethingSelected = function(win) {
       var range = selectionRange(win);
       return range && !range.collapsed;
+    };
+
+    select.offsetInNode = function(win, node) {
+      var range = selectionRange(win);
+      if (!range) return 0;
+      range = range.cloneRange();
+      range.setStartBefore(node);
+      return range.toString().length;
     };
 
     function insertNodeAtCursor(window, node) {
