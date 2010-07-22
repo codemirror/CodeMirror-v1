@@ -8,6 +8,10 @@ var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test
 var webkit = /AppleWebKit/.test(navigator.userAgent);
 var safari = /Apple Computers, Inc/.test(navigator.vendor);
 var gecko = /gecko\/(\d{8})/i.test(navigator.userAgent);
+// TODO this is related to the backspace-at-end-of-line bug. Remove
+// this if Opera gets their act together, make the version check more
+// broad if they don't.
+var brokenOpera = window.opera && /Version\/10.[56]/.test(navigator.userAgent);
 
 // Make sure a string does not contain two consecutive 'collapseable'
 // whitespace characters.
@@ -830,6 +834,18 @@ var Editor = (function(){
       else if ((event.character == "v" || event.character == "V")
                && (event.ctrlKey || event.metaKey) && !event.altKey) // ctrl-V
         this.reroutePasteEvent();
+      // Work around a bug where pressing backspace at the end of a
+      // line often causes the cursor to jump to the start of the line
+      // in Opera 10.60.
+      else if (brokenOpera && event.code == 8) {
+        var sel = select.selectionTopNode(this.container), self = this,
+            next = sel ? sel.nextSibling : this.container.firstChild;
+        if (sel !== false && next && isBR(next))
+          this.parent.setTimeout(function(){
+            if (select.selectionTopNode(self.container) == next)
+              select.focusAfterNode(next.previousSibling, self.container);
+          }, 20);
+      }
     },
 
     // Mark the node at the cursor dirty when a non-safe key is
