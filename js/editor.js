@@ -1242,7 +1242,7 @@ var Editor = (function(){
       while ((time() < endTime || force) && (start = this.getDirtyNode())) {
         var result = this.highlight(start, endTime);
         if (result && result.node && result.dirty)
-          this.addDirtyNode(result.node);
+          this.addDirtyNode(result.node.nextSibling);
       }
       if (!this.options.readOnly) select.selectMarked();
       if (start) this.scheduleHighlight();
