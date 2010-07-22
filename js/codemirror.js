@@ -392,12 +392,13 @@ var CodeMirror = (function(){
               return;
             }
           }
+          while (lineNum) setNum(next++);
           commitChanges();
           doScroll();
         }
-        function start() {
+        function start(firstTime) {
           doScroll();
-          ensureEnoughLineNumbers(false);
+          ensureEnoughLineNumbers(firstTime);
           node = body.firstChild;
           lineNum = scroller.firstChild;
           pos = 0;
@@ -405,7 +406,7 @@ var CodeMirror = (function(){
           work();
         }
 
-        start();
+        start(true);
         var pending = null;
         function update() {
           if (pending) clearTimeout(pending);
