@@ -501,6 +501,18 @@ var CodeMirror = (function(){
 
     area.style.display = "none";
     var mirror = new CodeMirror(insert, options);
+    mirror.toTextArea = function() {
+      area.parentNode.removeChild(mirror.wrapping);
+      area.style.display = "";
+      if (area.form) {
+        area.form.submit = realSubmit;
+        if (typeof area.form.removeEventListener == "function")
+          area.form.removeEventListener("submit", updateField, false);
+        else
+          area.form.detachEvent("onsubmit", updateField);
+      }
+    };
+
     return mirror;
   };
 
