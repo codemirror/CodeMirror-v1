@@ -835,16 +835,27 @@ var Editor = (function(){
                && (event.ctrlKey || event.metaKey) && !event.altKey) // ctrl-V
         this.reroutePasteEvent();
       // Work around a bug where pressing backspace at the end of a
-      // line often causes the cursor to jump to the start of the line
-      // in Opera 10.60.
-      else if (brokenOpera && event.code == 8) {
-        var sel = select.selectionTopNode(this.container), self = this,
-            next = sel ? sel.nextSibling : this.container.firstChild;
-        if (sel !== false && next && isBR(next))
-          this.parent.setTimeout(function(){
-            if (select.selectionTopNode(self.container) == next)
-              select.focusAfterNode(next.previousSibling, self.container);
-          }, 20);
+      // line, or delete at the start, often causes the cursor to jump
+      // to the start of the line in Opera 10.60.
+      else if (brokenOpera) {
+        if (event.code == 8) { // backspace
+          var sel = select.selectionTopNode(this.container), self = this,
+              next = sel ? sel.nextSibling : this.container.firstChild;
+          if (sel !== false && next && isBR(next))
+            this.parent.setTimeout(function(){
+              if (select.selectionTopNode(self.container) == next)
+                select.focusAfterNode(next.previousSibling, self.container);
+            }, 20);
+        }
+        else if (event.code == 46) { // delete
+          var sel = select.selectionTopNode(this.container), self = this;
+          if (sel && isBR(sel)) {
+            this.parent.setTimeout(function(){
+              if (select.selectionTopNode(self.container) != sel)
+                select.focusAfterNode(sel, self.container);
+            }, 20);
+          }
+        }
       }
     },
 
