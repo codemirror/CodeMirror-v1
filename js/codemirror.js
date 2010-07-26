@@ -79,6 +79,8 @@ var CodeMirror = (function(){
   function frameHTML(options) {
     if (typeof options.parserfile == "string")
       options.parserfile = [options.parserfile];
+    if (typeof options.basefiles == "string")
+      options.basefiles = [options.basefiles];
     if (typeof options.stylesheet == "string")
       options.stylesheet = [options.stylesheet];
 
