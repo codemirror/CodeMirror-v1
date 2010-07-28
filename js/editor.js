@@ -219,25 +219,26 @@ var Editor = (function(){
   // indicating whether anything was found, and can be called again to
   // skip to the next find. Use the select and replace methods to
   // actually do something with the found locations.
-  function SearchCursor(editor, string, fromCursor, caseFold) {
+  function SearchCursor(editor, string, from, caseFold) {
     this.editor = editor;
-    if (caseFold == undefined) {
-      caseFold = (string == string.toLowerCase());
-    }
-    this.caseFold = caseFold;
-    if (caseFold) string = string.toLowerCase();
+    this.caseFold = caseFold == undefined ? (string == string.toLowerCase()) : caseFold;
     this.history = editor.history;
     this.history.commit();
-
-    // Are we currently at an occurrence of the search string?
+    this.valid = !!string;
     this.atOccurrence = false;
-    // The object stores a set of nodes coming after its current
-    // position, so that when the current point is taken out of the
-    // DOM tree, we can still try to continue.
-    this.fallbackSize = 15;
-    var cursor;
-    // Start from the cursor when specified and a cursor can be found.
-    if (fromCursor && (cursor = select.cursorPos(this.editor.container))) {
+
+    var getText = function(node){
+      var line = cleanText(editor.history.textAfter(node));
+      return (caseFold ? line.toLowerCase() : line);
+    }
+
+    if (from && typeof from == "object" && typeof from.character == "number") {
+      editor.checkLine(from.line);
+      this.line = from.line;
+      this.offset = from.character;
+    }
+    else if (from) {
+      var cursor = select.cursorPos(editor.container, true);
       this.line = cursor.node;
       this.offset = cursor.offset;
     }
@@ -245,88 +246,87 @@ var Editor = (function(){
       this.line = null;
       this.offset = 0;
     }
-    this.valid = !!string;
 
     // Create a matcher function based on the kind of string we have.
-    var target = string.split("\n"), self = this;
+    var target = (this.caseFold ? string.toLowerCase() : string).split("\n");
     this.matches = (target.length == 1) ?
       // For one-line strings, searching can be done simply by calling
-      // indexOf on the current line.
-      function() {
-        var line = cleanText(self.history.textAfter(self.line).slice(self.offset));
-        var match = (self.caseFold ? line.toLowerCase() : line).indexOf(string);
-        if (match > -1)
-          return {from: {node: self.line, offset: self.offset + match},
-                  to: {node: self.line, offset: self.offset + match + string.length}};
+      // indexOf or lastIndexOf on the current line.
+      function(reverse) {
+        var line = getText(this.line), len = string.length, match;
+        if (reverse ? (this.offset >= len && (match = line.lastIndexOf(string, this.offset - len)) != -1)
+                    : (match = line.indexOf(string, this.offset)) != -1)
+          return {from: {node: this.line, offset: match},
+                  to: {node: this.line, offset: match + len}};
       } :
       // Multi-line strings require internal iteration over lines, and
       // some clunky checks to make sure the first match ends at the
       // end of the line and the last match starts at the start.
-      function() {
-        var firstLine = cleanText(self.history.textAfter(self.line).slice(self.offset));
-        var match = (self.caseFold ? firstLine.toLowerCase() : firstLine).lastIndexOf(target[0]);
-        if (match == -1 || match != firstLine.length - target[0].length)
-          return false;
-        var startOffset = self.offset + match;
+      function(reverse) {
+        var idx = (reverse ? target.length - 1 : 0), match = target[idx], line = getText(this.line);
+        var offsetA = (reverse ? line.indexOf(match) + match.length : line.lastIndexOf(match));
+        if (reverse ? offsetA >= this.offset || offsetA != match.length
+                    : offsetA <= this.offset || offsetA != line.length - match.length)
+          return;
 
-        var line = self.history.nodeAfter(self.line);
-        for (var i = 1; i < target.length - 1; i++) {
-          var lineText = cleanText(self.history.textAfter(line));
-          if ((self.caseFold ? lineText.toLowerCase() : lineText) != target[i])
-            return false;
-          line = self.history.nodeAfter(line);
+        var pos = this.line;
+        while (true) {
+          if (reverse && !pos) return;
+          pos = (reverse ? this.history.nodeBefore(pos) : this.history.nodeAfter(pos) );
+          if (!reverse && !pos) return;
+
+          line = getText(pos);
+          match = target[reverse ? --idx : ++idx];
+
+          if (idx > 0 && idx < target.length - 1) {
+            if (line != match) return;
+            else continue;
+          }
+          var offsetB = (reverse ? line.lastIndexOf(match) : line.indexOf(match) + match.length);
+          if (reverse ? offsetB != line.length - match.length : offsetB != match.length)
+            return;
+          return {from: {node: reverse ? pos : this.line, offset: reverse ? offsetB : offsetA},
+                  to: {node: reverse ? this.line : pos, offset: reverse ? offsetA : offsetB}};
         }
-
-        var lastLine = cleanText(self.history.textAfter(line));
-        if ((self.caseFold ? lastLine.toLowerCase() : lastLine).indexOf(target[target.length - 1]) != 0)
-          return false;
-
-        return {from: {node: self.line, offset: startOffset},
-                to: {node: line, offset: target[target.length - 1].length}};
       };
   }
 
   SearchCursor.prototype = {
-    findNext: function() {
-      if (!this.valid) return false;
-      this.atOccurrence = false;
-      var self = this;
+    findNext: function() {return this.find(false);},
+    findPrevious: function() {return this.find(true);},
 
-      // Go back to the start of the document if the current line is
-      // no longer in the DOM tree.
+    find: function(reverse) {
+      if (!this.valid) return false;
+
+      if (this.atOccurrence) {
+        var pos = (reverse ? this.atOccurrence.from : this.atOccurrence.to);
+        this.line = pos.node;
+        this.offset = pos.offset;
+      }
+      // Reset the cursor if the current line is no longer in the DOM tree.
       if (this.line && !this.line.parentNode) {
         this.line = null;
         this.offset = 0;
       }
 
-      // Set the cursor's position one character after the given
-      // position.
-      function saveAfter(pos) {
-        if (self.history.textAfter(pos.node).length > pos.offset) {
-          self.line = pos.node;
-          self.offset = pos.offset + 1;
+      while (true) {
+        if (this.atOccurrence = this.matches(reverse))
+          return true;
+
+        if (reverse) {
+          if (!this.line) return false;
+          this.line = this.history.nodeBefore(this.line);
+          this.offset = this.history.textAfter(this.line).length;
         }
         else {
-          self.line = self.history.nodeAfter(pos.node);
-          self.offset = 0;
-        }
-      }
-
-      while (true) {
-        var match = this.matches();
-        // Found the search string.
-        if (match) {
-          this.atOccurrence = match;
-          saveAfter(match.from);
-          return true;
-        }
-        this.line = this.history.nodeAfter(this.line);
-        this.offset = 0;
-        // End of document.
-        if (!this.line) {
-          this.valid = false;
-          return false;
-        }
+          var next = this.history.nodeAfter(this.line);
+          if (!next) {
+            this.offset = this.history.textAfter(this.line).length;
+            return false;
+          }
+          this.line = next;
+          this.offset = 0;
+        }        
       }
     },
 
@@ -344,6 +344,11 @@ var Editor = (function(){
         this.offset = end.offset;
         this.atOccurrence = false;
       }
+    },
+
+    position: function() {
+      if (this.atOccurrence)
+        return {line: this.atOccurrence.from.node, character: this.atOccurrence.from.offset};
     }
   };
 
