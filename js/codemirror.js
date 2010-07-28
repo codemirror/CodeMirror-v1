@@ -142,7 +142,7 @@ var CodeMirror = (function(){
         "document.write(window.frameElement.CodeMirror.html);document.close();})()";
     }
     else {
-      frame.src = "javascript:false";
+      frame.src = "javascript:;";
     }
 
     if (place.appendChild) place.appendChild(div);
