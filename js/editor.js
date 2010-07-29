@@ -929,6 +929,10 @@ var Editor = (function(){
                               whiteSpace.firstChild, newIndent, false, true);
         }
       }
+      // Make sure cursor ends up after the whitespace
+      else if (whiteSpace) {
+	select.snapshotMove(whiteSpace.firstChild, whiteSpace.firstChild, newIndent, false);
+      }
       if (indentDiff != 0) this.addDirtyNode(start);
     },
 
