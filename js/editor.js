@@ -221,30 +221,29 @@ var Editor = (function(){
   // actually do something with the found locations.
   function SearchCursor(editor, string, from, caseFold) {
     this.editor = editor;
-    this.caseFold = caseFold == undefined ? (string == string.toLowerCase()) : caseFold;
     this.history = editor.history;
     this.history.commit();
     this.valid = !!string;
     this.atOccurrence = false;
+    if (caseFold == undefined) caseFold = string == string.toLowerCase();
 
-    var getText = function(node){
+    function getText(node){
       var line = cleanText(editor.history.textAfter(node));
       return (caseFold ? line.toLowerCase() : line);
     }
 
     if (from && typeof from == "object" && typeof from.character == "number") {
       editor.checkLine(from.line);
-      this.line = from.line;
-      this.offset = from.character;
+      var pos = {node: from.line, offset: from.character};
+      this.pos = {from: pos, to: pos};
     }
     else if (from) {
-      var cursor = select.cursorPos(editor.container, true);
-      this.line = cursor.node;
-      this.offset = cursor.offset;
+      this.pos = {from: select.cursorPos(editor.container, true),
+                  to: select.cursorPos(editor.container, false)};
     }
     else {
-      this.line = null;
-      this.offset = 0;
+      var pos = {node: null, offset: 0};
+      this.pos = {from: pos, to: pos};
     }
 
     // Create a matcher function based on the kind of string we have.
@@ -252,24 +251,24 @@ var Editor = (function(){
     this.matches = (target.length == 1) ?
       // For one-line strings, searching can be done simply by calling
       // indexOf or lastIndexOf on the current line.
-      function(reverse) {
-        var line = getText(this.line), len = string.length, match;
-        if (reverse ? (this.offset >= len && (match = line.lastIndexOf(string, this.offset - len)) != -1)
-                    : (match = line.indexOf(string, this.offset)) != -1)
-          return {from: {node: this.line, offset: match},
-                  to: {node: this.line, offset: match + len}};
+      function(reverse, node, offset) {
+        var line = getText(node), len = string.length, match;
+        if (reverse ? (offset >= len && (match = line.lastIndexOf(string, offset - len)) != -1)
+                    : (match = line.indexOf(string, offset)) != -1)
+          return {from: {node: node, offset: match},
+                  to: {node: node, offset: match + len}};
       } :
       // Multi-line strings require internal iteration over lines, and
       // some clunky checks to make sure the first match ends at the
       // end of the line and the last match starts at the start.
-      function(reverse) {
-        var idx = (reverse ? target.length - 1 : 0), match = target[idx], line = getText(this.line);
+      function(reverse, node, offset) {
+        var idx = (reverse ? target.length - 1 : 0), match = target[idx], line = getText(node);
         var offsetA = (reverse ? line.indexOf(match) + match.length : line.lastIndexOf(match));
-        if (reverse ? offsetA >= this.offset || offsetA != match.length
-                    : offsetA <= this.offset || offsetA != line.length - match.length)
+        if (reverse ? offsetA >= offset || offsetA != match.length
+                    : offsetA <= offset || offsetA != line.length - match.length)
           return;
 
-        var pos = this.line;
+        var pos = node;
         while (true) {
           if (reverse && !pos) return;
           pos = (reverse ? this.history.nodeBefore(pos) : this.history.nodeAfter(pos) );
@@ -285,8 +284,8 @@ var Editor = (function(){
           var offsetB = (reverse ? line.lastIndexOf(match) : line.indexOf(match) + match.length);
           if (reverse ? offsetB != line.length - match.length : offsetB != match.length)
             return;
-          return {from: {node: reverse ? pos : this.line, offset: reverse ? offsetB : offsetA},
-                  to: {node: reverse ? this.line : pos, offset: reverse ? offsetA : offsetB}};
+          return {from: {node: reverse ? pos : node, offset: reverse ? offsetB : offsetA},
+                  to: {node: reverse ? node : pos, offset: reverse ? offsetA : offsetB}};
         }
       };
   }
@@ -298,57 +297,60 @@ var Editor = (function(){
     find: function(reverse) {
       if (!this.valid) return false;
 
-      if (this.atOccurrence) {
-        var pos = (reverse ? this.atOccurrence.from : this.atOccurrence.to);
-        this.line = pos.node;
-        this.offset = pos.offset;
-      }
+      var self = this, pos = reverse ? this.pos.from : this.pos.to,
+          node = pos.node, offset = pos.offset;
       // Reset the cursor if the current line is no longer in the DOM tree.
-      if (this.line && !this.line.parentNode) {
-        this.line = null;
-        this.offset = 0;
+      if (node && !node.parentNode) {
+        node = null; offset = 0;
+      }
+      function savePosAndFail() {
+        var pos = {node: node, offset: offset};
+        self.pos = {from: pos, to: pos};
+        self.atOccurrence = false;
+        return false;
       }
 
       while (true) {
-        if (this.atOccurrence = this.matches(reverse))
+        if (this.pos = this.matches(reverse, node, offset)) {
+          this.atOccurrence = true;
           return true;
+        }
 
         if (reverse) {
-          if (!this.line) return false;
-          this.line = this.history.nodeBefore(this.line);
-          this.offset = this.history.textAfter(this.line).length;
+          if (!node) return savePosAndFail();
+          node = this.history.nodeBefore(node);
+          offset = this.history.textAfter(node).length;
         }
         else {
-          var next = this.history.nodeAfter(this.line);
+          var next = this.history.nodeAfter(node);
           if (!next) {
-            this.offset = this.history.textAfter(this.line).length;
-            return false;
+            offset = this.history.textAfter(node).length;
+            return savePosAndFail();
           }
-          this.line = next;
-          this.offset = 0;
+          node = next;
+          offset = 0;
         }        
       }
     },
 
     select: function() {
       if (this.atOccurrence) {
-        select.setCursorPos(this.editor.container, this.atOccurrence.from, this.atOccurrence.to);
+        select.setCursorPos(this.editor.container, this.pos.from, this.pos.to);
         select.scrollToCursor(this.editor.container);
       }
     },
 
     replace: function(string) {
       if (this.atOccurrence) {
-        var end = this.editor.replaceRange(this.atOccurrence.from, this.atOccurrence.to, string);
-        this.line = end.node;
-        this.offset = end.offset;
+        var end = this.editor.replaceRange(this.pos.from, this.pos.to, string);
+        this.pos.to = end;
         this.atOccurrence = false;
       }
     },
 
     position: function() {
       if (this.atOccurrence)
-        return {line: this.atOccurrence.from.node, character: this.atOccurrence.from.offset};
+        return {line: this.pos.from.node, character: this.pos.from.offset};
     }
   };
 
