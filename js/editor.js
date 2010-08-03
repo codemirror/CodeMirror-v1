@@ -823,7 +823,7 @@ var Editor = (function(){
           this.options.saveFunction();
           event.stop();
         }
-        else if (internetExplorer && code == 86) {
+        else if (code == 86) { // V
           this.reroutePasteEvent();
         }
       }
@@ -845,9 +845,6 @@ var Editor = (function(){
         event.stop();
       else if (electric && electric.indexOf(event.character) != -1)
         this.parent.setTimeout(function(){self.indentAtCursor(null);}, 0);
-      else if ((event.character == "v" || event.character == "V")
-               && (event.ctrlKey || event.metaKey) && !event.altKey) // ctrl-V
-        this.reroutePasteEvent();
       // Work around a bug where pressing backspace at the end of a
       // line, or delete at the start, often causes the cursor to jump
       // to the start of the line in Opera 10.60.
