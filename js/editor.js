@@ -393,6 +393,12 @@ var Editor = (function(){
         else
           document.designMode = "on";
 
+        // Work around issue where you have to click on the actual
+        // body of the document to focus it in IE, making focusing
+        // hard when the document is small.
+        if (internetExplorer && options.height != "dynamic")
+          document.body.style.minHeight = options.height;
+
         document.documentElement.style.borderWidth = "0";
         if (!options.textWrapping)
           container.style.whiteSpace = "nowrap";
