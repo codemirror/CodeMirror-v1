@@ -47,3 +47,7 @@ pre.code {
 .warn {
   color: #C00;
 }
+
+dl dl {
+  margin: 0;
+}

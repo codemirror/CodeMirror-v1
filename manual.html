@@ -324,6 +324,18 @@
       This option can be changed at run-time using the
       <code>setTabMode(mode)</code> method.</dd>
 
+      <dt><code>enterMode</code></dt><dd>Determines how a new line
+      created by pressing enter is indented. Supported modes are:
+      <dl>
+        <dt><code>"indent"</code></dt><dd>The default. Causes the new
+        line to be intented by the rules of the parser.</dd>
+        <dt><code>"keep"</code></dt><dd>Keeps the indentation of the
+        previous line.</dd>
+        <dt><code>"flat"</code></dt><dd>Never indents new lines.</dd>
+      </dl>
+      The <code>setEnterMode</code> method can be used to change this
+      option in a running editor.</dd>
+
       <dt><code>reindentOnLoad</code></dt><dd>When <code>true</code>,
       this causes the content of the editor to be reindented
       immediately when the editor loads. Defaults to

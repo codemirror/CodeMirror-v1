@@ -49,6 +49,7 @@ var CodeMirror = (function(){
     autoMatchParens: false,
     parserConfig: null,
     tabMode: "indent", // or "spaces", "default", "shift"
+    enterMode: "indent", // or "keep", "flat"
     reindentOnLoad: false,
     activeTokens: null,
     cursorActivity: null,
@@ -251,6 +252,7 @@ var CodeMirror = (function(){
     setIndentUnit: function(unit) {this.win.indentUnit = unit;},
     setUndoDepth: function(depth) {this.editor.history.maxDepth = depth;},
     setTabMode: function(mode) {this.options.tabMode = mode;},
+    setEnterMode: function(mode) {this.options.enterMode = mode;},
     setLineNumbers: function(on) {
       if (on && !this.lineNumbers) {
         this.lineNumbers = addLineNumberDiv(this.wrapping);

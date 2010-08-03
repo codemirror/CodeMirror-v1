@@ -762,7 +762,8 @@ var Editor = (function(){
         }
         else {
           select.insertNewlineAtCursor(this.win);
-          this.indentAtCursor();
+          var mode = this.options.enterMode;
+          if (mode != "flat") this.indentAtCursor(mode == "keep" ? "keep" : undefined);
           select.scrollToCursor(this.container);
         }
         event.stop();
@@ -878,26 +879,39 @@ var Editor = (function(){
     // so that it has an indentation method. Returns the whitespace
     // element that has been modified or created (if any).
     indentLineAfter: function(start, direction) {
+      function whiteSpaceAfter(node) {
+        var ws = node ? node.nextSibling : self.container.firstChild;
+        if (!ws || !hasClass(ws, "whitespace")) return null;
+        return ws;
+      }
+
       // whiteSpace is the whitespace span at the start of the line,
       // or null if there is no such node.
-      var whiteSpace = start ? start.nextSibling : this.container.firstChild;
-      if (whiteSpace && !hasClass(whiteSpace, "whitespace"))
-        whiteSpace = null;
-
-      // Sometimes the start of the line can influence the correct
-      // indentation, so we retrieve it.
-      var firstText = whiteSpace ? whiteSpace.nextSibling : (start ? start.nextSibling : this.container.firstChild);
-      var nextChars = (start && firstText && firstText.currentText) ? firstText.currentText : "";
-
-      // Ask the lexical context for the correct indentation, and
-      // compute how much this differs from the current indentation.
+      var self = this, whiteSpace = whiteSpaceAfter(start);
       var newIndent = 0, curIndent = whiteSpace ? whiteSpace.currentText.length : 0;
-      if (direction != null && this.options.tabMode == "shift")
-        newIndent = direction ? curIndent + indentUnit : Math.max(0, curIndent - indentUnit)
-      else if (start)
-        newIndent = start.indentation(nextChars, curIndent, direction);
-      else if (Editor.Parser.firstIndentation)
-        newIndent = Editor.Parser.firstIndentation(nextChars, curIndent, direction);
+
+      if (direction == "keep") {
+        if (start) {
+          var prevWS = whiteSpaceAfter(startOfLine(start.previousSibling))
+          if (prevWS) newIndent = prevWS.currentText.length;
+        }
+      }
+      else {
+        // Sometimes the start of the line can influence the correct
+        // indentation, so we retrieve it.
+        var firstText = whiteSpace ? whiteSpace.nextSibling : (start ? start.nextSibling : this.container.firstChild);
+        var nextChars = (start && firstText && firstText.currentText) ? firstText.currentText : "";
+
+        // Ask the lexical context for the correct indentation, and
+        // compute how much this differs from the current indentation.
+        if (direction != null && this.options.tabMode == "shift")
+          newIndent = direction ? curIndent + indentUnit : Math.max(0, curIndent - indentUnit)
+        else if (start)
+          newIndent = start.indentation(nextChars, curIndent, direction);
+        else if (Editor.Parser.firstIndentation)
+          newIndent = Editor.Parser.firstIndentation(nextChars, curIndent, direction);
+      }
+      
       var indentDiff = newIndent - curIndent;
 
       // If there is too much, this is just a matter of shrinking a span.
