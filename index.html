@@ -19,10 +19,6 @@
   <h2 class="underline">In-browser code editing made almost bearable</h2>
 </div>
 <div style="float: right; padding-left: 10px;">
-  <form action="https://www.paypal.com/cgi-bin/webscr" method="post" id="paypal">
-    <input type="hidden" name="cmd" value="_s-xclick"/>
-    <input type="hidden" name="hosted_button_id" value="3FVHS5FGUY7CC"/>
-  </form>
   <img src="css/people.jpg" alt=""/><br/>
   <div class="donate">
     Make a donation:
@@ -39,6 +35,10 @@
       IBAN: <i>NL26 RABO 0147 8507 70</i>
     </div>
   </div>
+  <form action="https://www.paypal.com/cgi-bin/webscr" method="post" id="paypal">
+    <input type="hidden" name="cmd" value="_s-xclick"/>
+    <input type="hidden" name="hosted_button_id" value="3FVHS5FGUY7CC"/>
+  </form>
 </div>
 
 <p>CodeMirror is a JavaScript library that can be used to create a
@@ -89,7 +89,7 @@ parsers...</p>
 <h2>Releases</h2>
 
 <p class="rel"><em>22-07-2010</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.8.zip">Version
+href="http://codemirror.net/codemirror-0.8.zip">Version
 0.8</a>:</p>
 
 <ul class="rel">
@@ -114,7 +114,7 @@ href="http://marijn.haverbeke.nl/codemirror/codemirror-0.8.zip">Version
 </ul>
 
 <p class="rel"><em>21-06-2010</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.7.zip">Version
+href="http://codemirror.net/codemirror/codemirror-0.7.zip">Version
 0.7</a>:</p>
 
 <ul class="rel">
@@ -134,7 +134,7 @@ href="http://marijn.haverbeke.nl/codemirror/codemirror-0.7.zip">Version
 </ul>
 
 <p class="rel"><em>27-04-2010</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.67.zip">Version
+href="http://codemirror.net/codemirror-0.67.zip">Version
 0.67</a>: More consistent page-up/page-down behaviour across browsers.
 Fix some issues with hidden editors looping forever when line-numbers
 were enabled. Make PHP parser parse <code>"\\"</code> correctly. Have
@@ -144,7 +144,7 @@ cursor currently is. Add new <code>setStylesheet</code> function to
 switch style-sheets in a running editor.</p>
 
 <p class="rel"><em>01-03-2010</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.66.zip">Version
+href="http://codemirror.net/codemirror-0.66.zip">Version
 0.66</a>: Adds <code>removeLine</code> method to API. Introduces the
 <a href="contrib/plsql/index.html">PLSQL parser</a>. Marks XML errors
 by adding (rather than replacing) a CSS class, so that they can be
@@ -152,7 +152,7 @@ disabled by modifying their style. Fixes several selection bugs, and a
 number of small glitches.</p>
 
 <p class="rel"><em>12-11-2009</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.65.zip">Version
+href="http://codemirror.net/codemirror-0.65.zip">Version
 0.65</a>: Add support for having both line-wrapping and line-numbers
 turned on, make paren-highlighting style customisable
 (<code>markParen</code> and <code>unmarkParen</code> config options),
@@ -160,7 +160,7 @@ work around a selection bug that Opera <em>re</em>introduced in
 version 10.</p>
 
 <p class="rel"><em>23-10-2009</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.64.zip">Version
+href="http://codemirror.net/codemirror-0.64.zip">Version
 0.64</a>: Solves some issues introduced by the paste-handling changes
 from the previous release. Adds <code>setSpellcheck</code>,
 <code>setTextWrapping</code>, <code>setIndentUnit</code>,
@@ -172,13 +172,13 @@ And, as usual, add workarounds for various newly discovered browser
 incompatibilities.</p>
 
 <p class="rel"><em>31-08-2009</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.63.zip">Version
+href="http://codemirror.net/codemirror-0.63.zip">Version
 0.63</a>: Overhaul of paste-handling (less fragile), fixes for several
 serious IE8 issues (cursor jumping, end-of-document bugs) and a number
 of small problems.</p>
 
 <p class="rel"><em>30-05-2009</em>: <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-0.62.zip">Version
+href="http://codemirror.net/codemirror-0.62.zip">Version
 0.62</a>: Introduces <a href="contrib/python/index.html">Python</a>
 and <a href="contrib/lua/index.html">Lua</a> parsers. Add
 <code>setParser</code> (on-the-fly mode changing) and
@@ -205,14 +205,14 @@ against those.</p>
 
 <p>All of CodeMirror is released under a <a
 href="LICENSE">zlib-style</a> license. To get it, you can download the
-<a href="http://marijn.haverbeke.nl/codemirror/codemirror.zip">latest
+<a href="http://codemirror.net/codemirror.zip">latest
 release</a> or the current <a
-href="http://marijn.haverbeke.nl/codemirror/codemirror-latest.zip">development
+href="http://codemirror.net/codemirror-latest.zip">development
 snapshot</a> as zip files, try the <a href="compress.html">compression
 API</a> to create a compressed version, or use <a
 href="http://git-scm.com/">git</a> to get the repository:</p>
 
-<pre class="code">git clone http://marijn.haverbeke.nl/codemirror/.git</pre>
+<pre class="code">git clone http://marijn.haverbeke.nl/git/codemirror</pre>
 
 <p>This second method is recommended if you are planning to hack on
 CodeMirror &#x2015; it makes it easy to record your patches and share
