@@ -834,7 +834,7 @@ var Editor = (function(){
     // and prevent Opera from handling enter and tab anyway.
     keyPress: function(event) {
       this.keyUpOrPressAfterLastKeyDown = true;
-      var electric = Editor.Parser.electricChars, self = this;
+      var electric = this.options.electricChars && Editor.Parser.electricChars, self = this;
       // Hack for Opera, and Firefox on OS X, in which stopping a
       // keydown event does not prevent the associated keypress event
       // from happening, so we have to cancel enter and tab again

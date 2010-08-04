@@ -50,6 +50,7 @@ var CodeMirror = (function(){
     parserConfig: null,
     tabMode: "indent", // or "spaces", "default", "shift"
     enterMode: "indent", // or "keep", "flat"
+    electricChars: true,
     reindentOnLoad: false,
     activeTokens: null,
     cursorActivity: null,
