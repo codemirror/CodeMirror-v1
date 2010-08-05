@@ -960,7 +960,7 @@ var tokenizePHP = (function() {
     }
     var ch = source.next();
     if (ch == "'" || ch == "\"")
-      return readMultilineString(ch)
+      return readMultilineString(ch);
     else if (ch == "#")
       return readSingleLineComment();
     else if (ch == "$")
