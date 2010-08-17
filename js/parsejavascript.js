@@ -218,6 +218,7 @@ var JSParser = Editor.Parser = (function() {
     function expect(wanted){
       return function expecting(type){
         if (type == wanted) cont();
+        else if (wanted == ";") pass();
         else cont(arguments.callee);
       };
     }
@@ -236,6 +237,7 @@ var JSParser = Editor.Parser = (function() {
       else if (type == "keyword a") cont(pushlex("form"), expression, statement, poplex);
       else if (type == "keyword b") cont(pushlex("form"), statement, poplex);
       else if (type == "{") cont(pushlex("}"), block, poplex);
+      else if (type == ";") cont();
       else if (type == "function") cont(functiondef);
       else if (type == "for") cont(pushlex("form"), expect("("), pushlex(")"), forspec1, expect(")"), poplex, statement, poplex);
       else if (type == "variable") cont(pushlex("stat"), maybelabel);
@@ -261,6 +263,7 @@ var JSParser = Editor.Parser = (function() {
     // is found.
     function maybeoperator(type){
       if (type == "operator") cont(expression);
+      else if (type == ";") pass();
       else if (type == "(") cont(pushlex(")"), commasep(expression, ")"), poplex, maybeoperator);
       else if (type == ".") cont(property, maybeoperator);
       else if (type == "[") cont(pushlex("]"), expression, expect("]"), poplex, maybeoperator);
