@@ -55,11 +55,12 @@ var CodeMirror = (function(){
     activeTokens: null,
     cursorActivity: null,
     lineNumbers: false,
+    firstLineNumber: 1,
     indentUnit: 2,
     domain: null
   });
 
-  function addLineNumberDiv(container) {
+  function addLineNumberDiv(container, firstNum) {
     var nums = document.createElement("DIV"),
         scroller = document.createElement("DIV");
     nums.style.position = "absolute";
@@ -74,7 +75,7 @@ var CodeMirror = (function(){
     container.appendChild(nums);
     scroller.className = "CodeMirror-line-numbers";
     nums.appendChild(scroller);
-    scroller.innerHTML = "<div>1</div>";
+    scroller.innerHTML = "<div>" + firstNum + "</div>";
     return nums;
   }
 
@@ -150,7 +151,7 @@ var CodeMirror = (function(){
     if (place.appendChild) place.appendChild(div);
     else place(div);
     div.appendChild(frame);
-    if (options.lineNumbers) this.lineNumbers = addLineNumberDiv(div);
+    if (options.lineNumbers) this.lineNumbers = addLineNumberDiv(div, options.firstLineNumber);
 
     this.win = frame.contentWindow;
     if (!options.domain || !internetExplorer) {
@@ -341,7 +342,7 @@ var CodeMirror = (function(){
             lastNumber = Math.ceil(targetHeight / lineHeight);
         for (var i = scroller.childNodes.length; i <= lastNumber; i++) {
           var div = document.createElement("DIV");
-          div.appendChild(document.createTextNode(fill ? String(i + 1) : "\u00a0"));
+          div.appendChild(document.createTextNode(fill ? String(i + self.options.firstLineNumber) : "\u00a0"));
           scroller.appendChild(div);
         }
       }
@@ -407,7 +408,7 @@ var CodeMirror = (function(){
           node = body.firstChild;
           lineNum = scroller.firstChild;
           pos = 0;
-          next = 1;
+          next = self.options.firstLineNumber;
           work();
         }
 
