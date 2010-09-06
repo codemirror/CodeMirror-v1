@@ -391,7 +391,7 @@ UndoHistory.prototype = {
           // Only adjust if the cursor is after the unchanged part of
           // the line.
           for (var match = 0; match < cursor.offset &&
-               line.text.charAt(match) == prev.text.charAt(match); match++);
+               line.text.charAt(match) == prev.text.charAt(match); match++){}
           if (cursor.offset > match)
             cursordiff = line.text.length - prev.text.length;
         }
