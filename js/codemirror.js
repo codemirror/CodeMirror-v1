@@ -314,7 +314,7 @@ var CodeMirror = (function(){
 
       function sizeBar() {
         if (frame.offsetWidth == 0) return;
-        for (var root = frame; root.parentNode; root = root.parentNode);
+        for (var root = frame; root.parentNode; root = root.parentNode){}
         if (!nums.parentNode || root != document || !win.Editor) {
           // Clear event handlers (their nodes might already be collected, so try/catch)
           try{clear();}catch(e){}
