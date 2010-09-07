@@ -8,6 +8,8 @@ var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test
 var webkit = /AppleWebKit/.test(navigator.userAgent);
 var safari = /Apple Computers, Inc/.test(navigator.vendor);
 var gecko = /gecko\/(\d{8})/i.test(navigator.userAgent);
+var mac = /Mac/.test(navigator.platform);
+
 // TODO this is related to the backspace-at-end-of-line bug. Remove
 // this if Opera gets their act together, make the version check more
 // broad if they don't.
@@ -666,7 +668,7 @@ var Editor = (function(){
     },
 
     reroutePasteEvent: function() {
-      if (this.capturingPaste || window.opera) return;
+      if (this.capturingPaste || window.opera || mac) return;
       this.capturingPaste = true;
       var te = window.frameElement.CodeMirror.textareaHack;
       parent.focus();
