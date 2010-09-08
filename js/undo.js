@@ -380,7 +380,7 @@ UndoHistory.prototype = {
         self.container.insertBefore(line.from, end);
 
       // Add the text.
-      var node = makePartSpan(fixSpaces(line.text), this.container.ownerDocument);
+      var node = makePartSpan(fixSpaces(line.text));
       self.container.insertBefore(node, end);
       // See if the cursor was on this line. Put it back, adjusting
       // for changed line length, if it was.
