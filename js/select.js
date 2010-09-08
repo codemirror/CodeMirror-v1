@@ -569,6 +569,7 @@ var select = {};
 
       range.deleteContents();
       range.insertNode(node);
+      webkitLastLineHack(window.document.body);
 
       // work around weirdness where Opera will magically insert a new
       // BR node when a BR node inside a span is moved around. makes
@@ -590,10 +591,7 @@ var select = {};
     }
 
     select.insertNewlineAtCursor = function(window) {
-      if (webkit)
-        document.execCommand('insertLineBreak');
-      else
-        insertNodeAtCursor(window, window.document.createElement("BR"));
+      insertNodeAtCursor(window, window.document.createElement("BR"));
     };
 
     select.insertTabAtCursor = function(window) {
@@ -615,7 +613,8 @@ var select = {};
       else
         range.setStartBefore(container);
 
-      return {node: topNode, offset: range.toString().length};
+      var text = range.toString();
+      return {node: topNode, offset: text.length};
     };
 
     select.setCursorPos = function(container, from, to) {

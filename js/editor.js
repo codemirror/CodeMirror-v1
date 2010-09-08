@@ -52,6 +52,25 @@ function makePartSpan(value, doc) {
   return span;
 }
 
+// On webkit, when the last BR of the document does not have text
+// behind it, the cursor can not be put on the line after it. This
+// makes pressing enter at the end of the document occasionally do
+// nothing (or at least seem to do nothing). To work around it, this
+// function makes sure the document ends with a span containing a
+// zero-width space character. The traverseDOM iterator filters such
+// character out again, so that the parsers won't see them. This
+// function is called from a few strategic places to make sure the
+// zwsp is restored after the highlighting process eats it.
+var webkitLastLineHack = webkit ?
+  function(container) {
+    var last = container.lastChild;
+    if (!last || !last.hackBR) {
+      var br = document.createElement("BR");
+      br.hackBR = true;
+      container.appendChild(br);
+    }
+  } : function() {};
+
 var Editor = (function(){
   // The HTML elements whose content should be suffixed by a newline
   // when converting them to flat text.
@@ -475,7 +494,11 @@ var Editor = (function(){
       var accum = [];
       select.markSelection(this.win);
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
+      webkitLastLineHack(this.container);
       select.selectMarked();
+      // On webkit, don't count last (empty) line if the webkitLastLineHack BR is present
+      if (webkit && this.container.lastChild.hackBR)
+        accum.pop();
       return cleanText(accum.join(""));
     },
 
@@ -622,6 +645,7 @@ var Editor = (function(){
 
       end = this.replaceRange(start, end, text);
       select.setCursorPos(this.container, end);
+      webkitLastLineHack(this.container);
     },
 
     cursorCoords: function(start) {
@@ -1527,6 +1551,7 @@ var Editor = (function(){
         }
       });
       maybeTouch(from);
+      webkitLastLineHack(this.container);
 
       // The function returns some status information that is used by
       // hightlightDirty to determine whether and where it has to
