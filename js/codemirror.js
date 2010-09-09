@@ -440,21 +440,27 @@ var CodeMirror = (function(){
       this.frame.scrolling = "no";
 
       function updateHeight() {
-        for (var span = body.firstChild, sawBR = false; span; span = span.nextSibling)
-          if (win.isSpan(span) && span.offsetHeight) {
-            lineHeight = span.offsetHeight;
-            if (!sawBR) vmargin = 2 * (self.frame.offsetTop + span.offsetTop + body.offsetTop + (internetExplorer ? 10 : 0));
-            break;
-          }
-        if (lineHeight)
-          self.wrapping.style.height = Math.max(vmargin + lineHeight * (body.getElementsByTagName("BR").length + 1),
-                                                self.options.minHeight) + "px";
+        console.log("updating");
+        var trailingLines = 0, node = body.lastChild, computedHeight;
+        while (node && win.isBR(node)) {
+          if (!node.hackBR) trailingLines++;
+          node = node.previousSibling;
+        }
+        if (node) {
+          lineHeight = node.offsetHeight;
+          computedHeight = node.offsetTop + (1 + trailingLines) * lineHeight;
+        }
+        else if (lineHeight) {
+          computedHeight = trailingLines * lineHeight;
+        }
+        if (computedHeight)
+          self.wrapping.style.height = Math.max(vmargin + computedHeight, self.options.minHeight) + "px";
       }
-      setTimeout(updateHeight, 100);
+      setTimeout(updateHeight, 300);
       self.options.cursorActivity = function(x) {
         if (activity) activity(x);
         clearTimeout(timeout);
-        timeout = setTimeout(updateHeight, 200);
+        timeout = setTimeout(updateHeight, 100);
       };
     }
   };
