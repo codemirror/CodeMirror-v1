@@ -136,7 +136,7 @@ var CSSParser = Editor.Parser = (function() {
           inRule = inDecl = false;
         else if (inBraces && style != "css-comment" && style != "whitespace")
           inRule = true;
-        else if (!inBraces && style == "css-at")
+        else if (!inBraces && style == "css-at" && content != "@media")
           inDecl = true;
 
         return token;
