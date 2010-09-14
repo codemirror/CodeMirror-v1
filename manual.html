@@ -1,20 +1,21 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
   <head>
-    <title>CodeMirror user manual</title>
+    <title>CodeMirror: User Manual</title>
     <link rel="stylesheet" type="text/css" href="css/docs.css"/>
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Sans|Droid+Sans+Mono|Droid+Sans:bold"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   </head>
   <body>
-    <h1 class="underline">CodeMirror user manual</h1>
 
-    <h2>Contents</h2>
+<h1><span class="logo-braces">{ }</span> CodeMirror</h1>
 
-    <ul>
-      <li><a href="#usage">Basic Usage</a></li>
-      <li><a href="#configuration">Configuration</a></li>
-      <li><a href="#parsers">Parsers</a></li>
-      <li><a href="#programming">Programming Interface</a></li>
-      <li><a href="#writeparser">Writing a Parser</a></li>
-    </ul>
+<pre class="grey">
+/* User manual and
+   reference guide */
+</pre>
+
+<div class="clear"><div class="leftbig blk">
 
     <h2 id="usage">Basic Usage</h2>
 
@@ -479,7 +480,7 @@
     href="js/mirrorframe.js"><code>mirrorframe.js</code></a> provides
     a basic example of their usage.</p>
 
-    <h3>Properties</h3>
+    <h3 id="properties">Properties</h3>
 
     <dl>
       <dt><code>frame</code></dt><dd>The editable frame.</dd>
@@ -490,7 +491,7 @@
       <code>CodeMirror-wrapping</code>.</dd>
     </dl>
 
-    <h3>Methods</h3>
+    <h3 id="methods">Methods</h3>
 
     <dl>
       <dt><code>getCode()</code> &#8594;
@@ -583,6 +584,8 @@
       if the cursor position could not be determined (for example, if
       the editor is not focused).</dd>
     </dl>
+
+    <h3 id="lines">Line Manipulation</h3>
 
     <p>For detailed interaction with the content of the editor,
     CodeMirror exposes a line-oriented interface, which allows you to
@@ -719,6 +722,38 @@
     href="js/parsejavascript.js"><code>parsejavascript.js</code></a>,
     <a href="js/parsexml.js"><code>parsexml.js</code></a>, and <a
     href="js/parsecss.js"><code>parsecss.js</code></a>.</p>
+
+</div><div class="rightsmall blk">
+
+  <h2>Contents</h2>
+
+  <ul>
+    <li><a href="#usage">Basic Usage</a></li>
+    <li><a href="#configuration">Configuration</a></li>
+    <li><a href="#parsers">Parsers</a></li>
+    <li><a href="#programming">Programming Interface</a>
+    <ul>
+      <li><a href="#properties">Properties</a></li>
+      <li><a href="#methods">Methods</a></li>
+      <li><a href="#lines">Line Manipulation</a></li>
+    </ul>
+    </li>
+    <li><a href="#writeparser">Writing a Parser</a></li>
+  </ul>
+
+  <h2>Site</h2>
+
+  <ul>
+    <li><a href="index.html">Front Page</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="http://groups.google.com/group/codemirror">Google Group</a></li>
+    <li><a href="compress.html">Compression Helper</a></li>
+    <li><a href="story.html">War Story</a></li>
+  </ul>
+
+</div></div>
+
+<div style="height: 2em">&nbsp;</div>
 
   </body>
 </html>
