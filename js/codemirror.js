@@ -440,7 +440,6 @@ var CodeMirror = (function(){
       this.frame.scrolling = "no";
 
       function updateHeight() {
-        console.log("updating");
         var trailingLines = 0, node = body.lastChild, computedHeight;
         while (node && win.isBR(node)) {
           if (!node.hackBR) trailingLines++;
