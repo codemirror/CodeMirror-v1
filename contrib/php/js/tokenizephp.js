@@ -766,7 +766,7 @@ var tokenizePHP = (function() {
   // Helper regexps
   var isOperatorChar = /[+*&%\/=<>!?.|-]/;
   var isHexDigit = /[0-9A-Fa-f]/;
-  var isWordChar = /[\w\$_]/;
+  var isWordChar = /[\w\$_\\]/;
 
   // Wrapper around phpToken that helps maintain parser state (whether
   // we are inside of a multi-line comment)

@@ -376,7 +376,7 @@ var PHPParser = Editor.Parser = (function() {
         cont(require("("), require(")"));
     }
     function maybedefaultparameter(token){
-      if (token.content == "=") cont(require(["t_string", "string", "number"], [empty_parens_if_array, null, null]));
+      if (token.content == "=") cont(require(["t_string", "string", "number", "atom"], [empty_parens_if_array, null, null]));
     }
     function var_or_reference(token) {
       if(token.type == "variable") cont(maybedefaultparameter);
