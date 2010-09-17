@@ -261,8 +261,9 @@ var JSParser = Editor.Parser = (function() {
     // Called for places where operators, function calls, or
     // subscripts are valid. Will skip on to the next action if none
     // is found.
-    function maybeoperator(type){
-      if (type == "operator") cont(expression);
+    function maybeoperator(type, value){
+      if (type == "operator" && /\+\+|--/.test(value)) cont(maybeoperator);
+      else if (type == "operator") cont(expression);
       else if (type == ";") pass();
       else if (type == "(") cont(pushlex(")"), commasep(expression, ")"), poplex, maybeoperator);
       else if (type == ".") cont(property, maybeoperator);
