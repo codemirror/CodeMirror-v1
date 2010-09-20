@@ -1,0 +1,301 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <script src="../../js/codemirror.js" type="text/javascript"></script>
+    <title>CodeMirror: HTML/XML demonstration</title>
+    <link rel="stylesheet" type="text/css" href="../../css/docs.css"/>
+    <style type="text/css">
+      .CodeMirror-line-numbers {
+        width: 2.2em;
+        color: #aaa;
+        background-color: #eee;
+        text-align: right;
+        padding-right: .3em;
+        font-size: 10pt;
+        font-family: monospace;
+        padding-top: .4em;
+      }
+    </style>
+  </head>
+  <body style="padding: 20px;">
+
+<p>This is a simple demonstration of the XML/HTML indentation module
+for <a href="index.html">CodeMirror</a>. The <a
+href="js/parsexml.js">javascript</a> file contains some comments with
+more information.</p>
+
+<div class="border">
+<textarea id="code" cols="120" rows="50">
+    xquery version &quot;1.0-ml&quot;;
+    (:
+     : Client Query Application
+     :
+     : Copyright (c) 2002-2010 Mark Logic Corporation. All Rights Reserved.
+     :
+     : Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+     : you may not use this file except in compliance with the License.
+     : You may obtain a copy of the License at
+     :
+     : http://www.apache.org/licenses/LICENSE-2.0
+     :
+     : Unless required by applicable law or agreed to in writing, software
+     : distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+     : WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     : See the License for the specific language governing permissions and
+     : limitations under the License.
+     :
+     : The use of the Apache License does not indicate that this project is
+     : affiliated with the Apache Software Foundation.
+     :)
+
+    import module namespace c = &quot;com.marklogic.developer.cq.controller&quot;
+     at &quot;lib-controller.xqy&quot;;
+
+    import module namespace d = &quot;com.marklogic.developer.cq.debug&quot;
+     at &quot;lib-debug.xqy&quot;;
+
+    import module namespace su = &quot;com.marklogic.developer.cq.security&quot;
+     at &quot;lib-security-utils.xqy&quot;;
+
+    import module namespace v = &quot;com.marklogic.developer.cq.view&quot;
+     at &quot;lib-view.xqy&quot;;
+
+    import module namespace x = &quot;com.marklogic.developer.cq.xquery&quot;
+     at &quot;lib-xquery.xqy&quot;;
+
+    declare namespace sess = &quot;com.marklogic.developer.cq.session&quot;;
+
+    declare option xdmp:mapping &quot;false&quot;;
+
+    declare variable $SESSIONS as element(sess:session)* := c:sessions();
+
+    d:check-debug(),
+    c:set-content-type(),
+
+    &lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+    {
+      v:get-html-head(&#39;sessions&#39;, false(), true()),
+      &lt;body onload=&quot;sessionsOnLoad()&quot;&gt;
+        &lt;form action=&quot;&quot; method=&quot;post&quot; id=&quot;session-form&quot;&gt;
+          &lt;input type=&quot;hidden&quot; name=&quot;{$d:DEBUG-FIELD}&quot; value=&quot;{$d:DEBUG}&quot;/&gt;
+
+          &lt;h1 class=&quot;head1 accent-color&quot;&gt;Welcome to cq&lt;/h1&gt;
+
+          &lt;p class=&quot;instruction&quot;&gt;This is Mark Logic cq,
+          a web-based query tool for MarkLogic Server.
+          You can find out more about MarkLogic Server and cq
+          at &lt;a href=&quot;http://developer.marklogic.com/&quot; tabindex=&quot;-1&quot;
+          &gt;developer.marklogic.com&lt;/a&gt;.
+          You may also find it helpful to read the cq
+          &lt;a href=&quot;README.txt&quot; tabindex=&quot;-1&quot;&gt;README&lt;/a&gt; file.
+          &lt;/p&gt;
+          &lt;p&gt;
+      The admin user can install pre-defined roles for cq by clicking on this
+      &lt;a href=&quot;install-roles.xqy&quot;&gt;install-roles.xqy&lt;/a&gt; link.
+          &lt;/p&gt;
+          &lt;p&gt;&lt;a href=&quot;.&quot;&gt;return to cq&lt;/a&gt;&lt;/p&gt;
+          {
+        (: placeholder for local sessions :)
+        element div {
+          attribute id { &quot;sessions-local&quot; },
+          attribute class { &quot;hidden&quot; },
+          element h1 { &quot;Local Sessions&quot; },
+          element p {
+            &#39;These sessions use storage provided by your browser.&#39;,
+            &#39;You can also &#39;,
+            element a {
+              attribute href { &#39;session-import-local.xqy&#39; },
+              &#39;import&#39; },
+            &#39; sessions from local XML files.&#39;
+          }
+        },
+        element h1 { &#39;Server Sessions&#39; },
+            (: force session initialization :)
+            let $s := $c:SESSION return (),
+            if (exists($c:SESSION-EXCEPTION))
+            then &lt;div&gt;
+              &lt;h2&gt;WARNING: server session storage has been disabled,
+                  because of an error.&lt;/h2&gt;
+              &lt;p&gt;
+              Perhaps you have disabled server storage of sessions
+              for this instance of cq.
+              If so, you can ignore this error and use local sessions,
+              or &lt;a href=&quot;.&quot;&gt;return to cq&lt;/a&gt;.
+              &lt;/p&gt;
+              {
+                if ($c:SESSION-DB eq 0)
+                then
+                &lt;div&gt;
+                &lt;p&gt;
+                You are running cq from the filesystem.
+                Make sure that the directory &lt;code&gt;{$c:SESSION-DIRECTORY}&lt;/code&gt;
+                exists, and that MarkLogic Server can write to it.
+                &lt;/p&gt;
+                &lt;p&gt;
+                  Make sure that the current user
+                  has the following exec privileges:
+                  &lt;ul&gt;
+          &lt;li&gt;&lt;code&gt;http://marklogic.com/xdmp/privileges/xdmp-document-get
+          &lt;/code&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;code&gt;http://marklogic.com/xdmp/privileges/xdmp-filesystem-directory
+          &lt;/code&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;code&gt;http://marklogic.com/xdmp/privileges/xdmp-save
+          &lt;/code&gt;&lt;/li&gt;
+                  &lt;/ul&gt;
+                &lt;/p&gt;
+                &lt;/div&gt;
+                else
+                &lt;p&gt;
+                You are running cq from a modules database,
+                &lt;code&gt;{ xdmp:database-name($c:SESSION-DB) }&lt;/code&gt;.
+                You are logged in as &lt;code&gt;{ $su:USER }&lt;/code&gt;.
+                Make sure that the directory &lt;code&gt;{$c:SESSION-DIRECTORY}&lt;/code&gt;
+                exists, and that your login can write to it.
+                &lt;/p&gt;
+              }
+              &lt;p&gt;
+        The admin user may be able to fix this problem by clicking on this
+        &lt;a href=&quot;install-roles.xqy&quot;&gt;install-roles.xqy&lt;/a&gt; link,
+        then granting the &lt;code&gt;cq-sessions&lt;/code&gt; roles to your user login.
+        Please consult the
+        &lt;a href=&quot;README.txt&quot; tabindex=&quot;-1&quot;&gt;README&lt;/a&gt;
+        for more information about cq.
+              &lt;/p&gt;
+              &lt;p&gt;The complete error message follows:&lt;/p&gt;
+              &lt;hr/&gt;
+              &lt;pre&gt;{
+                xdmp:quote($c:SESSION-EXCEPTION)
+              }&lt;/pre&gt;
+              &lt;hr/&gt;
+            &lt;/div&gt;
+            else
+            &lt;div&gt;
+              &lt;p&gt;These sessions are stored on the server.&lt;/p&gt;
+              &lt;p&gt;On this page you can start a new session,
+              or resume a saved session.
+              Your sessions will be stored in the modules location
+              on the current server:
+              { xdmp:get-request-header(&quot;Host&quot;) }.
+              Your sessions will be stored in the {
+                if (xdmp:modules-database() eq 0) then &quot;filesystem,&quot;
+                else (&quot;database&quot;, xdmp:database-name(xdmp:modules-database())),
+                &quot; &quot;
+              } under the path &lt;code&gt;{ $c:SESSION-DIRECTORY }&lt;/code&gt;.
+              &lt;/p&gt;
+              &lt;p&gt;
+              Note that if your modules location is a database,
+              you must have write permission
+              for the uri &lt;code&gt;{ $c:SESSION-DIRECTORY }&lt;/code&gt;
+              in order to create sessions.
+              If you do not have read permission for a session,
+              you will not be able to view it.
+              If a session is locked by another user,
+              you will not be able to resume it.
+              &lt;/p&gt;
+              &lt;script&gt;
+              var list = new SessionList();
+              &lt;/script&gt;
+    {
+      let $sessions := c:sessions()
+      let $d := d:debug((&quot;sessions:&quot;, count($sessions)))
+      return
+        if (exists($sessions))
+        then element div {
+              &lt;br/&gt;,
+              element table {
+                element tr {
+                  for $i in (
+                    &quot;session name&quot;, &quot;user&quot;, &quot;created&quot;, &quot;last modified&quot;,
+                    &quot;&quot;)
+                  return element th { $i }
+                },
+                for $i in $sessions
+                let $id := c:session-id($i)
+                let $uri := c:session-uri($i)
+                (: we only care about the lock that expires last :)
+                let $conflicting := c:conflicting-locks($uri, 1)
+                let $name as xs:string := ($i/sess:name, &quot;(unnamed)&quot;)[1]
+                return element tr {
+                  element td { $name },
+                  element td { string($i/sec:user) },
+                  element td { data($i/sess:created) },
+                  element td { data($i/sess:last-modified) },
+                  element td {
+                    if (empty($conflicting)) then () else
+                    text {
+                      &quot;by&quot;, $conflicting/lock:owner,
+                      &quot;until&quot;, adjust-dateTime-to-timezone(
+                        x:epoch-seconds-to-dateTime(
+                          $conflicting/lock:timestamp + $conflicting/lock:timeout
+                        )
+                      )
+                    },
+                    (: only show resume button if there are no conflicting locks :)
+                    element input {
+                      attribute type { &quot;button&quot; },
+                      attribute title {
+                        data($i/sess:query-buffers/sess:query[1]) },
+                      attribute onclick {
+                        concat(&quot;list.resumeSession(&#39;&quot;, $id, &quot;&#39;)&quot;) },
+                      attribute value {
+                        &quot;Resume&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
+                    }[ not($conflicting) ],
+                    $x:NBSP,
+                    (: clone button :)
+                    element input {
+                      attribute type { &quot;button&quot; },
+                      attribute title { &quot;clone this session&quot; },
+                      attribute onclick {
+                        concat(&quot;list.cloneSession(&#39;&quot;, $id, &quot;&#39;, this)&quot;) },
+                      attribute value { &quot;Clone&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
+                    },
+                    $x:NBSP,
+                    (: export button :)
+                    element input {
+                      attribute type { &quot;button&quot; },
+                      attribute title { &quot;export this session&quot; },
+                      attribute onclick {
+                        concat(&quot;list.exportServerSession(&#39;&quot;, $id, &quot;&#39;, this)&quot;) },
+                      attribute value { &quot;Export&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
+                    },
+                    $x:NBSP,
+                    (: only show delete button if there are no conflicting locks :)
+                    element input {
+                      attribute type { &quot;button&quot; },
+                      attribute title { &quot;permanently delete this session&quot; },
+                      attribute onclick {
+                        concat(&quot;list.deleteSession(&#39;&quot;, $id, &quot;&#39;, this)&quot;) },
+                      attribute value { &quot;Delete&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
+                    }[ not($conflicting) ]
+                  }
+                }
+              }
+        }
+        else &lt;p class=&quot;instruction&quot;&gt;
+        There are no resumable sessions. Please create a new session.
+        &lt;/p&gt;
+    }
+              &lt;input type=&quot;button&quot; value=&quot;New Server Session&quot;
+              id=&quot;newSession2&quot; name=&quot;newSession2&quot; onclick=&quot;list.newSession()&quot;/&gt;
+            &lt;/div&gt;
+          }
+        &lt;/form&gt;
+      &lt;/body&gt;
+    }
+    &lt;/html&gt;
+
+    (: session.xqy :)
+</textarea>
+</div>
+
+<script type="text/javascript">
+  var editor = CodeMirror.fromTextArea('code', {
+    height: "550px",
+    parserfile: ["../../js/parsexml.js", "../contrib/xquery/js/tokenizexquery.js", "../contrib/xquery/js/parsexquery.js" ],
+    stylesheet: ["../../css/xmlcolors.css", "css/xqcolors.css"],
+    path: "../../js/",
+    continuousScanning: false, //500,
+    lineNumbers: true
+  });
+</script>
+  </body>
+</html>

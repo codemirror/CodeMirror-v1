@@ -1,0 +1,67 @@
+html {
+  cursor: text;
+}
+
+.editbox {
+  margin: .4em;
+  padding: 0;
+  font-family: monospace;
+  font-size: 10pt;
+  color: black;
+}
+
+pre.code, .editbox {
+  color: #666666;
+}
+
+.editbox p {
+  margin: 0;
+}
+
+span.xq-comment {
+  color: #AA7700;
+}
+
+span.xq-keyword {
+  color: #770088;
+}
+
+span.xq-keyworda {
+  color: red;
+}
+
+span.xq-keywordb {
+  color: blue;
+}
+
+span.xq-keywordc {
+  color: orange;
+}
+
+span.xq-punctuation {
+  color: red;
+}
+
+span.xq-operator {
+  color: #666666;
+}
+
+span.xq-variable {
+  color: black;
+}
+
+span.xq-variabledef {
+  color: #0000FF;
+}
+
+span.xq-localvariable {
+  color: #004499;
+}
+
+span.xq-property {
+  color: black;
+}
+
+span.xq-string {
+  color: #AA2222;
+}
