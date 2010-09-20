@@ -25,272 +25,403 @@ more information.</p>
 
 <div class="border">
 <textarea id="code" cols="120" rows="50">
-    xquery version &quot;1.0-ml&quot;;
-    (:
-     : Client Query Application
-     :
-     : Copyright (c) 2002-2010 Mark Logic Corporation. All Rights Reserved.
-     :
-     : Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
-     : you may not use this file except in compliance with the License.
-     : You may obtain a copy of the License at
-     :
-     : http://www.apache.org/licenses/LICENSE-2.0
-     :
-     : Unless required by applicable law or agreed to in writing, software
-     : distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
-     : WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     : See the License for the specific language governing permissions and
-     : limitations under the License.
-     :
-     : The use of the Apache License does not indicate that this project is
-     : affiliated with the Apache Software Foundation.
-     :)
+xquery version &quot;1.0-ml&quot;;
+(: this is
+ : a 
+   "comment" :)
+let $let := &lt;x&gt;&quot;test&quot;&lt;/x&gt;
+return element element {
+  attribute attribute { 1 },
+  element test { &#39;a&#39; },
+  attribute foo { &quot;bar&quot; },
+  fn:doc()[ foo/@bar eq $let ],
+  //x }    
+  
+  
+  module namespace comoms-dls = &quot;http://marklogic.com/comoms-dls&quot;;
+  import module namespace dls = &quot;http://marklogic.com/xdmp/dls&quot; at &quot;/MarkLogic/dls.xqy&quot;;
+  import module namespace comoms-util = &quot;http://marklogic.com/comoms-util&quot; at &quot;/lib/comoms-util.xqy&quot;;
+  import module namespace comoms-user = &quot;http://marklogic.com/comoms-user&quot; at &quot;/lib/comoms-user.xqy&quot;;
 
-    import module namespace c = &quot;com.marklogic.developer.cq.controller&quot;
-     at &quot;lib-controller.xqy&quot;;
 
-    import module namespace d = &quot;com.marklogic.developer.cq.debug&quot;
-     at &quot;lib-debug.xqy&quot;;
 
-    import module namespace su = &quot;com.marklogic.developer.cq.security&quot;
-     at &quot;lib-security-utils.xqy&quot;;
 
-    import module namespace v = &quot;com.marklogic.developer.cq.view&quot;
-     at &quot;lib-view.xqy&quot;;
+  (:~
+   : Make a call to insert and Manage. This IS NOT DONE WITHIN AN EVAL becuase
+   : haven&#39;t figured out how to pass the permissions variable through to be bound
+   :)
+  declare function comoms-dls:insert($uri as xs:string, $doc as node(),  $note as xs:string){
+      let $log := xdmp:log(&quot;in comoms-dls:insert.&quot;)
+      let $collection := &quot;DRAFTS&quot;
+      let $permissions := (xdmp:permission(&#39;mkp-admin&#39;, &#39;update&#39;), xdmp:permission(&#39;mkp-admin&#39;, &#39;read&#39;)) 
+      return dls:document-insert-and-manage($uri, fn:false(), $doc, $note, $permissions, $collection)
 
-    import module namespace x = &quot;com.marklogic.developer.cq.xquery&quot;
-     at &quot;lib-xquery.xqy&quot;;
-
-    declare namespace sess = &quot;com.marklogic.developer.cq.session&quot;;
-
-    declare option xdmp:mapping &quot;false&quot;;
-
-    declare variable $SESSIONS as element(sess:session)* := c:sessions();
-
-    d:check-debug(),
-    c:set-content-type(),
-
-    &lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
-    {
-      v:get-html-head(&#39;sessions&#39;, false(), true()),
-      &lt;body onload=&quot;sessionsOnLoad()&quot;&gt;
-        &lt;form action=&quot;&quot; method=&quot;post&quot; id=&quot;session-form&quot;&gt;
-          &lt;input type=&quot;hidden&quot; name=&quot;{$d:DEBUG-FIELD}&quot; value=&quot;{$d:DEBUG}&quot;/&gt;
-
-          &lt;h1 class=&quot;head1 accent-color&quot;&gt;Welcome to cq&lt;/h1&gt;
-
-          &lt;p class=&quot;instruction&quot;&gt;This is Mark Logic cq,
-          a web-based query tool for MarkLogic Server.
-          You can find out more about MarkLogic Server and cq
-          at &lt;a href=&quot;http://developer.marklogic.com/&quot; tabindex=&quot;-1&quot;
-          &gt;developer.marklogic.com&lt;/a&gt;.
-          You may also find it helpful to read the cq
-          &lt;a href=&quot;README.txt&quot; tabindex=&quot;-1&quot;&gt;README&lt;/a&gt; file.
-          &lt;/p&gt;
-          &lt;p&gt;
-      The admin user can install pre-defined roles for cq by clicking on this
-      &lt;a href=&quot;install-roles.xqy&quot;&gt;install-roles.xqy&lt;/a&gt; link.
-          &lt;/p&gt;
-          &lt;p&gt;&lt;a href=&quot;.&quot;&gt;return to cq&lt;/a&gt;&lt;/p&gt;
-          {
-        (: placeholder for local sessions :)
-        element div {
-          attribute id { &quot;sessions-local&quot; },
-          attribute class { &quot;hidden&quot; },
-          element h1 { &quot;Local Sessions&quot; },
-          element p {
-            &#39;These sessions use storage provided by your browser.&#39;,
-            &#39;You can also &#39;,
-            element a {
-              attribute href { &#39;session-import-local.xqy&#39; },
-              &#39;import&#39; },
-            &#39; sessions from local XML files.&#39;
-          }
-        },
-        element h1 { &#39;Server Sessions&#39; },
-            (: force session initialization :)
-            let $s := $c:SESSION return (),
-            if (exists($c:SESSION-EXCEPTION))
-            then &lt;div&gt;
-              &lt;h2&gt;WARNING: server session storage has been disabled,
-                  because of an error.&lt;/h2&gt;
-              &lt;p&gt;
-              Perhaps you have disabled server storage of sessions
-              for this instance of cq.
-              If so, you can ignore this error and use local sessions,
-              or &lt;a href=&quot;.&quot;&gt;return to cq&lt;/a&gt;.
-              &lt;/p&gt;
-              {
-                if ($c:SESSION-DB eq 0)
-                then
-                &lt;div&gt;
-                &lt;p&gt;
-                You are running cq from the filesystem.
-                Make sure that the directory &lt;code&gt;{$c:SESSION-DIRECTORY}&lt;/code&gt;
-                exists, and that MarkLogic Server can write to it.
-                &lt;/p&gt;
-                &lt;p&gt;
-                  Make sure that the current user
-                  has the following exec privileges:
-                  &lt;ul&gt;
-          &lt;li&gt;&lt;code&gt;http://marklogic.com/xdmp/privileges/xdmp-document-get
-          &lt;/code&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;code&gt;http://marklogic.com/xdmp/privileges/xdmp-filesystem-directory
-          &lt;/code&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;code&gt;http://marklogic.com/xdmp/privileges/xdmp-save
-          &lt;/code&gt;&lt;/li&gt;
-                  &lt;/ul&gt;
-                &lt;/p&gt;
-                &lt;/div&gt;
-                else
-                &lt;p&gt;
-                You are running cq from a modules database,
-                &lt;code&gt;{ xdmp:database-name($c:SESSION-DB) }&lt;/code&gt;.
-                You are logged in as &lt;code&gt;{ $su:USER }&lt;/code&gt;.
-                Make sure that the directory &lt;code&gt;{$c:SESSION-DIRECTORY}&lt;/code&gt;
-                exists, and that your login can write to it.
-                &lt;/p&gt;
-              }
-              &lt;p&gt;
-        The admin user may be able to fix this problem by clicking on this
-        &lt;a href=&quot;install-roles.xqy&quot;&gt;install-roles.xqy&lt;/a&gt; link,
-        then granting the &lt;code&gt;cq-sessions&lt;/code&gt; roles to your user login.
-        Please consult the
-        &lt;a href=&quot;README.txt&quot; tabindex=&quot;-1&quot;&gt;README&lt;/a&gt;
-        for more information about cq.
-              &lt;/p&gt;
-              &lt;p&gt;The complete error message follows:&lt;/p&gt;
-              &lt;hr/&gt;
-              &lt;pre&gt;{
-                xdmp:quote($c:SESSION-EXCEPTION)
-              }&lt;/pre&gt;
-              &lt;hr/&gt;
-            &lt;/div&gt;
-            else
-            &lt;div&gt;
-              &lt;p&gt;These sessions are stored on the server.&lt;/p&gt;
-              &lt;p&gt;On this page you can start a new session,
-              or resume a saved session.
-              Your sessions will be stored in the modules location
-              on the current server:
-              { xdmp:get-request-header(&quot;Host&quot;) }.
-              Your sessions will be stored in the {
-                if (xdmp:modules-database() eq 0) then &quot;filesystem,&quot;
-                else (&quot;database&quot;, xdmp:database-name(xdmp:modules-database())),
-                &quot; &quot;
-              } under the path &lt;code&gt;{ $c:SESSION-DIRECTORY }&lt;/code&gt;.
-              &lt;/p&gt;
-              &lt;p&gt;
-              Note that if your modules location is a database,
-              you must have write permission
-              for the uri &lt;code&gt;{ $c:SESSION-DIRECTORY }&lt;/code&gt;
-              in order to create sessions.
-              If you do not have read permission for a session,
-              you will not be able to view it.
-              If a session is locked by another user,
-              you will not be able to resume it.
-              &lt;/p&gt;
-              &lt;script&gt;
-              var list = new SessionList();
-              &lt;/script&gt;
-    {
-      let $sessions := c:sessions()
-      let $d := d:debug((&quot;sessions:&quot;, count($sessions)))
+      (:
+      let $collection := &quot;DRAFTS&quot;
       return
-        if (exists($sessions))
-        then element div {
-              &lt;br/&gt;,
-              element table {
-                element tr {
-                  for $i in (
-                    &quot;session name&quot;, &quot;user&quot;, &quot;created&quot;, &quot;last modified&quot;,
-                    &quot;&quot;)
-                  return element th { $i }
-                },
-                for $i in $sessions
-                let $id := c:session-id($i)
-                let $uri := c:session-uri($i)
-                (: we only care about the lock that expires last :)
-                let $conflicting := c:conflicting-locks($uri, 1)
-                let $name as xs:string := ($i/sess:name, &quot;(unnamed)&quot;)[1]
-                return element tr {
-                  element td { $name },
-                  element td { string($i/sec:user) },
-                  element td { data($i/sess:created) },
-                  element td { data($i/sess:last-modified) },
-                  element td {
-                    if (empty($conflicting)) then () else
-                    text {
-                      &quot;by&quot;, $conflicting/lock:owner,
-                      &quot;until&quot;, adjust-dateTime-to-timezone(
-                        x:epoch-seconds-to-dateTime(
-                          $conflicting/lock:timestamp + $conflicting/lock:timeout
-                        )
-                      )
-                    },
-                    (: only show resume button if there are no conflicting locks :)
-                    element input {
-                      attribute type { &quot;button&quot; },
-                      attribute title {
-                        data($i/sess:query-buffers/sess:query[1]) },
-                      attribute onclick {
-                        concat(&quot;list.resumeSession(&#39;&quot;, $id, &quot;&#39;)&quot;) },
-                      attribute value {
-                        &quot;Resume&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
-                    }[ not($conflicting) ],
-                    $x:NBSP,
-                    (: clone button :)
-                    element input {
-                      attribute type { &quot;button&quot; },
-                      attribute title { &quot;clone this session&quot; },
-                      attribute onclick {
-                        concat(&quot;list.cloneSession(&#39;&quot;, $id, &quot;&#39;, this)&quot;) },
-                      attribute value { &quot;Clone&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
-                    },
-                    $x:NBSP,
-                    (: export button :)
-                    element input {
-                      attribute type { &quot;button&quot; },
-                      attribute title { &quot;export this session&quot; },
-                      attribute onclick {
-                        concat(&quot;list.exportServerSession(&#39;&quot;, $id, &quot;&#39;, this)&quot;) },
-                      attribute value { &quot;Export&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
-                    },
-                    $x:NBSP,
-                    (: only show delete button if there are no conflicting locks :)
-                    element input {
-                      attribute type { &quot;button&quot; },
-                      attribute title { &quot;permanently delete this session&quot; },
-                      attribute onclick {
-                        concat(&quot;list.deleteSession(&#39;&quot;, $id, &quot;&#39;, this)&quot;) },
-                      attribute value { &quot;Delete&quot;, (&#39; &#39;, $id)[ $d:DEBUG ] }
-                    }[ not($conflicting) ]
-                  }
-                }
-              }
-        }
-        else &lt;p class=&quot;instruction&quot;&gt;
-        There are no resumable sessions. Please create a new session.
-        &lt;/p&gt;
-    }
-              &lt;input type=&quot;button&quot; value=&quot;New Server Session&quot;
-              id=&quot;newSession2&quot; name=&quot;newSession2&quot; onclick=&quot;list.newSession()&quot;/&gt;
-            &lt;/div&gt;
-          }
-        &lt;/form&gt;
-      &lt;/body&gt;
-    }
-    &lt;/html&gt;
+          xdmp:eval(
+              fn:concat(
+                  comoms-dls:_import(), 
+                  &quot;
+                  declare variable $uri as xs:string external;
+                  declare variable $doc as node() external;
+                  declare variable $collection as xs:string external;
+                  declare variable $note as xs:string external;
+                  dls:document-insert-and-manage($uri, fn:true(), $doc, $note, 
+                      (xdmp:permission(&#39;mkp-anon&#39;, &#39;read&#39;), xdmp:permission(&#39;mkp-admin&#39;, &#39;update&#39;)) , $collection)
+                  &quot;
+              ),
+              (xs:QName(&quot;uri&quot;), $uri, xs:QName(&quot;doc&quot;), $doc, xs:QName(&quot;note&quot;), $note, xs:QName(&quot;collection&quot;), $collection)
+          )    
+      :)    
 
-    (: session.xqy :)
+  };
+
+
+
+  declare function comoms-dls:manage($uri, $manageNote){
+      let $log := xdmp:log(&quot;in comoms-dls:manage with note.&quot;)
+      return (
+          xdmp:eval(
+              fn:concat(
+                  comoms-dls:_import(), 
+                  &quot;
+                  declare variable $uri as xs:string external;
+                  declare variable $manageNote as xs:string external;
+                  dls:document-manage($uri, fn:false(), $manageNote)
+                  &quot;
+              ),
+              (xs:QName(&quot;uri&quot;), $uri, xs:QName(&quot;manageNote&quot;), $manageNote)
+          )
+      )    
+  };
+
+  declare function comoms-dls:update($uri as xs:string, $doc as node(), $note as xs:string){
+
+      xdmp:eval(
+          fn:concat(
+              comoms-dls:_import(), 
+              &quot;
+              declare variable $uri as xs:string external;
+              declare variable $doc as node() external;
+              declare variable $note as xs:string external;
+              dls:document-update($uri, $doc, $note, fn:true(), (xdmp:permission(&#39;mkp-admin&#39;, &#39;update&#39;), xdmp:permission(&#39;mkp-admin&#39;, &#39;read&#39;)) )
+              &quot;
+          ),
+          (xs:QName(&quot;uri&quot;), $uri, xs:QName(&quot;doc&quot;), $doc, xs:QName(&quot;note&quot;), $note)
+      )
+
+  };
+
+
+  declare function comoms-dls:manage($uri){
+      let $log := xdmp:log(&quot;in comoms-dls:manage without note.&quot;)
+      return (xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;dls:document-manage(&#39;&quot;, $uri, &quot;&#39;, fn:false())&quot;))
+      )
+  };
+
+  declare function comoms-dls:unmanageAndDelete($uris){
+      for $uri in $uris
+      let $unpublish := (xdmp:eval(
+          fn:concat(comoms-dls:_import(), 
+              &quot;import module namespace comoms-dls = &#39;http://marklogic.com/comoms-dls&#39; at &#39;/lib/comoms-dls.xqy&#39;; comoms-dls:unpublish(&#39;&quot;, 
+              $uri, &quot;&#39;)&quot;)))
+      let $unmanage :=  (xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;dls:document-unmanage(&#39;&quot;, $uri, &quot;&#39;, fn:false(), fn:true())&quot;))
+      )
+      return
+          xdmp:document-delete($uri)
+  };
+
+
+  declare function comoms-dls:checkout($uri) {
+      xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;dls:document-checkout(&#39;&quot;, $uri, &quot;&#39;, fn:false())&quot;))
+  }; 
+
+  declare function comoms-dls:checkin($uri) {
+      xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;dls:document-checkin(&#39;&quot;, $uri, &quot;&#39;, fn:false())&quot;))
+  }; 
+
+
+  declare function comoms-dls:add($uri) {
+      xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;dls:document-manage(&#39;&quot;, $uri, &quot;&#39;, fn:false())&quot;)
+      )    
+  }; 
+
+
+  declare function comoms-dls:documentHistory($uri) {
+      xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;dls:document-history(&#39;&quot;, $uri, &quot;&#39;)&quot;)
+      )
+  };
+
+  declare function comoms-dls:checkoutStatus($uri) {
+      xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;dls:document-checkout-status(&#39;&quot;, $uri, &quot;&#39;)&quot;)
+      )
+  };
+
+  (:~
+   : call fn:doc but wrapped in an eval 
+   :)
+  declare function comoms-dls:docInEval($uri) {
+      xdmp:eval(
+          fn:concat(comoms-dls:_import(), &quot;fn:doc(&#39;&quot;, $uri, &quot;&#39;)&quot;)
+      )
+  };
+
+  (: ########################################################################### :)
+  (: PUBLISHING FUNCTIONS :)
+  (: ########################################################################### :)
+
+  (:~
+   : Given a sequence of version URIs, publish all of these versions of each document
+   : If there is a version of the same document already published, unpublish it 1st
+   : 
+   : When &quot;publish&quot; is referred to, we mean that it is put into the PUBLISHED collection
+   : unpublish removes content from this collection
+   : @param $version_uris - sequence of uris of versions of managed documents to publish
+   :)
+  declare function comoms-dls:publish($version_uris as item()*) {
+      for $uri in $version_uris
+      let $doc := fn:doc($uri)
+      let $managed_base_uri := $doc/node()/property::dls:version/dls:document-uri/text()
+      let $existing :=  comoms-dls:publishedDoc($managed_base_uri)
+      let $unpublishExisting := if($existing) then comoms-dls:unpublishVersion((xdmp:node-uri($existing)))  else ()
+      let $addPermissions := dls:document-add-permissions($uri, (xdmp:permission(&#39;mkp-anon&#39;, &#39;read&#39;)))
+      return
+          dls:document-add-collections($uri, (&quot;PUBLISHED&quot;))    
+  };
+
+  declare function comoms-dls:publishLatest($uri) {
+      (: TODO check if it&#39;s in the draft collection probably :)
+
+      let $latest_version_uri := comoms-dls:latestVersionUri($uri)
+      let $log:= xdmp:log(fn:concat(&quot;latest: &quot;, $latest_version_uri))    
+      let $log:= xdmp:log(fn:concat(&quot;uri: &quot;, $uri))            
+      return comoms-dls:publish($latest_version_uri)    
+
+  };
+
+  declare function comoms-dls:latestVersionUri($uri) {
+      let $latest_version_num :=
+          (
+          for $version in dls:document-history($uri)/dls:version
+          order by fn:number($version//dls:version-id/text()) descending
+          return $version//dls:version-id/text()
+          )[1]
+
+
+      return dls:document-version-uri($uri, $latest_version_num)
+  };
+
+  declare function comoms-dls:unpublish($uris as item()*) {
+      for $uri in $uris
+      return
+          let $published_doc := comoms-dls:publishedDoc($uri)
+          return
+              if($published_doc) then
+                  let $published_version_uri := xdmp:node-uri($published_doc)
+                  return comoms-dls:unpublishVersion($published_version_uri)        
+              else
+                  ()
+  };
+
+  declare function comoms-dls:latestPublishedDocAuthor($uri) {
+      let $author_id := doc($uri)/property::dls:version/dls:author/text()
+      return
+          if($author_id) then
+              comoms-user:getUsername($author_id)
+          else 
+              ()
+
+  };
+
+  (:~
+   : Given a sequence of version URIs, unpublish all of these versions of each document
+   :)
+  declare function comoms-dls:unpublishVersion($version_uris as item()*) {
+      for $uri in $version_uris
+      return
+          let $removePermissions := dls:document-remove-permissions($uri, (xdmp:permission(&#39;mkp-anon&#39;, &#39;read&#39;)))
+          return dls:document-remove-collections($uri, (&quot;PUBLISHED&quot;))        
+  };
+
+  (:~
+   : Given the base URI of a managed piece of content, return the document of the node
+   : of the version that is published
+   :)
+  declare function comoms-dls:publishedDoc($uri) {
+      fn:collection(&quot;PUBLISHED&quot;)[property::dls:version/dls:document-uri = $uri] 
+  };
+
+
+  (:~
+   : Test if any version of the managed document is published
+   :)
+  declare function comoms-dls:isPublished($uri) {
+      if( comoms-dls:publishedDoc($uri)) then
+          fn:true()
+      else
+          fn:false()
+  };
+
+
+  declare function comoms-dls:publishedState($uri) {
+      let $doc := comoms-dls:publishedDoc($uri)
+      let $published_uri := if($doc) then xdmp:node-uri($doc) else ()
+      let $latest := comoms-dls:latestVersionUri($uri)
+      return
+          if($doc) then
+              if($latest ne $published_uri) then
+                  &quot;stale&quot;
+              else
+                  &quot;published&quot;
+          else
+              &quot;unpublished&quot;
+  };
+
+
+  declare function comoms-dls:getManagedDocUri($uri) {
+      let $doc := fn:doc($uri)
+      let $managed_uri := $doc/property::dls:version/dls:document-uri/text()
+      let $managed_uri := if($managed_uri) then $managed_uri else $uri
+      return $managed_uri
+  };
+
+  (:~
+   : Given a manage content url (e.g. /content/123456.xml) return the appropriate
+   : version of the document based on what stage collection is being viewed and 
+   : what&#39;s published
+   :
+   : @param $uri a manage content url (e.g. /content/123456.xml) - NOT A VERSIONED URI
+   :)
+  declare function comoms-dls:doc($uri) {
+      let $doc := fn:root(comoms-dls:collection()[property::dls:version/dls:document-uri = $uri][1])
+      return
+          if($doc) then 
+              $doc 
+          else 
+              let $managedDocInCollection := comoms-dls:collection-name() = xdmp:document-get-collections($uri)
+              return
+                  if($managedDocInCollection) then
+                      fn:doc($uri)
+                  else
+                      ()
+  };
+
+  (:~ 
+   : Get the collection to be used when querying for content
+   : THIS or comoms-dls:collection-name() SHOULD BE USED WHEN BUILDING ANY QUERY FOR MANAGED CONTENT
+   :)
+  declare function comoms-dls:collection()  {
+      fn:collection( comoms-dls:collection-name() )
+  };
+
+  (:~ 
+   : Get the collection nameto be used when querying for content
+   : THIS or comoms-dls:collection() SHOULD BE USED WHEN BUILDING ANY QUERY FOR MANAGED CONTENT 
+   :)
+  declare function comoms-dls:collection-name() as xs:string {
+      let $default_collection := &quot;PUBLISHED&quot;
+      return
+          if(comoms-user:isAdmin()) then 
+              let $pub_stage_collection_cookie := comoms-util:getCookie(&quot;COMOMS_COLLECTION&quot;)
+              return
+                  if($pub_stage_collection_cookie) then
+                      $pub_stage_collection_cookie
+                  else
+                      $default_collection
+          else
+              $default_collection
+  };
+
+  (:~
+   : Check if the published collection is being viewed
+   :)
+  declare function comoms-dls:isViewingPublished() {
+      if(comoms-dls:collection-name() = &quot;PUBLISHED&quot;) then
+          fn:true()
+      else
+          fn:false()
+  };
+
+  (:~
+   : Get the best URL for the content URI. 
+   : This is either the default URI based on detail type or should also take
+   : into account friendly urls and navigation structures to figure out the 
+   : best choice
+   :)
+  declare function comoms-dls:contentUrl($uri) {
+
+      (: TODO: add friendly URL and nav structure logic 1st :)
+
+      let $doc := fn:doc($uri)
+      let $managedDocUri := $doc/property::dls:version/dls:document-uri
+      let $uri := if($managedDocUri) then $managedDocUri else $uri
+      let $type := $doc/node()/fn:name()
+      let $content_id := fn:tokenize( fn:tokenize($uri, &quot;/&quot;)[3], &quot;\.&quot;)[1]
+      return
+          fn:concat(&quot;/&quot;, $type, &quot;/&quot;, $content_id)
+  };
+
+  (:
+   :
+   :  gets list of doc versions and uri. 
+   :
+   :)
+  declare function comoms-dls:versionHistory($uri) {
+      let $published_doc := comoms-dls:publishedDoc($uri)
+      let $published_uri := if($published_doc) then xdmp:node-uri($published_doc) else ()
+      return
+      &lt;versions&gt;
+          {
+          for $version in dls:document-history($uri)/dls:version
+            let $version_num := $version/dls:version-id/text()
+            let $created := $version/dls:created/text()
+            let $author_id := $version/dls:author/text()
+            let $author := comoms-user:getUsername($author_id)
+
+
+            let $note := $version/dls:annotation/text()
+            let $version_uri := xdmp:node-uri(dls:document-version($uri, $version_num))
+            let $published := $published_uri eq $version_uri
+            return 
+              &lt;version&gt;
+                  &lt;version-number&gt;{$version_num}&lt;/version-number&gt;
+                  &lt;created&gt;{$created}&lt;/created&gt;                
+                  &lt;author&gt;{$author}&lt;/author&gt;
+                  &lt;published&gt;{$published}&lt;/published&gt;
+                  &lt;version-uri&gt;{$version_uri}&lt;/version-uri&gt;
+              &lt;/version&gt;  
+          }        
+      &lt;/versions&gt;
+  };
+
+
+
+
+
+
+  (: ########################################################################### :)
+  (: PRIVATE FUNCTIONS :)
+  (: ########################################################################### :)
+
+  declare function comoms-dls:_import() {
+      &quot;xquery version &#39;1.0-ml&#39;;
+       import module namespace dls = &#39;http://marklogic.com/xdmp/dls&#39; at &#39;/MarkLogic/dls.xqy&#39;; &quot; 
+  };  
 </textarea>
 </div>
 
 <script type="text/javascript">
   var editor = CodeMirror.fromTextArea('code', {
     height: "550px",
-    parserfile: ["../../js/parsexml.js", "../contrib/xquery/js/tokenizexquery.js", "../contrib/xquery/js/parsexquery.js" ],
+    parserfile: ["../contrib/xquery/js/tokenizexquery.js", "../contrib/xquery/js/parsexquery.js" ],
     stylesheet: ["../../css/xmlcolors.css", "css/xqcolors.css"],
     path: "../../js/",
     continuousScanning: false, //500,

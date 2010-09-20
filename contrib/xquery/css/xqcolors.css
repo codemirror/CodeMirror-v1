@@ -1,6 +1,3 @@
-html {
-  cursor: text;
-}
 
 .editbox {
   margin: .4em;
@@ -8,60 +5,108 @@ html {
   font-family: monospace;
   font-size: 10pt;
   color: black;
+  background-color: transparent;
+  line-height: 16px;
 }
 
-pre.code, .editbox {
-  color: #666666;
+/* new style */
+span.xqueryGsdkMethod {
+  color: rgb(102,204,255);
+  font-weight: bold;
 }
 
-.editbox p {
-  margin: 0;
+/* inherited from 'js-keyword' */
+span.xqueryKeyword {
+  color: rgb(0,153,102);
+  font-weight: bold;
 }
 
-span.xq-comment {
-  color: #AA7700;
+/* inherited from 'js-keyword' */
+span.javaKeyword {
+  color: rgb(0,102,153);
+  font-weight: bold;
 }
 
-span.xq-keyword {
-  color: #770088;
+/* inherited from 'js-comment' */
+span.xqueryComment {
+  color: rgb(204,0,0);
 }
 
-span.xq-keyworda {
-  color: red;
+/* inherited from 'js-keyword' */
+span.javaModifier {
+  color: rgb(0,102,153);
+  font-weight: bold;
 }
 
-span.xq-keywordb {
-  color: blue;
+/* new style */
+span.javaType {
+  color: rgb(0,135,255);
+  font-weight: bold;
 }
 
-span.xq-keywordc {
-  color: orange;
+/* inherited from 'js-atom' */
+span.javaAtom {
+  color: rgb(0,102,153);
+  font-weight: bold;  
 }
 
-span.xq-punctuation {
-  color: red;
+/* inherited from 'js-string' */
+span.xqueryString {
+  color: rgb(42,0,255);
 }
 
-span.xq-operator {
-  color: #666666;
+/* inherited from 'js-string' */
+span.xqueryRegexp {
+  color: rgb(128,0,64);
 }
 
-span.xq-variable {
+/* inherited from 'js-atom' */
+span.xqueryNumber {
+  color: rgb(255,0,0); 
+}
+
+/* inherited from 'js-variable' */
+span.xqueryVariable {
+    color: black;
+}
+
+/* inherited from 'js-variabledef' */
+span.grooveVariabledef {
+    color: black;
+}
+
+/* inherited from 'js-localvariable' */
+span.xqueryLocalvariable {
+    color: black;
+}
+
+/* inherited from 'js-property' */
+span.xqueryProperty
+{
   color: black;
 }
 
-span.xq-variabledef {
-  color: #0000FF;
+/* inherited from 'js-opertator' */
+span.xqueryOperator {
+  color: rgb(92,92,92);
 }
 
-span.xq-localvariable {
-  color: #004499;
+/* inherited from 'js-punctuation' */
+span.xqueryPunctuation {
+    color: black;
 }
 
-span.xq-property {
-  color: black;
+/* new style */
+span.xquery-doc-directive {
+    color: black; 
 }
 
-span.xq-string {
-  color: #AA2222;
+span#parenCorrect {
+	font-weight: bold;
+	color: green;
+}
+
+span#parenIncorrect {
+	font-weight: bold;
+	color: red;
 }
