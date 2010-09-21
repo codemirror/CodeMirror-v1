@@ -251,18 +251,18 @@ var Editor = (function(){
       return (caseFold ? line.toLowerCase() : line);
     }
 
+    var topPos = {node: null, offset: 0};
     if (from && typeof from == "object" && typeof from.character == "number") {
       editor.checkLine(from.line);
       var pos = {node: from.line, offset: from.character};
       this.pos = {from: pos, to: pos};
     }
     else if (from) {
-      this.pos = {from: select.cursorPos(editor.container, true),
-                  to: select.cursorPos(editor.container, false)};
+      this.pos = {from: select.cursorPos(editor.container, true) || topPos,
+                  to: select.cursorPos(editor.container, false) || topPos};
     }
     else {
-      var pos = {node: null, offset: 0};
-      this.pos = {from: pos, to: pos};
+      this.pos = {from: topPos, to: topPos};
     }
 
     // Create a matcher function based on the kind of string we have.
