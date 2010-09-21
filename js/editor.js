@@ -688,7 +688,7 @@ var Editor = (function(){
     },
 
     reroutePasteEvent: function() {
-      if (this.capturingPaste || window.opera || mac) return;
+      if (this.capturingPaste || window.opera) return;
       this.capturingPaste = true;
       var te = window.frameElement.CodeMirror.textareaHack;
       parent.focus();
@@ -845,7 +845,7 @@ var Editor = (function(){
           this.options.saveFunction();
           event.stop();
         }
-        else if (code == 86) { // V
+        else if (code == 86 && !mac) { // V
           this.reroutePasteEvent();
         }
       }
@@ -863,6 +863,9 @@ var Editor = (function(){
           event.code == 13 || (event.code == 9 && this.options.tabMode != "default") ||
           (event.code == 32 && event.shiftKey && this.options.tabMode == "default"))
         event.stop();
+      else if (mac && (event.ctrlKey || event.metaKey) && event.character == "v") {
+        this.reroutePasteEvent();
+      }
       else if (electric && electric.indexOf(event.character) != -1)
         this.parent.setTimeout(function(){self.indentAtCursor(null);}, 0);
       // Work around a bug where pressing backspace at the end of a
