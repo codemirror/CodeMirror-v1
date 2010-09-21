@@ -294,6 +294,13 @@ var select = {};
         else
           end = middle - 1;
       }
+      
+      if (start == 0) {
+        var test1 = selection.createRange(), test2 = test1.duplicate();
+        test2.moveToElementText(container);
+        if (test1.compareEndPoints("StartToStart", test2) == 0)
+          return null;
+      }
       return container.childNodes[start] || null;
     };
 
