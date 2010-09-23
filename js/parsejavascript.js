@@ -206,6 +206,7 @@ var JSParser = Editor.Parser = (function() {
     }
     // Pop off the current lexical context.
     function poplex(){
+      indented = lexical.indented;
       lexical = lexical.prev;
     }
     poplex.lex = true;
