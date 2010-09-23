@@ -39,13 +39,13 @@ span.javaModifier {
 }
 
 /* new style */
-span.javaType {
+span.xqueryType {
   color: rgb(0,135,255);
   font-weight: bold;
 }
 
 /* inherited from 'js-atom' */
-span.javaAtom {
+span.xqueryAtom {
   color: rgb(0,102,153);
   font-weight: bold;  
 }

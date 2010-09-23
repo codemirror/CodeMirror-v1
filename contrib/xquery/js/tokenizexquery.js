@@ -1,24 +1,3 @@
-/**
- * Copyright (C) 2010 eXo Platform SAS.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
- */
-
-/* Tokenizer for Xquery code */
 
 var tokenizeXquery = (function() {
   // Advance the stream until the given character (not preceded by a
@@ -34,6 +13,8 @@ var tokenizeXquery = (function() {
     }
     return escaped;
   }
+  
+
 
   // A map of Xquery's keywords. The a/b/c keyword distinction is
   // very rough, but it gives the parser enough information to parse
@@ -52,24 +33,24 @@ var tokenizeXquery = (function() {
     var keywordsList = {};
     
     // keywords that take a parenthised expression, and then a statement (if)
-    keywordsList['javaKeywordA'] = new Array('if', 'switch', 'while');
+    keywordsList['xqueryKeywordA'] = new Array('if', 'switch', 'while');
     
     // keywords that take just a statement (else)
-    keywordsList['javaKeywordB'] = new Array('else', 'do', 'try', 'finally');
+    keywordsList['xqueryKeywordB'] = new Array('else', 'then', 'try', 'finally');
 
     // keywords that optionally take an expression, and form a statement (return)
-    keywordsList['javaKeywordC'] = new Array('attribute', 'element', 'let', 'implements', 'import', 'new', 'package', 'return', 'super', 'this', 'throws');
+    keywordsList['xqueryKeywordC'] = new Array('element', 'let', 'implements', 'import', 'module', 'namespace', 'return', 'super', 'this', 'throws');
 
     for (var keywordType in keywordsList) {
         for (var i = 0; i < keywordsList[keywordType].length; i++) {
-            allKeywords[keywordsList[keywordType][i]] = result(keywordType, "javaKeyword");
+            allKeywords[keywordsList[keywordType][i]] = result(keywordType, "xqueryKeyword");
         }
     }
 
     keywordsList = {};
     
     // java atom
-    keywordsList['javaAtom'] = new Array('null', 'true', 'false');
+    keywordsList['javaAtom'] = new Array('null', 'fn:false()', 'fn:true()');
     for (var keywordType in keywordsList) {
         for (var i = 0; i < keywordsList[keywordType].length; i++) {
             allKeywords[keywordsList[keywordType][i]] = result(keywordType, keywordType);
@@ -79,10 +60,10 @@ var tokenizeXquery = (function() {
     keywordsList = {};
 
     // java modifiers
-    keywordsList['javaModifier'] = new Array('function', 'xquery', 'version');
+    keywordsList['xqueryModifier'] = new Array('function', 'xquery', 'ascending', 'descending');
 
     // java types
-    keywordsList['javaType'] = new Array('boolean', 'byte', 'char', 'enum', 'double', 'float', 'int', 'interface', 'long', 'short', 'void', 'class');
+    keywordsList['xqueryType'] = new Array('xs:string', 'xs:float', 'xs:decimal', 'xs:double', 'xs:integer', 'xs:boolean', 'xs:date', 'xx:dateTime', 'xs:time', 'xs:duration', 'xs:dayTimeDuration', 'xs:time', 'xs:yearMonthDuration', 'numeric', 'xs:hexBinary', 'xs:base64Binary', 'xs:anyURI', 'xs:QName');
     for (var keywordType in keywordsList) {
         for (var i = 0; i < keywordsList[keywordType].length; i++) {
             allKeywords[keywordsList[keywordType][i]] = result('function', keywordType);
@@ -117,21 +98,35 @@ var tokenizeXquery = (function() {
     allKeywords = objectConcat(allKeywords, {
         "as": result("operator", "xqueryKeyword"),
         "in": result("operator", "xqueryKeyword"),
-        "function": result("function", "xqueryKeyword")
+        "declare": result("function", "xqueryKeyword"),
+        "function": result("function", "xqueryKeyword"),
+        "attribute": result("attribute", "xqueryKeyword")
     });
-
     return allKeywords;
   }();
+  
+  function specialCases(source, word) {
+      if(word in {"fn:true":"", "fn:false":""}  && source.lookAhead("()", false)) {
+          source.next();source.next();source.get();
+          return {type: "function", style: "xqueryAtom", content: word+"()"};
+      }
+      else if(word in {"node":"", "item":""}  && source.lookAhead("()", false)) {
+          source.next();source.next();source.get();
+          return {type: "function", style: "xqueryType", content: word+"()"};
+      } 
+      else return null;
+  }
 
   // Some helper regexp matchers.
-  var isOperatorChar = /[+\-*&%\/=<>!?|]/;
+  var isOperatorChar = /[+\-*&%=!?|]/;
   var isDigit = /[0-9]/;
   var isHexDigit = /^[0-9A-Fa-f]$/;
-  var isWordChar = /[\w\$_]/;
+  var isWordChar = /[\w\:\$_]/;
   var isXqueryVariableChar = /[\w\.()\[\]{}]/;
-  var isPunctuation = /[\[\]{}\(\),;\:\.]/;
+  var isPunctuation = /[\[\]{}\(\),;\.]/;
   var isStringDelimeter = /^[\/'"]$/;
   var isRegexpDelimeter = /^[\/'$]/;
+  var tagnameChar = /[<\w\:\/_]/;
 
   // Wrapper around xqueryToken that helps maintain parser state (whether
   // we are inside of a multi-line comment and whether the next token
@@ -185,9 +180,11 @@ var tokenizeXquery = (function() {
       setInside(null);      
       source.nextWhileMatches(isWordChar);
       var word = source.get();
+      var specialCase = specialCases(source, word);
+      if(specialCase) return specialCase;
       var known = keywords.hasOwnProperty(word) && keywords.propertyIsEnumerable(word) && keywords[word];
-      return known ? {type: known.type, style: known.style, content: word} :
-      {type: "variable", style: "xqueryVariable", content: word};
+      if(known) return {type: known.type, style: known.style, content: word}
+      return {type: "word", style: "word", content: word};
     }
     
     
@@ -236,25 +233,31 @@ var tokenizeXquery = (function() {
 
       return {type: "operator", style: "xqueryOperator"};
     }
-    function readString(quote) {           
-      var newInside = quote;
-      if (source.endOfLine()) {  // finish String coloring after the end of the line
-        newInside = null;
-      } else {     
-        var next = source.next();
-        
-        // test if this is  \", \' or \/ inside the String 
-        if (next == "\\" && source.equals(quote)) {
-          newInside = "\\" + quote;
-          source.next();
-        } else if (next == quote) {  // finish String coloring after the ', " or /, not \', \", \/
-          newInside = null;
-        }
-      }
-
-      setInside(newInside);
+    
+    function readString(quote) {
+      var endBackSlash = nextUntilUnescaped(source, quote);
+      setInside(endBackSlash ? quote : null);
       return {type: "string", style: "xqueryString"};
-    }
+    }    
+    // function readString(quote) {           
+    //   var newInside = quote;
+    //   if (source.endOfLine()) {  // finish String coloring after the end of the line
+    //     newInside = null;
+    //   } else {     
+    //     var next = source.next();
+    //     
+    //     // test if this is  \", \' or \/ inside the String 
+    //     if (next == "\\" && source.equals(quote)) {
+    //       newInside = "\\" + quote;
+    //       source.next();
+    //     } else if (next == quote) {  // finish String coloring after the ', " or /, not \', \", \/
+    //       newInside = null;
+    //     }
+    //   }
+    // 
+    //   setInside(newInside);
+    //   return {type: "string", style: "xqueryString"};
+    // }
     
     function readVariable() {
         setInside(null);      
@@ -263,31 +266,26 @@ var tokenizeXquery = (function() {
         return {type: "variable", style: "xqueryVariable", content: word};        
     }
     
-
+    function readTagname(lt) {
+        var tagtype = (source.lookAhead("/", false)) ? "xml-tag-close" : "xml-tag-open";
+        source.nextWhileMatches(tagnameChar);
+        var word = source.get();
+        return {type: tagtype, style: "xml-tagname", content: word};                
+    }
 
     // Fetch the next token. Dispatches on first character in the
     // stream, or first two characters when the first is a slash.        
 
-    // to avoid the considering of \", \', \/ as the end of String inside the String
-    if (inside == '\\"' || inside == "\\'" || inside == "\\/") {
-      setInside(inside[1]);  // set 'inside' = ', ", /
-      return {type: "string", style: "xqueryString"};      
-    }
 
-    // test if we within the String
-    if (isStringDelimeter.test(inside))
-      return readString(inside);
+      if (inside == "\"" || inside == "'")
+        return readString(inside);
+      var ch = source.next();
+      if (inside == "(:")
+        return readMultilineComment(ch);
+      else if (ch == "\"" || ch == "'")
+        return readString(ch);
 
-      
-    var ch = source.next();
-        
-    if (inside == "(:")  // test if this is the start of Multiline Comment
-      return readMultilineComment(ch);
-      
-    else if (ch == "'" || ch == '"') {   // test if this is the start of String
-      setInside(ch);
-      return {type: "string", style: "xqueryString"};
-    }
+
 
     // test if this is range 
     else if ( ch == "." && source.equals(".")) {
@@ -309,7 +307,6 @@ var tokenizeXquery = (function() {
     else if (ch == ":" && source.equals("="))
         return readOperator();
 
-
     // with punctuation, the type of the token is the symbol itself
     else if (isPunctuation.test(ch))
       return {type: ch, style: "xqueryPunctuation"};
@@ -324,6 +321,11 @@ var tokenizeXquery = (function() {
     }       
     else if (isOperatorChar.test(ch))
       return readOperator(ch);
+    // some xml handling stuff
+    else if(ch == "<")
+      return readTagname(ch);
+    else if(ch == ">")
+      return {type: "xml-tag", style: "xml-tagname"};
     else
       return readWord();
   }
