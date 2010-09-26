@@ -4,16 +4,17 @@
   padding: 0;
   font-family: monospace;
   font-size: 10pt;
-  color: black;
-  background-color: white;
+  color: white;
+  background-color: black;
   line-height: 16px;
 }
 
 span.word {
+    color:white;
 }
 
 span.xqueryKeyword {
-  color: blue; 
+  color: orange; 
   /* font-weight: bold; */
 }
 
@@ -56,24 +57,35 @@ span.xqueryFunction {
     text-decoration:underline
 }
 
+span.xqueryLocalvariable {
+    color: white;
+}
+
+span.xqueryProperty
+{
+  color: white;
+}
 
 span.xqueryOperator {
-    color: DimGray;
+  color: orange;
 }
 
 span.xqueryPunctuation {
+    color: white;
+}
+
+span.xquery-doc-directive {
+    color: white; 
 }
 
 span.xml-tagname {
-    color: purple;
+    color: #A0B;
 }
 
 span.xml-attribute {
-    color: purple;
-    font-style:italic;
+    color: yellow;
 }
 
 span.xml-attribute-value {
-    color: purple;
-    font-style:italic;
+    color:MediumSpringGreen ;
 }

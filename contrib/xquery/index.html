@@ -29,7 +29,8 @@ xquery version &quot;1.0-ml&quot;;
 (: this is
  : a 
    "comment" :)
-let $let := &lt;x&gt;&quot;test&quot;&lt;/x&gt;
+let $let := &lt;x attr=&quot;value&quot;&gt;&quot;test&quot;&lt;/x&gt;
+let $joe:=1
 return element element {
   attribute attribute { 1 },
   element test { &#39;a&#39; },
@@ -421,8 +422,8 @@ return element element {
 <script type="text/javascript">
   var editor = CodeMirror.fromTextArea('code', {
     height: "550px",
-    parserfile: ["parsexml.js", "../contrib/xquery/js/tokenizexquery.js", "../contrib/xquery/js/parsexquery.js" ],
-    stylesheet: ["../../css/xmlcolors.css", "css/xqcolors.css"],
+    parserfile: ["../contrib/xquery/js/tokenizexquery.js", "../contrib/xquery/js/parsexquery.js" ],
+    stylesheet: ["css/xqcolors.css"],
     path: "../../js/",
     continuousScanning: false, //500,
     lineNumbers: true
