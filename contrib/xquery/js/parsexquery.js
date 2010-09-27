@@ -66,19 +66,32 @@ var XqueryParser = Editor.Parser = (function() {
                     token.style = "xqueryVariable";
                 }
 
-                if (previousToken && previousToken.content == "xquery" && token.content == "version") {
+                else if (previousToken && previousToken.content == "xquery" && token.content == "version") {
                     //token.type="variable";
                     token.style = "xqueryModifier";
                 }
 
-                if (token.type == "word" && (getPrevious(3).style == "xml-attribute" || previousToken.type == "xml-tag-open") &&
+                else if (token.type == "word" && (getPrevious(3).style == "xml-attribute" || previousToken.type == "xml-tag-open") &&
                 previousToken.content.substring(previousToken.content.length - 1) != ">") {
                     token.style = "xml-attribute";
                 }
-                if (previousToken && previousToken.content == "=" && previousTokens.length > 2
+                else if (previousToken && previousToken.content == "=" && previousTokens.length > 2
                 && getPrevious(2).style == "xml-attribute") {
                     token.style = "xml-attribute-value";
                 }
+                else if(token.type == "string" && previousToken.type == "}") {
+                    // looking for expressions within a string and detecting if the expression is within an attribute
+                    var i=0;
+                    while(i++ < previousTokens.length-1) {
+                        if(getPrevious(i).style == "xml-attribute-value" ) {
+                            token.style = "xml-attribute-value";
+                            break;
+                        } 
+                        else if(getPrevious(i).type == "string") {
+                            break;
+                        }                            
+                    }
+                }    
 
                 if (token.type == "whitespace") {
                     if (token.value == "\n") {

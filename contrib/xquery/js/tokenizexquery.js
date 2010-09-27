@@ -161,7 +161,7 @@ var tokenizeXquery = (function() {
     var isDigit = /[0-9]/;
     var isHexDigit = /^[0-9A-Fa-f]$/;
     var isWordChar = /[\w\:\-\$_]/;
-    var isVariableChar = /[\w\$_]/;
+    var isVariableChar = /[\w\$_-]/;
     var isXqueryVariableChar = /[\w\.()\[\]{}]/;
     var isPunctuation = /[\[\]{}\(\),;\.]/;
     var isStringDelimeter = /^[\/'"]$/;
@@ -227,7 +227,7 @@ var tokenizeXquery = (function() {
         // Read a word, look it up in keywords. If not found, it is a
         // variable, otherwise it is a keyword of the type found.
         function readWord() {
-            setInside(null);
+            //setInside(null);
             source.nextWhileMatches(isWordChar);
             var word = source.get();
             var specialCase = specialCases(source, word);
@@ -311,6 +311,10 @@ var tokenizeXquery = (function() {
             while (true) {
                 if (source.endOfLine())
                 break;
+                if(source.lookAhead("{", false)) {
+                    newInside = quote + "{";
+                    break;
+                }    
                 var next = source.next();
                 if (next == quote && previous != "\\") {
                     newInside = null;
@@ -324,9 +328,15 @@ var tokenizeXquery = (function() {
                 style: "xqueryString"
             };
         }
+        
+        function readExpressionEndInString(inside) {
+            var quote = inside.substr(0,1);
+            setInside(quote);
+            return { type: ch, style: "xqueryPunctuation"};            
+        }
 
         function readVariable() {
-            setInside(null);
+            //setInside(null);
             source.nextWhileMatches(isVariableChar);
             var word = source.get();
             return {
@@ -354,12 +364,16 @@ var tokenizeXquery = (function() {
         // stream, or first two characters when the first is a slash.
 
         if (inside == "\"" || inside == "'")
-        return readString(inside);
+            return readString(inside);
+            
         var ch = source.next();
+        if (inside && inside.indexOf("{") == 1 && ch == "}") {
+            return readExpressionEndInString(inside);
+        }    
         if (inside == "(:")
-        return readMultilineComment(ch);
+            return readMultilineComment(ch);
         else if (ch == "\"" || ch == "'")
-        return readString(ch);
+            return readString(ch);
 
 
         // test if this is range
@@ -376,20 +390,20 @@ var tokenizeXquery = (function() {
             return readMultilineComment(ch);
         }
         else if (ch == "$")
-        return readVariable();
+            return readVariable();
         else if (ch == ":" && source.equals("="))
-        return readOperator();
+            return readOperator();
 
         // with punctuation, the type of the token is the symbol itself
         else if (isPunctuation.test(ch))
-        return {
-            type: ch,
-            style: "xqueryPunctuation"
-        };
+            return {
+                type: ch,
+                style: "xqueryPunctuation"
+            };
         else if (ch == "0" && (source.equals("x") || source.equals("X")))
-        return readHexNumber();
+            return readHexNumber();
         else if (isDigit.test(ch))
-        return readNumber();
+            return readNumber();
 
         else if (ch == "~") {
             setInside("~");
@@ -397,17 +411,17 @@ var tokenizeXquery = (function() {
             return readOperator(ch);
         }
         else if (isOperatorChar.test(ch))
-        return readOperator(ch);
+            return readOperator(ch);
         // some xml handling stuff
         else if (ch == "<")
-        return readTagname(ch);
+            return readTagname(ch);
         else if (ch == ">")
-        return {
-            type: "xml-tag",
-            style: "xml-tagname"
-        };
+            return {
+                type: "xml-tag",
+                style: "xml-tagname"
+            };
         else
-        return readWord();
+            return readWord();
     }
 
     // returns new object = object1 + object2
