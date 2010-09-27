@@ -92,6 +92,27 @@ var XqueryParser = Editor.Parser = (function() {
                         }                            
                     }
                 }    
+                else if(token.type == "string") {
+                    // brute force check for strings inside XML TODO... something else
+                    var i=0;
+                    var closeCount = 0;
+                    while(i++ < previousTokens.length-1) {
+                        var prev = getPrevious(i);                  
+                        if(prev.type == "xml-tag-open") {
+                            if(closeCount == 0) {
+                                token.style = "word";
+                                break;
+                            } else {
+                                closeCount--;
+                            }
+                        }    
+                        else if(prev.type == "xml-tag-close") {
+                            closeCount++;
+                        }
+                        else if(prev.content == ":=" || prev.content == "return")
+                            break;
+                    }
+                }
 
                 if (token.type == "whitespace") {
                     if (token.value == "\n") {
