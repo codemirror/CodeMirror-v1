@@ -114,7 +114,7 @@ var XqueryParser = Editor.Parser = (function() {
                         else if(prev.type == "xml-tag-close") {
                             closeCount++;
                         }
-                        else if(prev.content == ":=" || prev.content == "return")
+                        else if(prev.content == ":=" || prev.content == "return" || prev.content == "{")
                             break;
                     }
                 }

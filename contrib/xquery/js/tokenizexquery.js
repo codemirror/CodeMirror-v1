@@ -51,15 +51,23 @@ var tokenizeXquery = (function() {
 
         var allKeywords = {};
         var keywordsList = {};
+        
+        // an array of all of the keywords that will be used by default, otherwise keywords will be more specifically specified and overridden below
+        var allKeywordsArray = new Array('after','ancestor','ancestor-or-self','and','as','ascending','assert','attribute','before','by','case','cast','child','comment','comment','declare','default','define','descendant','descendant-or-self','descending','document-node','element','element','else','eq','every','except','external','following','following-sibling','follows','for','function','if','import','in','instance','intersect','item','let','module','namespace','node','node','of','only','or','order','parent','precedes','preceding','preceding-sibling','processing-instruction','ref','return','returns','satisfies','schema','schema-element','self','some','sortby','stable','text','then','to','treat','typeswitch','union','variable','version','where','xquery');
 
+        for(var i in allKeywordsArray) {
+            allKeywords[allKeywordsArray[i]] = result("keyword", "xqueryKeyword");
+        }
+
+        /* This next bit is broken down this was for future indentation support */
         // keywords that take a parenthised expression, and then a statement (if)
-        keywordsList['xqueryKeywordA'] = new Array('if', 'switch', 'while');
+        keywordsList['xqueryKeywordA'] = new Array('if', 'switch', 'while', 'for');
 
         // keywords that take just a statement (else)
         keywordsList['xqueryKeywordB'] = new Array('else', 'then', 'try', 'finally');
 
         // keywords that optionally take an expression, and form a statement (return)
-        keywordsList['xqueryKeywordC'] = new Array('element', 'attribute', 'let', 'implements', 'import', 'module', 'namespace', 'return', 'super', 'this', 'throws');
+        keywordsList['xqueryKeywordC'] = new Array('element', 'attribute', 'let', 'implements', 'import', 'module', 'namespace', 'return', 'super', 'this', 'throws', 'where');
 
         keywordsList['xqueryOperator'] = new Array('eq', 'ne', 'lt', 'le', 'gt', 'ge');
 
@@ -79,10 +87,8 @@ var tokenizeXquery = (function() {
         }
 
         keywordsList = {};
-
         keywordsList['xqueryModifier'] = new Array('xquery', 'ascending', 'descending');
-
-        keywordsList['xqueryType'] = new Array('xs:string', 'xs:float', 'xs:decimal', 'xs:double', 'xs:integer', 'xs:boolean', 'xs:date', 'xx:dateTime', 'xs:time', 'xs:duration', 'xs:dayTimeDuration', 'xs:time', 'xs:yearMonthDuration', 'numeric', 'xs:hexBinary', 'xs:base64Binary', 'xs:anyURI', 'xs:QName');
+        keywordsList['xqueryType'] = new Array('xs:string', 'xs:float', 'xs:decimal', 'xs:double', 'xs:integer', 'xs:boolean', 'xs:date', 'xs:dateTime', 'xs:time', 'xs:duration', 'xs:dayTimeDuration', 'xs:time', 'xs:yearMonthDuration', 'numeric', 'xs:hexBinary', 'xs:base64Binary', 'xs:anyURI', 'xs:QName', 'xs:byte','xs:boolean','xs:anyURI','xf:yearMonthDuration');
         for (var keywordType in keywordsList) {
             for (var i = 0; i < keywordsList[keywordType].length; i++) {
                 allKeywords[keywordsList[keywordType][i]] = result('function', keywordType);
