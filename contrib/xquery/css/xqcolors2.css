@@ -30,13 +30,12 @@ span.word {
 }
 
 span.xqueryKeyword {
-  color: red; /* #1240AB; */
+  color: blue; 
   /* font-weight: bold; */
 }
 
 span.xqueryComment {
   color: gray;
-  font-style: italic;
 }
 
 span.xqueryModifier {
@@ -45,7 +44,7 @@ span.xqueryModifier {
 }
 
 span.xqueryType {
-  color: purple;
+  color: rgb(0,135,255);
   font-weight: bold;
 }
 
@@ -63,25 +62,23 @@ span.xqueryRegexp {
 }
 
 span.xqueryNumber {
-  color: #1240AB;
+  color: rgb(255,0,0); 
 }
 
 span.xqueryVariable {
-    /* color: red; */
+    color: red;
 }
 
 span.xqueryFunction {
-    color: #1240AB;     
-    /* font-weight:bold; */ 
+    text-decoration:underline
 }
 
 
 span.xqueryOperator {
-    color: red;
+    color: DimGray;
 }
 
 span.xqueryPunctuation {
-    color: DIMGray;
 }
 
 span.xml-tagname {

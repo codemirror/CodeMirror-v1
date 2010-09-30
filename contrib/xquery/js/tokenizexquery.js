@@ -17,9 +17,8 @@ This is an indirect collective derivative of the other parses in this package
 
 */
 
-// A tokenizer for xQuery, basically trying to look at the source stream, 
-// chunk into proper tokens and apply the correct metadata to be able to
-// apply the proper CSS class
+// A tokenizer for xQuery, looks at the source stream and tokenizes, applying
+// metadata to be able to apply the proper CSS classes in the parser.
 
 var tokenizeXquery = (function() {
     // Advance the stream until the given character (not preceded by a
@@ -118,6 +117,8 @@ var tokenizeXquery = (function() {
         return allKeywords;
     } ();
 
+    // there are some special cases where ordinarily text like xs:string() would
+    // look like a function call when it is really a type, etc.
     function specialCases(source, word) {
         if (word in {
             "fn:true": "",
@@ -157,7 +158,7 @@ var tokenizeXquery = (function() {
     }
 
     // Some helper regexp matchers.
-    var isOperatorChar = /[+\-/ * &%@ = !?|] / ;
+    var isOperatorChar = /[=+\-*&%!?@\/]/; 
     var isDigit = /[0-9]/;
     var isHexDigit = /^[0-9A-Fa-f]$/;
     var isWordChar = /[\w\:\-\$_]/;
@@ -261,7 +262,7 @@ var tokenizeXquery = (function() {
         // embedded in them as regular newline tokens, and then continue
         // returning a comment token for every line of the comment. So
         // some state has to be saved (inside) to indicate whether we are
-        // inside a /* */ sequence.
+        // inside a (: :) sequence.
         function readMultilineComment(start) {
             var newInside = "(:";
             var maybeEnd = (start == ":");
@@ -305,6 +306,8 @@ var tokenizeXquery = (function() {
             };
         }
 
+        // read a string, but look for embedded expressions wrapped in curly
+        // brackets. 
         function readString(quote) {
             var newInside = quote;
             var previous = "";
@@ -329,6 +332,11 @@ var tokenizeXquery = (function() {
             };
         }
         
+        // Given an expression end by a closing curly bracket, mark the } as
+        // punctuation an resume the string processing by setting "inside" to
+        // the type of string it's embedded in. 
+        // This is known because the readString() function sets inside to the 
+        // quote type then an open curly bracket like "{  or '{
         function readExpressionEndInString(inside) {
             var quote = inside.substr(0,1);
             setInside(quote);
@@ -346,6 +354,7 @@ var tokenizeXquery = (function() {
             };
         }
 
+        // read an XML Tagname, both closing and opening
         function readTagname(lt) {
             var tagtype = (source.lookAhead("/", false)) ? "xml-tag-close": "xml-tag-open";
             source.nextWhileMatches(tagnameChar);
@@ -360,8 +369,9 @@ var tokenizeXquery = (function() {
             };
         }
 
-        // Fetch the next token. Dispatches on first character in the
-        // stream, or first two characters when the first is a slash.
+        // Fetch the next token. Dispatches on first character in the stream
+        // what follows is a big if statement that makes decisions based on the 
+        // character, the following character and the inside variable
 
         if (inside == "\"" || inside == "'")
             return readString(inside);
@@ -410,8 +420,9 @@ var tokenizeXquery = (function() {
             // prepare to read slashy string like ~ /\w{1}:\\.+\\.+/
             return readOperator(ch);
         }
-        else if (isOperatorChar.test(ch))
-            return readOperator(ch);
+        else if (isOperatorChar.test(ch)) {
+            return readOperator(ch);            
+        }
         // some xml handling stuff
         else if (ch == "<")
             return readTagname(ch);

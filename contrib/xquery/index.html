@@ -1,8 +1,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <script src="../../js/codemirror.js" type="text/javascript"></script>
-    <title>CodeMirror: HTML/XML demonstration</title>
-    <link rel="stylesheet" type="text/css" href="../../css/docs.css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <title>CodeMirror: XQuery highlighting demonstration</title>
     <style type="text/css">
       .CodeMirror-line-numbers {
         width: 2.2em;
@@ -14,14 +14,38 @@
         font-family: monospace;
         padding-top: .4em;
       }
+      body {
+          font-family: helvetica;
+          font-weight:bold;
+          max-width:4000px;
+      }
+      a {
+          color: #EB1D1D;
+          text-decoration: none;
+      }     
+      a:hover {
+          text-decoration: underline;
+      }
+      div.border {
+        border: 1px solid black;
+      }
+      .css-switch {
+          margin-right:15px;
+          padding-bottom:5px;
+      }
     </style>
   </head>
   <body style="padding: 20px;">
 
-<p>This is a simple demonstration of the XQuery  module
-for <a href="index.html">CodeMirror</a>. The <a
-href="js/parsexquery.js">javascript</a> file contains some comments with
-more information.</p>
+<div style="margin:auto; width:920px; border-width:1px;">
+<h2>XQuery Syntax Support for CodeMirror</h2>
+<p style="text-align: justify;  word-spacing: 3px;">This is a demonstration of the XQuery highlighting module
+for <a href="index.html">CodeMirror</a>. The formatting is CSS driven and very easy to customize to your liking.
+There are three sample styles sets below.
+You can edit or paste in any code below to give it a test run.
+</p>
+
+<a href="#" rel="xqcolors.css" class="css-switch">Light 1</a>  <a href="#" rel="xqcolors2.css" class="css-switch">Light 2</a> <a href="#" rel="xqcolors-dark.css" class="css-switch">Dark</a> 
 
 <div class="border">
 <textarea id="code" cols="120" rows="50">
@@ -33,7 +57,7 @@ let $let := &lt;x attr=&quot;value&quot;&gt;&quot;test&quot;&lt;/x&gt;
 let $joe:=1
 return element element {
   attribute attribute { 1 },
-  element test { &#39;a&#39; },
+  element test { &#39;a&#39; }, 
   attribute foo { &quot;bar&quot; },
   fn:doc()[ foo/@bar eq $let ],
   //x }    
@@ -406,8 +430,6 @@ return element element {
 
 
 
-
-
   (: ########################################################################### :)
   (: PRIVATE FUNCTIONS :)
   (: ########################################################################### :)
@@ -416,9 +438,99 @@ return element element {
       &quot;xquery version &#39;1.0-ml&#39;;
        import module namespace dls = &#39;http://marklogic.com/xdmp/dls&#39; at &#39;/MarkLogic/dls.xqy&#39;; &quot; 
   };  
+  
+  (: CODE SAMPLE BELOW BORROWED FROM PARTICK WIED :)
+  declare function local:document-move-forest($uri as xs:string, $forest-ids as xs:unsignedLong*)
+  {
+    xdmp:document-insert(
+      $uri,
+      fn:doc($uri),
+      xdmp:document-get-permissions($uri),
+      xdmp:document-get-collections($uri),
+      xdmp:document-get-quality($uri),
+      $forest-ids
+    )
+  };
+
+  let $xml :=
+    &lt;xml att=&quot;blah&quot; att2=&quot;blah&quot;&gt;
+      sdasd&lt;b&gt;asdasd&lt;/b&gt;
+    &lt;/xml&gt;
+  (: -------- :)
+  for $d in fn:doc(&quot;depts.xml&quot;)/depts/deptno
+  let $e := fn:doc(&quot;emps.xml&quot;)/emps/emp[deptno = $d]
+  where fn:count($e) &gt;= 10
+  order by fn:avg($e/salary) descending
+  return
+     &lt;big-dept&gt;
+        {
+        $d,
+        &lt;headcount&gt;{fn:count($e)}&lt;/headcount&gt;,
+        &lt;avgsal&gt;{fn:avg($e/salary)}&lt;/avgsal&gt;
+        }
+     &lt;/big-dept&gt;
+  (: -------- :)
+  declare function local:depth($e as node()) as xs:integer
+  {
+     (: A node with no children has depth 1 :)
+     (: Otherwise, add 1 to max depth of children :)
+     if (fn:empty($e/*)) then 1
+     else fn:max(for $c in $e/* return local:depth($c)) + 1
+  };
+
+  local:depth(fn:doc(&quot;partlist.xml&quot;))
+
+  (: -------- :)
+  &lt;html&gt;&lt;head/&gt;&lt;body&gt;
+  {
+    for $act in doc(&quot;hamlet.xml&quot;)//ACT
+    let $speakers := distinct-values($act//SPEAKER)
+    return
+      &lt;div&gt;{ string($act/TITLE) }&lt;/h1&gt;
+        &lt;ul&gt;
+        {
+          for $speaker in $speakers
+          return &lt;li&gt;{ $speaker }&lt;/li&gt;
+        }
+        &lt;/ul&gt;
+      &lt;/div&gt;
+  }
+  &lt;/body&gt;&lt;/html&gt;
+  (: -------- :)
+  {
+          for $book in doc(&quot;books.xml&quot;)//book
+          return
+          if (contains($book/author/text(),&quot;Herbert&quot;) or contains($book/author/text(),&quot;Asimov&quot;))
+                  then $book
+          else $book/text()
+
+          let $let := &lt;x&gt;&quot;test&quot;&lt;/x&gt;
+          return element element {
+          attribute attribute { 1 },
+          element test { &#39;a&#39; },
+          attribute foo { &quot;bar&quot; },
+          fn:doc()[ foo/@bar eq $let ],
+          //x }
+  }
+  (: -------- :)
+  &lt;bib&gt;
+   {
+    for $b in doc(&quot;http://bstore1.example.com/bib.xml&quot;)/bib/book
+    where $b/publisher = &quot;Addison-Wesley&quot; and $b/@year &gt; 1991
+    return
+      &lt;book year=&quot;{ $b/@year }&quot;&gt;
+       { $b/title }
+      &lt;/book&gt;
+   }
+  &lt;/bib&gt;
+  (: -------- :)
 </textarea>
 </div>
+<div style="width:100%;text-align:center;padding-top:15px;">
+    Developed by <a href="http://mike.brevoort.com">Mike Brevoort</a> (<a href="http://twitter.com">@mbrevoort</a>) 
+    <br/><small><a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License, Version 2.0</a></small></div>
 
+</div>
 <script type="text/javascript">
   var editor = CodeMirror.fromTextArea('code', {
     height: "550px",
@@ -427,6 +539,12 @@ return element element {
     path: "../../js/",
     continuousScanning: false, //500,
     lineNumbers: true
+  });
+  
+  $(document).ready(function() {
+      $(".css-switch").click(function() {
+         editor.setStylesheet("css/" + $(this).attr("rel"));
+      });
   });
 </script>
   </body>

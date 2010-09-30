@@ -16,6 +16,11 @@ limitations under the License.
 This is an indirect collective derivative of the other parses in this package
 
 */
+
+// The XQuery parser uses the xquery tokenizer in tokenizexquery.js. Given the
+// stream of tokens, it makes decisions to override the tokens styles by evaluating
+// it's context with respect to the other tokens. 
+
 var XqueryParser = Editor.Parser = (function() {
     function xqueryLexical(startColumn, currentToken, align, previousToken, encloseLevel) {
         this.startColumn = startColumn;
@@ -113,6 +118,10 @@ var XqueryParser = Editor.Parser = (function() {
                             break;
                     }
                 }
+                else if(getPrevious(2).content == "module" && getPrevious(1).content == "namespace") 
+                    token.style="xqueryFunction";
+                else if(token.content == "=" && getPrevious(1).style == "xml-attribute")
+                    token.style="xml-attribute"
 
                 if (token.type == "whitespace") {
                     if (token.value == "\n") {
@@ -143,6 +152,10 @@ var XqueryParser = Editor.Parser = (function() {
                     column = token.value.length;
                 }
 
+                // maintain the previous tokens array so that it doesn't continue to leak
+                // keep only the last 5000
+                if(previousTokens.length > 5000) previousTokens.shift();
+
                 while (true) {
                     consume = marked = false;
                     // Take and execute the topmost action.
@@ -157,7 +170,6 @@ var XqueryParser = Editor.Parser = (function() {
                         return token;
                     }
                 }
-
 
             },
 
@@ -199,7 +211,7 @@ var XqueryParser = Editor.Parser = (function() {
             push(arguments);
             consume = false;
         }
-
+        
 
         function getPrevious(numberFromCurrent) {
             var l = previousTokens.length;

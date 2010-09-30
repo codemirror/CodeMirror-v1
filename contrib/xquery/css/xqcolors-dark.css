@@ -14,31 +14,32 @@ span.word {
 }
 
 span.xqueryKeyword {
-  color: orange; 
+  color: #ffbd40; 
   /* font-weight: bold; */
 }
 
 span.xqueryComment {
-  color: gray;
+  color: #CDCDCD;
+  font-style:italic;
 }
 
 span.xqueryModifier {
-  color: rgb(0,102,153);
+color:#6c8cd5;
   font-weight: bold;
 }
 
 span.xqueryType {
-  color: rgb(0,135,255);
+  color:#6c8cd5;
   font-weight: bold;
 }
 
 span.xqueryAtom {
-  color: rgb(0,102,153);
+  color:#6c8cd5;
   font-weight: bold;  
 }
 
 span.xqueryString {
-  color: green;
+  color: #9fee00;
 }
 
 span.xqueryRegexp {
@@ -50,11 +51,11 @@ span.xqueryNumber {
 }
 
 span.xqueryVariable {
-    color: red;
+
 }
 
 span.xqueryFunction {
-    text-decoration:underline
+    color:#FFF700;
 }
 
 span.xqueryLocalvariable {
@@ -79,13 +80,14 @@ span.xquery-doc-directive {
 }
 
 span.xml-tagname {
-    color: #A0B;
+    color: #ffbd40; ;
 }
 
 span.xml-attribute {
-    color: yellow;
+    color: #FFF700;
 }
 
 span.xml-attribute-value {
-    color:MediumSpringGreen ;
+    color: #FFF700;
+    font-style:italic;
 }
