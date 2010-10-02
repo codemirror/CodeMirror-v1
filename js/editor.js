@@ -265,8 +265,9 @@ var Editor = (function(){
       this.pos = {from: topPos, to: topPos};
     }
 
+    if (caseFold) string = string.toLowerCase();
     // Create a matcher function based on the kind of string we have.
-    var target = (this.caseFold ? string.toLowerCase() : string).split("\n");
+    var target = string.split("\n");
     this.matches = (target.length == 1) ?
       // For one-line strings, searching can be done simply by calling
       // indexOf or lastIndexOf on the current line.
