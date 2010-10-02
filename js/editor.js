@@ -14,6 +14,8 @@ var mac = /Mac/.test(navigator.platform);
 // this if Opera gets their act together, make the version check more
 // broad if they don't.
 var brokenOpera = window.opera && /Version\/10.[56]/.test(navigator.userAgent);
+// TODO remove this once WebKit 533 becomes less common.
+var slowWebkit = /AppleWebKit\/533/.test(navigator.userAgent);
 
 // Make sure a string does not contain two consecutive 'collapseable'
 // whitespace characters.
@@ -890,6 +892,26 @@ var Editor = (function(){
                 select.focusAfterNode(sel, self.container);
             }, 20);
           }
+        }
+      }
+      // In 533.* WebKit versions, when the document is big, typing
+      // something at the end of a line causes the browser to do some
+      // kind of stupid heavy operation, creating delays of several
+      // seconds before the typed characters appear. This very crude
+      // hack inserts a temporary zero-width space after the cursor to
+      // make it not be at the end of the line.
+      else if (slowWebkit) {
+        var sel = select.selectionTopNode(this.container),
+            next = sel ? sel.nextSibling : this.container.firstChild;
+        // Doesn't work on empty lines, for some reason those always
+        // trigger the delay.
+        if (sel && next && isBR(next) && !isBR(sel)) {
+          var cheat = document.createTextNode("\u200b");
+          this.container.insertBefore(cheat, next);
+          this.parent.setTimeout(function() {
+            if (cheat.nodeValue == "\u200b") removeElement(cheat);
+            else cheat.nodeValue = cheat.nodeValue.replace("\u200b", "");
+          }, 20);
         }
       }
     },
