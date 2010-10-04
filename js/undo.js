@@ -257,8 +257,8 @@ UndoHistory.prototype = {
     function buildLine(node) {
       var text = [];
       for (var cur = node ? node.nextSibling : self.container.firstChild;
-           cur && !isBR(cur); cur = cur.nextSibling)
-        if (cur.currentText) text.push(cur.currentText);
+           cur && (!isBR(cur) || cur.hackBR); cur = cur.nextSibling)
+        if (!cur.hackBR && cur.currentText) text.push(cur.currentText);
       return {from: node, to: cur, text: cleanText(text.join(""))};
     }
 
