@@ -297,7 +297,11 @@ var select = {};
       
       if (start == 0) {
         var test1 = selection.createRange(), test2 = test1.duplicate();
-        test2.moveToElementText(container);
+        try {
+          test2.moveToElementText(container);
+        } catch(exception) {
+          return null;
+        }
         if (test1.compareEndPoints("StartToStart", test2) == 0)
           return null;
       }
