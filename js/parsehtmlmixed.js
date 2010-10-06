@@ -3,6 +3,13 @@ var HTMLMixedParser = Editor.Parser = (function() {
     throw new Error("CSS, JS, and XML parsers must be loaded for HTML mixed mode to work.");
   XMLParser.configure({useHTMLKludges: true});
 
+  // tags that trigger seperate parsers
+  var triggers = {
+    "script": "JSParser",
+    "style":  "CSSParser"
+  };
+
+
   function parseMixed(stream) {
     var htmlParser = XMLParser.make(stream), localParser = null, inTag = false;
     var iter = {next: top, copy: copy};
@@ -14,10 +21,10 @@ var HTMLMixedParser = Editor.Parser = (function() {
       else if (token.style == "xml-tagname" && inTag === true)
         inTag = token.content.toLowerCase();
       else if (token.content == ">") {
-        if (inTag == "script")
-          iter.next = local(JSParser, "</script");
-        else if (inTag == "style")
-          iter.next = local(CSSParser, "</style");
+        if (triggers[inTag]) {
+          var parser = window[triggers[inTag]];
+          iter.next = local(parser, "</"+inTag);
+        }
         inTag = false;
       }
       return token;
@@ -47,7 +54,7 @@ var HTMLMixedParser = Editor.Parser = (function() {
               return baseIndent;
             else
               return oldIndent(chars);
-          }
+          };
         }
 
         return token;
@@ -69,6 +76,12 @@ var HTMLMixedParser = Editor.Parser = (function() {
     return iter;
   }
 
-  return {make: parseMixed, electricChars: "{}/:"};
+  return {
+    make: parseMixed,
+    electricChars: "{}/:",
+    configure: function(obj) {
+      if (obj.triggers) triggers = obj.triggers;
+    }
+  };
 
 })();
