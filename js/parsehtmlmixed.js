@@ -1,7 +1,4 @@
 var HTMLMixedParser = Editor.Parser = (function() {
-  if (!(CSSParser && JSParser && XMLParser))
-    throw new Error("CSS, JS, and XML parsers must be loaded for HTML mixed mode to work.");
-  XMLParser.configure({useHTMLKludges: true});
 
   // tags that trigger seperate parsers
   var triggers = {
@@ -9,8 +6,17 @@ var HTMLMixedParser = Editor.Parser = (function() {
     "style":  "CSSParser"
   };
 
+  function checkDependencies() {
+    var parsers = ['XMLParser'];
+    for (var p in triggers) parsers.push(triggers[p]);
+    for (var i in parsers) {
+      if (!window[parsers[i]]) throw new Error(parsers[i] + " parser must be loaded for HTML mixed mode to work.");
+    }
+    XMLParser.configure({useHTMLKludges: true});
+  }
 
   function parseMixed(stream) {
+    checkDependencies();
     var htmlParser = XMLParser.make(stream), localParser = null, inTag = false;
     var iter = {next: top, copy: copy};
 
