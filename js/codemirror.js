@@ -257,7 +257,7 @@ var CodeMirror = (function(){
     setEnterMode: function(mode) {this.options.enterMode = mode;},
     setLineNumbers: function(on) {
       if (on && !this.lineNumbers) {
-        this.lineNumbers = addLineNumberDiv(this.wrapping);
+        this.lineNumbers = addLineNumberDiv(this.wrapping,this.options.firstLineNumber);
         this.activateLineNumbers();
       }
       else if (!on && this.lineNumbers) {
