@@ -44,6 +44,13 @@ pre.code {
   padding: .5em 1em;
   line-height: 1.2em;
   margin-top: .5em;
+  position: relative;
+}
+
+img.logo {
+  position: absolute;
+  right: -25px;
+  bottom: 4px;
 }
 
 a:link, a:visited, .quasilink {
@@ -52,8 +59,12 @@ a:link, a:visited, .quasilink {
   text-decoration: none;
 }
 
-a:hover {
+a:hover, .quasilink:hover {
   color: #800004;
+}
+
+h1 a:link, h1 a:visited, h1 a:hover {
+  color: black;
 }
 
 ul {
