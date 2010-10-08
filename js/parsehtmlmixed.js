@@ -29,7 +29,7 @@ var HTMLMixedParser = Editor.Parser = (function() {
       else if (token.content == ">") {
         if (triggers[inTag]) {
           var parser = window[triggers[inTag]];
-          iter.next = local(parser, "</"+inTag);
+          iter.next = local(parser, "</" + inTag);
         }
         inTag = false;
       }

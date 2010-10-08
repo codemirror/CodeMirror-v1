@@ -430,11 +430,15 @@
       <dt><code><a
       href="js/parsehtmlmixed.js">parsehtmlmixed.js</a></code> (<a
       href="mixedtest.html">demo</a>)</dt><dd>A mixed-mode HTML
-      parser. Requires the XML, JavaScript, and CSS parsers to also be
-      loaded, so your <code>parserfile</code> option looks something
-      like <code>["parsexml.js", "parsecss.js",
+      parser. By default, requires the XML, JavaScript, and CSS
+      parsers to also be loaded, so your <code>parserfile</code>
+      option looks something like <code>["parsexml.js", "parsecss.js",
       "tokenizejavascript.js", "parsejavascript.js",
-      "parsehtmlmixed.js"]</code>.</dd>
+      "parsehtmlmixed.js"]</code>. This parser accepts a configuration
+      object with a <code>triggers</code> property to configure which
+      parser should be invoked for which tag. The default looks like
+      this (property names are tags, values are parser names):
+      <code>{script: "JSParser", style: "CSSParser"}</code></dd>
 
       <dt><code><a href="js/parsesparql.js">parsesparql.js</a></code>
       (<a href="sparqltest.html">demo</a>)</dt><dd>Parses the <a
