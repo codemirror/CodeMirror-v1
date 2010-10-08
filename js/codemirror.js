@@ -262,7 +262,7 @@ var CodeMirror = (function(){
       }
       else if (!on && this.lineNumbers) {
         this.wrapping.removeChild(this.lineNumbers);
-        this.wrapping.style.marginLeft = "";
+        this.wrapping.style.paddingLeft = "";
         this.lineNumbers = null;
       }
     },
