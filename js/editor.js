@@ -938,6 +938,7 @@ var Editor = (function(){
       var self = this, whiteSpace = whiteSpaceAfter(start);
       var newIndent = 0, curIndent = whiteSpace ? whiteSpace.currentText.length : 0;
 
+      var firstText = whiteSpace ? whiteSpace.nextSibling : (start ? start.nextSibling : this.container.firstChild);
       if (direction == "keep") {
         if (start) {
           var prevWS = whiteSpaceAfter(startOfLine(start.previousSibling))
@@ -947,7 +948,6 @@ var Editor = (function(){
       else {
         // Sometimes the start of the line can influence the correct
         // indentation, so we retrieve it.
-        var firstText = whiteSpace ? whiteSpace.nextSibling : (start ? start.nextSibling : this.container.firstChild);
         var nextChars = (start && firstText && firstText.currentText) ? firstText.currentText : "";
 
         // Ask the lexical context for the correct indentation, and
