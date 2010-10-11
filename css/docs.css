@@ -1,9 +1,12 @@
 body {
-  font-family: Droid Sans, Arial, sans-serif;
+  font-family: Arial, sans-serif;
   line-height: 1.5;
   max-width: 64.3em;
   margin: 3em auto;
   padding: 0 1em;
+}
+body.droid {
+  font-family: Droid Sans, Arial, sans-serif;
 }
 
 h1 {
@@ -27,7 +30,7 @@ h3 {
 }
 
 pre {
-  font-family: Droid Sans Mono, Courier New, monospaced;
+  font-family: Courier New, monospaced;
   background-color: #eee;
   -moz-border-radius: 6px;
   -webkit-border-radius: 6px;
