@@ -359,6 +359,14 @@
       Used to prevent access issues in IE, where this value isn't
       automatically inherited by iframes.</dd>
 
+      <dt><code>noScriptCaching</code></dt><dd>The scripts loaded
+      inside the editor frame are not affected by, for example,
+      ctrl-F5 on Firefox, and will often be cached even though you
+      don't want them to. During development, you can set this option
+      to <code>true</code> to cause CodeMirror to add a changing dummy
+      parameter to the script URLs, which will force browsers to
+      reload them every time.</dd>
+
       <dt><code>initCallback</code></dt><dd>If set to a function, this
       will be called (with the editor object as its argument) after
       the editor has finished initialising.</dd>

@@ -57,7 +57,8 @@ var CodeMirror = (function(){
     lineNumbers: false,
     firstLineNumber: 1,
     indentUnit: 2,
-    domain: null
+    domain: null,
+    noScriptCaching: false
   });
 
   function addLineNumberDiv(container, firstNum) {
@@ -95,7 +96,7 @@ var CodeMirror = (function(){
     });
     forEach(options.basefiles.concat(options.parserfile), function(file) {
       if (!/^https?:/.test(file)) file = options.path + file;
-      html.push("<script type=\"text/javascript\" src=\"" + file + "\"><" + "/script>");
+      html.push("<script type=\"text/javascript\" src=\"" + file + (options.noScriptCaching ? "?nocache=" + new Date().getTime().toString(16) : "") + "\"><" + "/script>");
     });
     html.push("</head><body style=\"border-width: 0;\" class=\"editbox\" spellcheck=\"" +
               (options.disableSpellcheck ? "false" : "true") + "\"></body></html>");
