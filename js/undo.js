@@ -267,7 +267,7 @@ UndoHistory.prototype = {
     var lines = [];
     if (self.firstTouched) self.touched.push(null);
     forEach(self.touched, function(node) {
-      if (node && node.parentNode != self.container) return;
+      if (node && (node.parentNode != self.container || node.hackBR)) return;
 
       if (node) node.historyTouched = false;
       else self.firstTouched = false;
