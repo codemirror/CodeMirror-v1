@@ -221,7 +221,8 @@ var PHPParser = Editor.Parser = (function() {
     }
     // Pop off the current lexical context.
     function poplex(){
-      lexical = lexical.prev;
+      if (lexical.prev)
+        lexical = lexical.prev;
     }
     poplex.lex = true;
     // The 'lex' flag on these actions is used by the 'next' function
@@ -272,7 +273,7 @@ var PHPParser = Editor.Parser = (function() {
     function statement(token){
       var type = token.type;
       if (type == "keyword a") cont(pushlex("form"), expression, altsyntax, statement, poplex);
-      else if (type == "keyword b") cont(pushlex("form"), statement, poplex);
+      else if (type == "keyword b") cont(pushlex("form"), altsyntax, statement, poplex);
       else if (type == "{") cont(pushlex("}"), block, poplex);
       else if (type == "function") funcdef();
       // technically, "class implode {...}" is correct, but we'll flag that as an error because it overrides a predefined function
