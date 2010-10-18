@@ -569,7 +569,7 @@ var select = {};
       return range.toString().length;
     };
 
-    function insertNodeAtCursor(node) {
+    select.insertNodeAtCursor = function(node) {
       var range = selectionRange();
       if (!range) return;
 
@@ -597,11 +597,11 @@ var select = {};
     }
 
     select.insertNewlineAtCursor = function() {
-      insertNodeAtCursor(document.createElement("BR"));
+      select.insertNodeAtCursor(document.createElement("BR"));
     };
 
     select.insertTabAtCursor = function() {
-      insertNodeAtCursor(document.createTextNode(fourSpaces));
+      select.insertNodeAtCursor(document.createTextNode(fourSpaces));
     };
 
     select.cursorPos = function(container, start) {

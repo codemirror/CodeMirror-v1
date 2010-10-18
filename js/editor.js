@@ -793,6 +793,11 @@ var Editor = (function(){
         }
         else {
           select.insertNewlineAtCursor();
+          if (webkit && !this.options.textWrapping) {
+            var temp = makePartSpan("\u200b");
+            select.insertNodeAtCursor(temp);
+            setTimeout(function(){removeElement(temp);}, 50);
+          }
           var mode = this.options.enterMode;
           if (mode != "flat") this.indentAtCursor(mode == "keep" ? "keep" : undefined);
           select.scrollToCursor(this.container);
