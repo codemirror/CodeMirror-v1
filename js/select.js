@@ -97,6 +97,21 @@ var select = {};
     if (currentSelection) currentSelection.changed = true;
   };
 
+  // Find the 'leaf' node (BR or text) after the given one.
+  function baseNodeAfter(node) {
+    var next = node.nextSibling;
+    if (next) {
+      while (next.firstChild) next = next.firstChild;
+      if (next.nodeType == 3 || isBR(next)) return next;
+      else return baseNodeAfter(next);
+    }
+    else {
+      var parent = node.parentNode;
+      while (parent && !parent.nextSibling) parent = parent.parentNode;
+      return parent && baseNodeAfter(parent);
+    }
+  }
+
   // This is called by the code in editor.js whenever it is replacing
   // a text node. The function sees whether the given oldNode is part
   // of the current selection, and updates this selection if it is.
@@ -120,6 +135,9 @@ var select = {};
           point.node = to;
           point.offset += (offset || 0);
         }
+      }
+      else if (select.ie_selection && point.offset == 0 && point.node == baseNodeAfter(from)) {
+        currentSelection.changed = true;
       }
     }
     replace(currentSelection.start);
