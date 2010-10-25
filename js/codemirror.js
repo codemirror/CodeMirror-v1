@@ -535,7 +535,7 @@ var CodeMirror = (function(){
     var match;
     if (window.opera)
       return Number(window.opera.version()) >= 9.52;
-    else if (/Apple Computers, Inc/.test(navigator.vendor) && (match = navigator.userAgent.match(/Version\/(\d+(?:\.\d+)?)\./)))
+    else if (/Apple Computer, Inc/.test(navigator.vendor) && (match = navigator.userAgent.match(/Version\/(\d+(?:\.\d+)?)\./)))
       return Number(match[1]) >= 3;
     else if (document.selection && window.ActiveXObject && (match = navigator.userAgent.match(/MSIE (\d+(?:\.\d*)?)\b/)))
       return Number(match[1]) >= 6;

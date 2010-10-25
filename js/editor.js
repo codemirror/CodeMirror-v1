@@ -6,7 +6,7 @@
 
 var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
 var webkit = /AppleWebKit/.test(navigator.userAgent);
-var safari = /Apple Computers, Inc/.test(navigator.vendor);
+var safari = /Apple Computer, Inc/.test(navigator.vendor);
 var gecko = /gecko\/(\d{8})/i.test(navigator.userAgent);
 var mac = /Mac/.test(navigator.platform);
 
