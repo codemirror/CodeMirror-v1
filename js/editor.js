@@ -1245,7 +1245,12 @@ var Editor = (function(){
 
       if (internetExplorer) {
         this.container.createTextRange().execCommand("unlink");
-        this.selectionSnapshot = select.getBookmark(this.container);
+        clearTimeout(this.saveSelectionSnapshot);
+        var self = this;
+        this.saveSelectionSnapshot = setTimeout(function() {
+          var snapshot = select.getBookmark(self.container);
+          if (snapshot) self.selectionSnapshot = snapshot;
+        }, 200);
       }
 
       var activity = this.options.cursorActivity;
