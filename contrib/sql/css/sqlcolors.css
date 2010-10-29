@@ -19,16 +19,22 @@ span.sql-keyword {
 }
 
 span.sql-var {
-  color: red;
+  color: green;
 }
 
 span.sql-comment {
   color: #AA7700;
 }
 
-span.sql-literal {
-  color: green;
+span.sql-literal1 {
+  color: black;
+  font-weight:bold;
 }
+
+span.sql-literal2 {
+  color: red;
+}
+
 
 span.sql-operator {
   color: blue;
