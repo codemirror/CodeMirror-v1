@@ -5,6 +5,7 @@ function waitForStyles() {
   setTimeout(waitForStyles, 100);
 }
 setTimeout(function() {
+  if (/AppleWebKit/.test(navigator.userAgent) && /iP[oa]d|iPhone/.test(navigator.userAgent)) return;
   var link = document.createElement("LINK");
   link.type = "text/css";
   link.rel = "stylesheet";
