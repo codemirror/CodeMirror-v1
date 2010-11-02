@@ -91,7 +91,7 @@ var Editor = (function(){
 
     function simplifyNode(node, top) {
       if (node.nodeType == 3) {
-        var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/\r/g, "").replace(/\n/g, " "));
+        var text = node.nodeValue = fixSpaces(node.nodeValue.replace(/[\r\u200b]/g, "").replace(/\n/g, " "));
         if (text.length) leaving = false;
         result.push(node);
       }
