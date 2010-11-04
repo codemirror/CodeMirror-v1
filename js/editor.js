@@ -7,7 +7,8 @@
 var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
 var webkit = /AppleWebKit/.test(navigator.userAgent);
 var safari = /Apple Computer, Inc/.test(navigator.vendor);
-var gecko = /gecko\/(\d{8})/i.test(navigator.userAgent);
+var gecko = navigator.userAgent.match(/gecko\/(\d{8})/i);
+if (gecko) gecko = Number(gecko[1]);
 var mac = /Mac/.test(navigator.platform);
 
 // TODO this is related to the backspace-at-end-of-line bug. Remove
@@ -691,7 +692,7 @@ var Editor = (function(){
     },
 
     reroutePasteEvent: function() {
-      if (this.capturingPaste || window.opera) return;
+      if (this.capturingPaste || window.opera || (gecko && gecko >= 20101026)) return;
       this.capturingPaste = true;
       var te = window.frameElement.CodeMirror.textareaHack;
       parent.focus();
