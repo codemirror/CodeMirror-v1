@@ -55,6 +55,8 @@ function makePartSpan(value) {
   return span;
 }
 
+function alwaysZero() {return 0;}
+
 // On webkit, when the last BR of the document does not have text
 // behind it, the cursor can not be put on the line after it. This
 // makes pressing enter at the end of the document occasionally do
@@ -1533,7 +1535,7 @@ var Editor = (function(){
           // later resume parsing from this point, the second is used
           // for indentation.
           part.parserFromHere = parsed.copy();
-          part.indentation = token.indentation;
+          part.indentation = token.indentation || alwaysZero;
           part.dirty = false;
 
           // If the target argument wasn't an integer, go at least
