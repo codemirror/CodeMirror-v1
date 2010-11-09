@@ -496,11 +496,11 @@ var Editor = (function(){
       var accum = [];
       select.markSelection();
       forEach(traverseDOM(this.container.firstChild), method(accum, "push"));
-      webkitLastLineHack(this.container);
       select.selectMarked();
       // On webkit, don't count last (empty) line if the webkitLastLineHack BR is present
       if (webkit && this.container.lastChild.hackBR)
         accum.pop();
+      webkitLastLineHack(this.container);
       return cleanText(accum.join(""));
     },
 

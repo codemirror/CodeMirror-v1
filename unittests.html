@@ -9,7 +9,7 @@
   <head>
     <title>Test Harness for CodeMirror</title>
 
-    <script type="text/javascript" src="unittests.js"></script>
+    <script type="text/javascript" src="js/unittests.js"></script>
 
     <script type="text/javascript">
       // Counters for unit test results.
@@ -105,7 +105,7 @@
     </script>
   </head>
 
-  <body onload="initTests()">
+  <body>
     <h1>Test Harness for CodeMirror</h1>
     <div id="testoutput"></div>
     <hr>
@@ -116,7 +116,8 @@
     <script>
       var editor = new CodeMirror(CodeMirror.replace(document.getElementById('inputfield')), {
           parserfile: ["tokenizejavascript.js", "parsejavascript.js"],
-          path: "js/"
+          path: "js/",
+          initCallback: initTests
       });
     </script>
 
