@@ -445,7 +445,7 @@ var Editor = (function(){
       addEventHandler(document, "keyup", method(this, "keyUp"));
 
       function cursorActivity() {self.cursorActivity(false);}
-      addEventHandler(document.body, "mouseup", cursorActivity);
+      addEventHandler(internetExplorer ? document.body : window, "mouseup", cursorActivity);
       addEventHandler(document.body, "cut", cursorActivity);
 
       // workaround for a gecko bug [?] where going forward and then
