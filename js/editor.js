@@ -393,7 +393,7 @@ var Editor = (function(){
     if (options.parserConfig && Editor.Parser.configure)
       Editor.Parser.configure(options.parserConfig);
 
-    if (!options.readOnly)
+    if (!options.readOnly && !internetExplorer)
       select.setCursorPos(container, {node: null, offset: 0});
 
     this.dirty = [];
