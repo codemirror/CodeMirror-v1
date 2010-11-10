@@ -145,7 +145,7 @@ UndoHistory.prototype = {
 
   // Commit unless there are pending dirty nodes.
   tryCommit: function() {
-    if (!window.parent || !window.UndoHistory) return; // Stop when frame has been unloaded
+    if (!window || !window.parent || !window.UndoHistory) return; // Stop when frame has been unloaded
     if (this.editor.highlightDirty()) this.commit(true);
     else this.scheduleCommit();
   },
