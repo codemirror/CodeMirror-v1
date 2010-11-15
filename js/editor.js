@@ -650,14 +650,14 @@ var Editor = (function(){
       webkitLastLineHack(this.container);
     },
 
-    cursorCoords: function(start) {
+    cursorCoords: function(start, internal) {
       var sel = select.cursorPos(this.container, start);
       if (!sel) return null;
       var off = sel.offset, node = sel.node, self = this;
       function measureFromNode(node, xOffset) {
         var y = -(document.body.scrollTop || document.documentElement.scrollTop || 0),
             x = -(document.body.scrollLeft || document.documentElement.scrollLeft || 0) + xOffset;
-        forEach([node, window.frameElement], function(n) {
+        forEach([node, internal ? null : window.frameElement], function(n) {
           while (n) {x += n.offsetLeft; y += n.offsetTop;n = n.offsetParent;}
         });
         return {x: x, y: y, yBot: y + node.offsetHeight};
@@ -697,6 +697,8 @@ var Editor = (function(){
       if (this.capturingPaste || window.opera || (gecko && gecko >= 20101026)) return;
       this.capturingPaste = true;
       var te = window.frameElement.CodeMirror.textareaHack;
+      var coords = this.cursorCoords(true, true);
+      te.style.top = coords.y + "px";
       parent.focus();
       te.value = "";
       te.focus();

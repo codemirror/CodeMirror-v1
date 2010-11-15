@@ -135,6 +135,7 @@ var CodeMirror = (function(){
     teHack.style.position = "absolute";
     teHack.style.left = "-10000px";
     teHack.style.width = "10px";
+    teHack.tabIndex = 100000;
 
     // Link back to this object, so that the editor can fetch options
     // and add a reference to itself.
