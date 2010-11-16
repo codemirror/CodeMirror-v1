@@ -699,6 +699,10 @@ var Editor = (function(){
       var te = window.frameElement.CodeMirror.textareaHack;
       var coords = this.cursorCoords(true, true);
       te.style.top = coords.y + "px";
+      if (internetExplorer) {
+        var snapshot = select.getBookmark(this.container);
+        if (snapshot) this.selectionSnapshot = snapshot;
+      }
       parent.focus();
       te.value = "";
       te.focus();

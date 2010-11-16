@@ -162,8 +162,13 @@ var select = {};
   // Most functions are defined in two ways, one for the IE selection
   // model, one for the W3C one.
   if (select.ie_selection) {
+    function selRange() {
+      var sel = document.selection;
+      return sel && (sel.createRange || sel.createTextRange)();
+    }
+
     function selectionNode(start) {
-      var range = document.selection.createRange();
+      var range = selRange();
       range.collapse(start);
 
       function nodeAfter(node) {
@@ -250,9 +255,9 @@ var select = {};
     };
 
     select.offsetInNode = function(node) {
-      var sel = document.selection;
-      if (!sel) return 0;
-      var range = sel.createRange(), range2 = range.duplicate();
+      var range = selRange();
+      if (!range) return 0;
+      var range2 = range.duplicate();
       try {range2.moveToElementText(node);} catch(e){return 0;}
       range.setEndPoint("StartToStart", range2);
       return range.text.length;
@@ -262,10 +267,9 @@ var select = {};
     // after. Note that this returns false for 'no cursor', and null
     // for 'start of document'.
     select.selectionTopNode = function(container, start) {
-      var selection = document.selection;
-      if (!selection) return false;
-
-      var range = selection.createRange(), range2 = range.duplicate();
+      var range = selRange();
+      if (!range) return false;
+      var range2 = range.duplicate();
       range.collapse(start);
       var around = range.parentElement();
       if (around && isAncestor(container, around)) {
@@ -314,7 +318,7 @@ var select = {};
       }
       
       if (start == 0) {
-        var test1 = selection.createRange(), test2 = test1.duplicate();
+        var test1 = selRange(), test2 = test1.duplicate();
         try {
           test2.moveToElementText(container);
         } catch(exception) {
@@ -337,14 +341,13 @@ var select = {};
     };
 
     select.somethingSelected = function() {
-      var sel = document.selection;
-      return sel && (sel.createRange().text != "");
+      var range = selRange();
+      return range && (range.text != "");
     };
 
     function insertAtCursor(html) {
-      var selection = document.selection;
-      if (selection) {
-        var range = selection.createRange();
+      var range = selRange();
+      if (range) {
         range.pasteHTML(html);
         range.collapse(false);
         range.select();
@@ -365,14 +368,14 @@ var select = {};
     // currently is, and the offset into the line. Returns null as
     // node if cursor is on first line.
     select.cursorPos = function(container, start) {
-      var selection = document.selection;
-      if (!selection) return null;
+      var range = selRange();
+      if (!range) return null;
 
       var topNode = select.selectionTopNode(container, start);
       while (topNode && !isBR(topNode))
         topNode = topNode.previousSibling;
 
-      var range = selection.createRange(), range2 = range.duplicate();
+      var range2 = range.duplicate();
       range.collapse(start);
       if (topNode) {
         range2.moveToElementText(topNode);
