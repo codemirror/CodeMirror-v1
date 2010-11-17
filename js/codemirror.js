@@ -324,7 +324,7 @@ var CodeMirror = (function(){
         if (handler) {
           var div = (e || event).target || (e || event).srcElement;
           var num = div == nums ? NaN : Number(div.innerHTML);
-          if (!isNaN(num)) handler(num);
+          if (!isNaN(num)) handler(num, div);
         }
       };
 
