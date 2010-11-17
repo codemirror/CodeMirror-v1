@@ -1268,7 +1268,7 @@ var Editor = (function(){
         }, 200);
       }
 
-      var activity = this.options.cursorActivity;
+      var activity = this.options.onCursorActivity;
       if (!safe || activity) {
         var cursor = select.selectionTopNode(this.container, false);
         if (cursor === false || !this.container.firstChild) return;

@@ -37,6 +37,7 @@ var CodeMirror = (function(){
     lineNumberTime: 50,
     continuousScanning: false,
     saveFunction: null,
+    onLoad: null,
     onChange: null,
     undoDepth: 50,
     undoDelay: 800,
@@ -53,7 +54,7 @@ var CodeMirror = (function(){
     electricChars: true,
     reindentOnLoad: false,
     activeTokens: null,
-    cursorActivity: null,
+    onCursorActivity: null,
     lineNumbers: false,
     firstLineNumber: 1,
     indentUnit: 2,
@@ -113,6 +114,7 @@ var CodeMirror = (function(){
     // Backward compatibility for deprecated options.
     if (options.dumbTabs) options.tabMode = "spaces";
     else if (options.normalTab) options.tabMode = "default";
+    if (options.cursorActivity) options.onCursorActivity = options.cursorActivity;
 
     var frame = this.frame = document.createElement("IFRAME");
     if (options.iframeClass) frame.className = options.iframeClass;
@@ -165,7 +167,9 @@ var CodeMirror = (function(){
 
   CodeMirror.prototype = {
     init: function() {
+      // Deprecated, but still supported.
       if (this.options.initCallback) this.options.initCallback(this);
+      if (this.options.onLoad) this.options.onLoad(this);
       if (this.options.lineNumbers) this.activateLineNumbers();
       if (this.options.reindentOnLoad) this.reindent();
       if (this.options.height == "dynamic") this.setDynamicHeight();
@@ -435,7 +439,7 @@ var CodeMirror = (function(){
     },
 
     setDynamicHeight: function() {
-      var self = this, activity = self.options.cursorActivity, win = self.win, body = win.document.body,
+      var self = this, activity = self.options.onCursorActivity, win = self.win, body = win.document.body,
           lineHeight = null, timeout = null, vmargin = 2 * self.frame.offsetTop;
       body.style.overflowY = "hidden";
       win.document.documentElement.style.overflowY = "hidden";
@@ -458,7 +462,7 @@ var CodeMirror = (function(){
           self.wrapping.style.height = Math.max(vmargin + computedHeight, self.options.minHeight) + "px";
       }
       setTimeout(updateHeight, 300);
-      self.options.cursorActivity = function(x) {
+      self.options.onCursorActivity = function(x) {
         if (activity) activity(x);
         clearTimeout(timeout);
         timeout = setTimeout(updateHeight, 100);
