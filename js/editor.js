@@ -48,7 +48,7 @@ function makePartSpan(value) {
   if (value.nodeType == 3) text = value.nodeValue;
   else value = document.createTextNode(text);
 
-  var span = document.createElement("SPAN");
+  var span = document.createElement("span");
   span.isPart = true;
   span.appendChild(value);
   span.currentText = text;
@@ -70,7 +70,7 @@ var webkitLastLineHack = webkit ?
   function(container) {
     var last = container.lastChild;
     if (!last || !last.hackBR) {
-      var br = document.createElement("BR");
+      var br = document.createElement("br");
       br.hackBR = true;
       container.appendChild(br);
     }
@@ -107,7 +107,7 @@ var Editor = (function(){
         if (!leaving && newlineElements.hasOwnProperty(node.nodeName.toUpperCase())) {
           leaving = true;
           if (!atEnd || !top)
-            result.push(document.createElement("BR"));
+            result.push(document.createElement("br"));
         }
       }
     }

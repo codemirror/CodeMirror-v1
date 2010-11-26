@@ -21,6 +21,12 @@ var CodeMirror = (function(){
     for (var i = 0; i < array.length; i++)
       action(array[i]);
   }
+  function createHTMLElement(el) {
+    if (document.createElementNS && document.documentElement.namespaceURI !== null)
+      return document.createElementNS("http://www.w3.org/1999/xhtml", el)
+    else
+      return document.createElement(el)
+  }
 
   // These default options can be overridden by passing a set of
   // options to a specific CodeMirror constructor. See manual.html for
@@ -64,8 +70,8 @@ var CodeMirror = (function(){
   });
 
   function addLineNumberDiv(container, firstNum) {
-    var nums = document.createElement("DIV"),
-        scroller = document.createElement("DIV");
+    var nums = createHTMLElement("div"),
+        scroller = createHTMLElement("div");
     nums.style.position = "absolute";
     nums.style.height = "100%";
     if (nums.style.setExpression) {
@@ -117,7 +123,7 @@ var CodeMirror = (function(){
     else if (options.normalTab) options.tabMode = "default";
     if (options.cursorActivity) options.onCursorActivity = options.cursorActivity;
 
-    var frame = this.frame = document.createElement("IFRAME");
+    var frame = this.frame = createHTMLElement("iframe");
     if (options.iframeClass) frame.className = options.iframeClass;
     frame.frameBorder = 0;
     frame.style.border = "0";
@@ -127,13 +133,13 @@ var CodeMirror = (function(){
     // always add it, redundant as it sounds.
     frame.style.display = "block";
 
-    var div = this.wrapping = document.createElement("DIV");
+    var div = this.wrapping = createHTMLElement("div");
     div.style.position = "relative";
     div.className = "CodeMirror-wrapping";
     div.style.width = options.width;
     div.style.height = (options.height == "dynamic") ? options.minHeight + "px" : options.height;
     // This is used by Editor.reroutePasteEvent
-    var teHack = this.textareaHack = document.createElement("TEXTAREA");
+    var teHack = this.textareaHack = createHTMLElement("textarea");
     div.appendChild(teHack);
     teHack.style.position = "absolute";
     teHack.style.left = "-10000px";
@@ -357,7 +363,7 @@ var CodeMirror = (function(){
         var targetHeight = 50 + Math.max(body.offsetHeight, Math.max(frame.offsetHeight, body.scrollHeight || 0)),
             lastNumber = Math.ceil(targetHeight / lineHeight);
         for (var i = scroller.childNodes.length; i <= lastNumber; i++) {
-          var div = document.createElement("DIV");
+          var div = createHTMLElement("div");
           div.appendChild(document.createTextNode(fill ? String(i + self.options.firstLineNumber) : "\u00a0"));
           scroller.appendChild(div);
         }
@@ -384,7 +390,7 @@ var CodeMirror = (function(){
         function setNum(n, node) {
           // Does not typically happen (but can, if you mess with the
           // document during the numbering)
-          if (!lineNum) lineNum = scroller.appendChild(document.createElement("DIV"));
+          if (!lineNum) lineNum = scroller.appendChild(createHTMLElement("div"));
           if (styleNums) styleNums(lineNum, node, n);
           // Changes are accumulated, so that the document layout
           // doesn't have to be recomputed during the pass

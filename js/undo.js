@@ -103,7 +103,7 @@ UndoHistory.prototype = {
   push: function(from, to, lines) {
     var chain = [];
     for (var i = 0; i < lines.length; i++) {
-      var end = (i == lines.length - 1) ? to : document.createElement("BR");
+      var end = (i == lines.length - 1) ? to : document.createElement("br");
       chain.push({from: from, to: end, text: cleanText(lines[i])});
       from = end;
     }
