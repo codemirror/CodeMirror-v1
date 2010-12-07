@@ -328,7 +328,7 @@ var CodeMirror = (function(){
       nums.onclick = function(e) {
         var handler = self.options.onLineNumberClick;
         if (handler) {
-          var div = (e || event).target || (e || event).srcElement;
+          var div = (e || window.event).target || (e || window.event).srcElement;
           var num = div == nums ? NaN : Number(div.innerHTML);
           if (!isNaN(num)) handler(num, div);
         }
