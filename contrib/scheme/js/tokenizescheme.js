@@ -114,26 +114,6 @@ var tokenizeScheme = (function() {
 
 
     var START = function(source, setState) {
-	var readHexNumber = function(){
-	    source.next(); // skip the 'x'
-	    source.nextWhileMatches(isHexDigit);
-	    return {type: "number", style: "scheme-number"};
-	};
-
-
-	var readNumber = function() {
-	    scanSimpleNumber();
-	    if (source.equals("-") || source.equals("+")) {
-		source.next();
-	    }
-	    scanSimpleNumber();
-	    if (source.equals("i")) {
-		source.next();
-	    }
-	    return {type: "number", style: "scheme-number"};
-	};
-
-
 	// Read a word, look it up in keywords. If not found, it is a
 	// variable, otherwise it is a keyword of the type found.
 	var readWordOrNumber = function() {

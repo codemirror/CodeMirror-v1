@@ -420,7 +420,8 @@ var Editor = (function(){
         // body of the document to focus it in IE, making focusing
         // hard when the document is small.
         if (internetExplorer && options.height != "dynamic")
-          document.body.style.minHeight = (frameElement.clientHeight - 2 * document.body.offsetTop - 5) + "px";
+          document.body.style.minHeight = (
+            window.frameElement.clientHeight - 2 * document.body.offsetTop - 5) + "px";
 
         document.documentElement.style.borderWidth = "0";
         if (!options.textWrapping)

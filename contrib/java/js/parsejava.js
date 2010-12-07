@@ -215,7 +215,6 @@ var JavaParser = Editor.Parser = (function() {
       else if (type == "(") cont(pushlex(")"), expression, expect(")"), poplex, maybeoperator);
       else if (type == "operator") cont(expression);
       else if (type == "[") cont(pushlex("]"), commasep(expression, "]"), poplex, maybeoperator);
-      else if (type == "{") cont(pushlex("}"), commasep(objprop, "}"), poplex, maybeoperator);
     }
     // Called for places where operators, function calls, or
     // subscripts are valid. Will skip on to the next action if none
