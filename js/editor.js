@@ -178,7 +178,9 @@ var Editor = (function(){
     // Check whether a node is a normalized <span> element.
     function partNode(node){
       if (node.isPart && node.childNodes.length == 1 && node.firstChild.nodeType == 3) {
-        node.currentText = node.firstChild.nodeValue;
+        var text = node.firstChild.nodeValue;
+        node.dirty = node.dirty || text != node.currentText;
+        node.currentText = text;
         return !/[\n\t\r]/.test(node.currentText);
       }
       return false;
@@ -1565,6 +1567,7 @@ var Editor = (function(){
 
           // If the part matches the token, we can leave it alone.
           if (correctPart(token, part)){
+            if (active && part.dirty) active(part, token, self);
             part.dirty = false;
             parts.next();
           }
