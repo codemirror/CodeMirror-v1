@@ -507,10 +507,10 @@ var CodeMirror = (function(){
       options.height = area.style.height;
     if (options.content == null) options.content = area.value;
 
+    function updateField() {
+      area.value = mirror.getCode();
+    }
     if (area.form) {
-      function updateField() {
-        area.value = mirror.getCode();
-      }
       if (typeof area.form.addEventListener == "function")
         area.form.addEventListener("submit", updateField, false);
       else
