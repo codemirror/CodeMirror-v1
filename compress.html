@@ -20,9 +20,11 @@
     comments. To optimize page loading, it is recommended to
     concatenate the scripts loaded in the CodeMirror frame, and
     compress them. This page may be useful if you intend to do this:
-    it provides an interface to Google's <a
-    href="http://closure-compiler.appspot.com/">Closure compiler</a>,
-    allowing you to easily load in CodeMirror scripts.</p>
+    it provides an interface to two different minifiers, <a
+    href="http://github.com/mishoo/UglifyJS/">UglifyJS</a> and
+    Google's <a href="http://closure-compiler.appspot.com/">Closure
+    compiler</a>, allowing you to easily feed them CodeMirror
+    scripts.</p>
 
     <p>You will have to compress <code>codemirror.js</code>
     separately, since that will be loaded into the top-level page from
@@ -48,10 +50,11 @@
   lineNumbers: true
 });</pre>
 
-    <p>Clicking the "Compress" buttons below will take you to a file
-    containing the compressed code. Copy-paste this into your script
-    file. ("Save as" for that page is broken on some browsers, so be
-    careful).</p>
+    <p>Clicking the "Compress with UglifyJS" button will download the
+    compressed file. If you use Closure, that doesn't support direct
+    downloads, so the button will take you to a file containing the
+    compressed code. Copy-paste this into your script file. ("Save as"
+    for that page is broken on some browsers, so be careful).</p>
 
     <form id="form" action="http://marijnhaverbeke.nl/uglifyjs" method="post">
       <input type="hidden" id="download" name="download" value=""/>
