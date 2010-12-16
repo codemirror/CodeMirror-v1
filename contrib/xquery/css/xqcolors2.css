@@ -31,7 +31,6 @@ span.word {
 
 span.xqueryKeyword {
   color: blue; 
-  /* font-weight: bold; */
 }
 
 span.xqueryComment {
@@ -40,17 +39,14 @@ span.xqueryComment {
 
 span.xqueryModifier {
   color: rgb(0,102,153);
-  font-weight: bold;
 }
 
 span.xqueryType {
   color: rgb(0,135,255);
-  font-weight: bold;
 }
 
 span.xqueryAtom {
   color: rgb(0,102,153);
-  font-weight: bold;  
 }
 
 span.xqueryString {
@@ -87,10 +83,8 @@ span.xml-tagname {
 
 span.xml-attribute {
     color: purple;
-    font-style:italic;
 }
 
 span.xml-attribute-value {
     color: purple;
-    font-style:italic;
 }
