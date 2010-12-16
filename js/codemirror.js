@@ -99,12 +99,13 @@ var CodeMirror = (function(){
     var html = ["<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\"><html><head>"];
     // Hack to work around a bunch of IE8-specific problems.
     html.push("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=EmulateIE7\"/>");
+    var queryStr = options.noScriptCaching ? "?nocache=" + new Date().getTime().toString(16) : "";
     forEach(options.stylesheet, function(file) {
-      html.push("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + file + "\"/>");
+      html.push("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + file + queryStr + "\"/>");
     });
     forEach(options.basefiles.concat(options.parserfile), function(file) {
       if (!/^https?:/.test(file)) file = options.path + file;
-      html.push("<script type=\"text/javascript\" src=\"" + file + (options.noScriptCaching ? "?nocache=" + new Date().getTime().toString(16) : "") + "\"><" + "/script>");
+      html.push("<script type=\"text/javascript\" src=\"" + file + queryStr + "\"><" + "/script>");
     });
     html.push("</head><body style=\"border-width: 0;\" class=\"editbox\" spellcheck=\"" +
               (options.disableSpellcheck ? "false" : "true") + "\"></body></html>");
