@@ -191,7 +191,8 @@ var CodeMirror = (function(){
 
     focusIfIE: function() {
       // in IE, a lot of selection-related functionality only works when the frame is focused
-      if (this.win.select.ie_selection) this.focus();
+      if (this.win.select.ie_selection && document.activeElement != this.frame)
+        this.focus();
     },
     focus: function() {
       this.win.focus();
