@@ -63,7 +63,6 @@ var XqueryParser = Editor.Parser = (function() {
         var iter = {
             next: function() {
                 var token = tokens.next();
-
                 // since attribute and elements can be named the same, assume the
                 // following word of each is a variable
                 if (previousToken && (previousToken.content == "attribute" || previousToken.content == "element") && previousToken.type == "xqueryKeywordC") {
@@ -76,7 +75,7 @@ var XqueryParser = Editor.Parser = (function() {
                     token.style = "xqueryModifier";
                 }
 
-                else if (token.type == "word" && (getPrevious(3).style == "xml-attribute" || previousToken.type == "xml-tag-open") &&
+                else if (token.type == "word" && (getPrevious(3).style == "xml-attribute" || (previousToken && previousToken.type == "xml-tag-open")) &&
                 previousToken.content.substring(previousToken.content.length - 1) != ">") {
                     token.style = "xml-attribute";
                 }
@@ -84,7 +83,7 @@ var XqueryParser = Editor.Parser = (function() {
                 && getPrevious(2).style == "xml-attribute") {
                     token.style = "xml-attribute-value";
                 }
-                else if(token.type == "string" && previousToken.type == "}") {
+                else if(token.type == "string" && previousToken && previousToken.type == "}") {
                     // looking for expressions within a string and detecting if the expression is within an attribute
                     var i=0;
                     while(i++ < previousTokens.length-1) {

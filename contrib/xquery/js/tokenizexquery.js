@@ -30,7 +30,6 @@ var tokenizeXquery = (function() {
             if (next == end && !escaped)
             return false;
             escaped = !escaped && next == "\\";
-            console.debug(escaped);
         }
         return escaped;
     }
