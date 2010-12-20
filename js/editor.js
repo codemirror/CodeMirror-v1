@@ -1119,23 +1119,24 @@ var Editor = (function(){
     // highlight them in green for a moment, or red if no proper match
     // was found.
     highlightParens: function(jump, fromKey) {
-      var self = this;
+      var self = this, mark = this.options.markParen;
+      if (typeof mark == "string") mark = [mark, mark];
       // give the relevant nodes a colour.
       function highlight(node, ok) {
         if (!node) return;
-        if (self.options.markParen) {
-          self.options.markParen(node, ok);
-        }
-        else {
+        if (!mark) {
           node.style.fontWeight = "bold";
           node.style.color = ok ? "#8F8" : "#F88";
         }
+        else if (mark.call) mark(node, ok);
+        else node.className += " " + mark[ok ? 0 : 1];
       }
       function unhighlight(node) {
         if (!node) return;
-        if (self.options.unmarkParen) {
+        if (mark && !mark.call)
+          removeClass(removeClass(node, mark[0]), mark[1]);
+        else if (self.options.unmarkParen)
           self.options.unmarkParen(node);
-        }
         else {
           node.style.fontWeight = "";
           node.style.color = "";

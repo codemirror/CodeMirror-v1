@@ -54,6 +54,8 @@ var CodeMirror = (function(){
     height: "300px",
     minHeight: 100,
     autoMatchParens: false,
+    markParen: null,
+    unmarkParen: null,
     parserConfig: null,
     tabMode: "indent", // or "spaces", "default", "shift"
     enterMode: "indent", // or "keep", "flat"

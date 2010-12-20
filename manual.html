@@ -234,14 +234,23 @@
       the user clicks on the document. Defaults to <code>false</code>.
       Might be expensive for big documents.</dd>
 
-      <dt><code>markParen</code>,
-      <code>unmarkParen</code></dt><dd>Functions. Can be used to
-      customise the way brackets are marked (and unmarked) when
-      matched. Both take the bracket's <code>SPAN</code> node as their
-      first argument, and <code>markParen</code> takes a second
-      boolean argument indicating whether a successful match was
-      found. The default is to make the brackets bold and green (or
-      red, if not matched).</dd>
+      <dt><code>markParen</code>,<code>unmarkParen</code></dt>
+      <dd>Can be used to customise the way brackets are marked (and
+      unmarked) when matched. The simplest way to do this is to simply
+      set <code>markParen</code> to a string, the name of the CSS
+      class that should be added to the bracket elements when they are
+      matched. Alternatively, you can provide an array of two strings,
+      where the first will be used for successful matches, and the
+      second for failing matches. You'll have to include some CSS file
+      (using the <code>stylesheet</code> option) that defines these
+      classes. Alternatively, you can provide both
+      <code>markParen</code> and <code>unmarkParen</code>, and set
+      them to functions that will be called to style the bracket's
+      <code>SPAN</code> elements. Both will get this element as their
+      first argument, and <code>markParen</code> gets a second boolean
+      argument indicating whether a successful match was found. The
+      default behaviour, if these options are not supplied, is to make
+      the brackets bold and green (or red, if not matched).</dd>
 
       <dt><code>saveFunction</code></dt><dd>If given a function
       value, that function will be invoked when the user presses
