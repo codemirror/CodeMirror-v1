@@ -1123,8 +1123,12 @@ var Editor = (function(){
       // give the relevant nodes a colour.
       function highlight(node, ok) {
         if (!node) return;
-        if (self.options.markParen) {
-          self.options.markParen(node, ok);
+        var so = self.options, markParen = so.markParen, markParenError = so.markParenError;
+        if (typeof markParen === 'string' && typeof markParenError === 'string') {
+          node.className = ok ? markParen : markParenError;
+        }
+        else if (markParen) {
+          markParen(node, ok);
         }
         else {
           node.style.fontWeight = "bold";
@@ -1133,8 +1137,12 @@ var Editor = (function(){
       }
       function unhighlight(node) {
         if (!node) return;
-        if (self.options.unmarkParen) {
-          self.options.unmarkParen(node);
+        var unmarkParen = self.options.unmarkParen;
+        if (typeof unmarkParen === 'string') {
+          node.className = unmarkParen;
+        }
+        else if (unmarkParen) {
+          unmarkParen(node);
         }
         else {
           node.style.fontWeight = "";
