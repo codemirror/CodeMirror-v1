@@ -1,0 +1,32 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <script src="js/codemirror.js" type="text/javascript"></script>
+    <title>CodeMirror: CSS demonstration</title>
+    <link rel="stylesheet" type="text/css" href="css/docs.css"/>
+  </head>
+  <body style="padding: 20px;">
+
+<p>Demonstration of <a href="index.html">CodeMirror</a>'s CSS
+highlighter.</p>
+
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+<textarea id="code" cols="120" rows="30">
+  foo
+    bar;
++ baz;
++ bug;
+- oooooo;
+  blah
+</textarea>
+</div>
+
+<script type="text/javascript">
+  var editor = CodeMirror.fromTextArea('code', {
+    parserfile: ["portable.js", "portablediff.js"],
+    stylesheet: "css/diffcolors.css",
+    path: "js/"
+  });
+</script>
+
+  </body>
+</html>
