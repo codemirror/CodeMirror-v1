@@ -76,15 +76,15 @@ var webkitLastLineHack = webkit ?
     }
   } : function() {};
 
+function asEditorLines(string) {
+  var tab = makeWhiteSpace(indentUnit);
+  return map(string.replace(/\t/g, tab).replace(/\u00a0/g, " ").replace(/\r\n?/g, "\n").split("\n"), fixSpaces);
+}
+
 var Editor = (function(){
   // The HTML elements whose content should be suffixed by a newline
   // when converting them to flat text.
   var newlineElements = {"P": true, "DIV": true, "LI": true};
-
-  function asEditorLines(string) {
-    var tab = makeWhiteSpace(indentUnit);
-    return map(string.replace(/\t/g, tab).replace(/\u00a0/g, " ").replace(/\r\n?/g, "\n").split("\n"), fixSpaces);
-  }
 
   // Helper function for traverseDOM. Flattens an arbitrary DOM node
   // into an array of textnodes and <br> tags.
