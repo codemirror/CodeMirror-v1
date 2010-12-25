@@ -58,6 +58,8 @@ var SqlParser = Editor.Parser = (function() {
 
   var operatorChars = /[*+\-<>=&|:\/]/;
 
+  var CFG = {};
+
   var tokenizeSql = (function() {
     function normal(source, setState) {
       var ch = source.next();
@@ -158,9 +160,10 @@ var SqlParser = Editor.Parser = (function() {
             setState(normal);
             break;
           }
-          escaped = !escaped && ch == "\\";
-        }
-        
+          escaped = CFG.extension == 'T-SQL' ?
+                                  !escaped && quote == ch && source.equals(quote) :
+                                  !escaped && ch == "\\";
+        }        
         return quote == "`" ? "sql-quoted-word" : "sql-literal";
       };
     }
@@ -252,5 +255,13 @@ var SqlParser = Editor.Parser = (function() {
     return iter;
   }
 
-  return {make: parseSql, electricChars: ")"};
+  function configure (parserConfig) {
+    for (var p in parserConfig) {
+      if (parserConfig.hasOwnProperty(p)) {
+        CFG[p] = parserConfig[p];
+      }
+    }
+  }
+
+  return {make: parseSql, electricChars: ")", configure: configure};
 })();
