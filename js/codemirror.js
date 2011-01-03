@@ -539,6 +539,7 @@ var CodeMirror = (function(){
 
     area.style.display = "none";
     var mirror = new CodeMirror(insert, options);
+    mirror.save = updateField;
     mirror.toTextArea = function() {
       updateField();
       area.parentNode.removeChild(mirror.wrapping);
