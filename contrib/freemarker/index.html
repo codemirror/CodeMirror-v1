@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/docs.css"/>
     <style type="text/css">
       .CodeMirror-line-numbers {
-        width: 30px;
+        width: 2em;
         color: #aaa;
         background-color: #eee;
         text-align: right;
@@ -24,15 +24,13 @@
 Freemarker parser. Written by Magnus Ljung, released under a BSD-style <a
 href="LICENSE">license</a>.</p>
 
-<p>This parser is very rudimentary and only supports color highlighting, not indentation.</p>
-
-<div style="border: 1px solid black; padding: 0px; width: 100%;">
-<textarea id="code" cols="30" rows="30">
+<div style="border-top: 1px solid black; border-bottom: 1px solid black;">
+<textarea id="code" cols="120" rows="30">
 &lt;!--
 example useless code to show Freemarker syntax highlighting
 this is multiline comment
 --&gt;
-    
+
 &lt;#macro join sequence separator&gt;
     &lt;#assign first="true"/&gt;
     &lt;#list sequence as entry&gt;&lt;#if first=="true"&gt;&lt;#assign first="false"/&gt;&lt;#else&gt;${separator} &lt;/#if&gt;${entry}&lt;/#list&gt;
@@ -40,13 +38,13 @@ this is multiline comment
 
 Here is some text that isn't Freemarker.
 
-Let's join a list <@join ["foo", "bar", "baz"] ", "/>
+Let's join a list &lt;@join ["foo", "bar", "baz"] ", "/&gt;
 
 Some expressions: ${test} ${another?test?substring(0, 12)}
 
 Use alternative directive syntax:
 [#if user == "Big Joe"]
-    Hello big ${user}
+    Hello big ${user} xxx
 [/#if]
 </textarea>
 </div>
@@ -69,8 +67,9 @@ Use alternative directive syntax:
     unmarkParen: function(node) { 
          node.style.backgroundColor = "";
          node.style.color = "";
-    }
+    },
+    indentUnit: 4
   });
-</script>
-  </body>
+  </script>
+</body>
 </html>
