@@ -978,9 +978,9 @@ var Editor = (function(){
         if (direction != null && this.options.tabMode == "shift")
           newIndent = direction ? curIndent + indentUnit : Math.max(0, curIndent - indentUnit)
         else if (start)
-          newIndent = start.indentation(nextChars, curIndent, direction);
+          newIndent = start.indentation(nextChars, curIndent, direction, firstText);
         else if (Editor.Parser.firstIndentation)
-          newIndent = Editor.Parser.firstIndentation(nextChars, curIndent, direction);
+          newIndent = Editor.Parser.firstIndentation(nextChars, curIndent, direction, firstText);
       }
       
       var indentDiff = newIndent - curIndent;
