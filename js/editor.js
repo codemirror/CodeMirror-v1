@@ -245,20 +245,20 @@ var Editor = (function(){
   // indicating whether anything was found, and can be called again to
   // skip to the next find. Use the select and replace methods to
   // actually do something with the found locations.
-  function SearchCursor(editor, string, from, caseFold) {
+  function SearchCursor(editor, pattern, from, caseFold) {
     this.editor = editor;
     this.history = editor.history;
     this.history.commit();
-    this.valid = !!string;
+    this.valid = !!pattern;
     this.atOccurrence = false;
-    if (caseFold == undefined) caseFold = string == string.toLowerCase();
+    if (caseFold == undefined) caseFold = typeof pattern == "string" && pattern == pattern.toLowerCase();
 
     function getText(node){
       var line = cleanText(editor.history.textAfter(node));
       return (caseFold ? line.toLowerCase() : line);
     }
 
-    var topPos = {node: null, offset: 0};
+    var topPos = {node: null, offset: 0}, self = this;
     if (from && typeof from == "object" && typeof from.character == "number") {
       editor.checkLine(from.line);
       var pos = {node: from.line, offset: from.character};
@@ -272,16 +272,42 @@ var Editor = (function(){
       this.pos = {from: topPos, to: topPos};
     }
 
-    if (caseFold) string = string.toLowerCase();
+    if (typeof pattern != "string") { // Regexp match
+      this.matches = function(reverse, node, offset) {
+        if (reverse) {
+          var line = getText(node).slice(0, offset), match = line.match(pattern), start = 0;
+          while (match) {
+            var ind = line.indexOf(match[0]);
+            start += ind;
+            line = line.slice(ind + 1);
+            var newmatch = line.match(pattern);
+            if (newmatch) match = newmatch;
+            else break;
+          }
+        }
+        else {
+          var line = getText(node).slice(offset), match = line.match(pattern),
+              start = match && offset + line.indexOf(match[0]);
+        }
+        if (match) {
+          self.currentMatch = match;
+          return {from: {node: node, offset: start},
+                  to: {node: node, offset: start + match[0].length}};
+        }
+      };
+      return;
+    }
+
+    if (caseFold) pattern = pattern.toLowerCase();
     // Create a matcher function based on the kind of string we have.
-    var target = string.split("\n");
+    var target = pattern.split("\n");
     this.matches = (target.length == 1) ?
       // For one-line strings, searching can be done simply by calling
       // indexOf or lastIndexOf on the current line.
       function(reverse, node, offset) {
-        var line = getText(node), len = string.length, match;
-        if (reverse ? (offset >= len && (match = line.lastIndexOf(string, offset - len)) != -1)
-                    : (match = line.indexOf(string, offset)) != -1)
+        var line = getText(node), len = pattern.length, match;
+        if (reverse ? (offset >= len && (match = line.lastIndexOf(pattern, offset - len)) != -1)
+                    : (match = line.indexOf(pattern, offset)) != -1)
           return {from: {node: node, offset: match},
                   to: {node: node, offset: match + len}};
       } :
@@ -369,6 +395,9 @@ var Editor = (function(){
 
     replace: function(string) {
       if (this.atOccurrence) {
+        var fragments = this.currentMatch;
+        if (fragments)
+          string = string.replace(/\\(\d)/, function(m, i){return fragments[i];});
         var end = this.editor.replaceRange(this.pos.from, this.pos.to, string);
         this.pos.to = end;
         this.atOccurrence = false;
