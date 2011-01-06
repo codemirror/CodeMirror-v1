@@ -68,7 +68,8 @@ var CodeMirror = (function(){
     onLineNumberClick: null,
     indentUnit: 2,
     domain: null,
-    noScriptCaching: false
+    noScriptCaching: false,
+    incrementalLoading: false
   });
 
   function addLineNumberDiv(container, firstNum) {

@@ -486,8 +486,24 @@ var Editor = (function(){
   Editor.prototype = {
     // Import a piece of code into the editor.
     importCode: function(code) {
-      this.history.push(null, null, asEditorLines(code));
-      this.history.reset();
+      var lines = asEditorLines(code), chunk = 1000;
+      if (!this.options.incrementalLoading || lines.length < chunk) {
+        this.history.push(null, null, lines);
+        this.history.reset();
+      }
+      else {
+        var cur = 0, self = this;
+        function addChunk() {
+          var chunklines = lines.slice(cur, cur + chunk);
+          chunklines.push("");
+          self.history.push(self.history.nodeBefore(null), null, chunklines);
+          self.history.reset();
+          cur += chunk;
+          if (cur < lines.length)
+            parent.setTimeout(addChunk, 1000);
+        }
+        addChunk();
+      }
     },
 
     // Extract the code from the editor.
