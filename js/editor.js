@@ -385,7 +385,6 @@ var Editor = (function(){
   function Editor(options) {
     this.options = options;
     window.indentUnit = options.indentUnit;
-    this.parent = parent;
     var container = this.container = document.body;
     this.history = new UndoHistory(container, options.undoDepth, options.undoDelay, this);
     var self = this;
@@ -711,7 +710,7 @@ var Editor = (function(){
       te.focus();
 
       var self = this;
-      this.parent.setTimeout(function() {
+      parent.setTimeout(function() {
         self.capturingPaste = false;
         window.focus();
         if (self.selectionSnapshot) // IE hack
@@ -882,7 +881,7 @@ var Editor = (function(){
         this.reroutePasteEvent();
       }
       else if (electric && electric.indexOf(event.character) != -1)
-        this.parent.setTimeout(function(){self.indentAtCursor(null);}, 0);
+        parent.setTimeout(function(){self.indentAtCursor(null);}, 0);
       // Work around a bug where pressing backspace at the end of a
       // line, or delete at the start, often causes the cursor to jump
       // to the start of the line in Opera 10.60.
@@ -891,7 +890,7 @@ var Editor = (function(){
           var sel = select.selectionTopNode(this.container), self = this,
               next = sel ? sel.nextSibling : this.container.firstChild;
           if (sel !== false && next && isBR(next))
-            this.parent.setTimeout(function(){
+            parent.setTimeout(function(){
               if (select.selectionTopNode(self.container) == next)
                 select.focusAfterNode(next.previousSibling, self.container);
             }, 20);
@@ -899,7 +898,7 @@ var Editor = (function(){
         else if (event.code == 46) { // delete
           var sel = select.selectionTopNode(this.container), self = this;
           if (sel && isBR(sel)) {
-            this.parent.setTimeout(function(){
+            parent.setTimeout(function(){
               if (select.selectionTopNode(self.container) != sel)
                 select.focusAfterNode(sel, self.container);
             }, 20);
@@ -920,7 +919,7 @@ var Editor = (function(){
         if (sel && next && isBR(next) && !isBR(sel)) {
           var cheat = document.createTextNode("\u200b");
           this.container.insertBefore(cheat, next);
-          this.parent.setTimeout(function() {
+          parent.setTimeout(function() {
             if (cheat.nodeValue == "\u200b") removeElement(cheat);
             else cheat.nodeValue = cheat.nodeValue.replace("\u200b", "");
           }, 20);
@@ -1109,9 +1108,9 @@ var Editor = (function(){
 
     // Delay (or initiate) the next paren highlight event.
     scheduleParenHighlight: function() {
-      if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
+      if (this.parenEvent) parent.clearTimeout(this.parenEvent);
       var self = this;
-      this.parenEvent = this.parent.setTimeout(function(){self.highlightParens();}, 300);
+      this.parenEvent = parent.setTimeout(function(){self.highlightParens();}, 300);
     },
 
     // Take the token before the cursor. If it contains a character in
@@ -1149,7 +1148,7 @@ var Editor = (function(){
 
       if (!window || !window.parent || !window.select) return;
       // Clear the event property.
-      if (this.parenEvent) this.parent.clearTimeout(this.parenEvent);
+      if (this.parenEvent) parent.clearTimeout(this.parenEvent);
       this.parenEvent = null;
 
       // Extract a 'paren' from a piece of text.
@@ -1208,7 +1207,7 @@ var Editor = (function(){
           highlight(cursor, found.status);
           highlight(found.node, found.status);
           if (fromKey)
-            self.parent.setTimeout(function() {unhighlight(cursor); unhighlight(found.node);}, 500);
+            parent.setTimeout(function() {unhighlight(cursor); unhighlight(found.node);}, 500);
           else
             self.highlighted = [cursor, found.node];
           if (jump && found.node)
@@ -1317,8 +1316,8 @@ var Editor = (function(){
       // Timeouts are routed through the parent window, because on
       // some browsers designMode windows do not fire timeouts.
       var self = this;
-      this.parent.clearTimeout(this.highlightTimeout);
-      this.highlightTimeout = this.parent.setTimeout(function(){self.highlightDirty();}, this.options.passDelay);
+      parent.clearTimeout(this.highlightTimeout);
+      this.highlightTimeout = parent.setTimeout(function(){self.highlightDirty();}, this.options.passDelay);
     },
 
     // Fetch one dirty node, and remove it from the dirty set.
@@ -1386,8 +1385,8 @@ var Editor = (function(){
     // a given interval.
     delayScanning: function() {
       if (this.scanner) {
-        this.parent.clearTimeout(this.documentScan);
-        this.documentScan = this.parent.setTimeout(this.scanner, this.options.continuousScanning);
+        parent.clearTimeout(this.documentScan);
+        this.documentScan = parent.setTimeout(this.scanner, this.options.continuousScanning);
       }
     },
 
@@ -1619,5 +1618,5 @@ var Editor = (function(){
 addEventHandler(window, "load", function() {
   var CodeMirror = window.frameElement.CodeMirror;
   var e = CodeMirror.editor = new Editor(CodeMirror.options);
-  this.parent.setTimeout(method(CodeMirror, "init"), 0);
+  parent.setTimeout(method(CodeMirror, "init"), 0);
 });

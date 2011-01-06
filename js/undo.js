@@ -29,7 +29,7 @@
 function UndoHistory(container, maxDepth, commitDelay, editor) {
   this.container = container;
   this.maxDepth = maxDepth; this.commitDelay = commitDelay;
-  this.editor = editor; this.parent = editor.parent;
+  this.editor = editor;
   // This line object represents the initial, empty editor.
   var initial = {text: "", from: null, to: null};
   // As the borders between lines are represented by BR elements, the
@@ -52,8 +52,8 @@ UndoHistory.prototype = {
   // milliseconds).
   scheduleCommit: function() {
     var self = this;
-    this.parent.clearTimeout(this.commitTimeout);
-    this.commitTimeout = this.parent.setTimeout(function(){self.tryCommit();}, this.commitDelay);
+    parent.clearTimeout(this.commitTimeout);
+    this.commitTimeout = parent.setTimeout(function(){self.tryCommit();}, this.commitDelay);
   },
 
   // Mark a node as touched. Null is a valid argument.
@@ -153,7 +153,7 @@ UndoHistory.prototype = {
   // Check whether the touched nodes hold any changes, if so, commit
   // them.
   commit: function(doNotHighlight) {
-    this.parent.clearTimeout(this.commitTimeout);
+    parent.clearTimeout(this.commitTimeout);
     // Make sure there are no pending dirty nodes.
     if (!doNotHighlight) this.editor.highlightDirty(true);
     // Build set of chains.
