@@ -552,7 +552,7 @@ var Editor = (function(){
     },
 
     checkLine: function(node) {
-      if (node === false || !(node == null || node.parentNode == this.container))
+      if (node === false || !(node == null || node.parentNode == this.container || node.hackBR))
         throw parent.CodeMirror.InvalidLineHandle;
     },
 
@@ -568,14 +568,17 @@ var Editor = (function(){
     },
 
     lastLine: function() {
-      if (this.container.lastChild) return startOfLine(this.container.lastChild);
-      else return null;
+      var last = this.container.lastChild;
+      if (last) last = startOfLine(last);
+      if (last && last.hackBR) last = startOfLine(last.previousSibling);
+      return last;
     },
 
     nextLine: function(line) {
       this.checkLine(line);
       var end = endOfLine(line, this.container);
-      return end || false;
+      if (!end || end.hackBR) return false;
+      else return end;
     },
 
     prevLine: function(line) {
