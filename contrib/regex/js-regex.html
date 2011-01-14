@@ -4,8 +4,8 @@
 <title>CodeMirror Regex Highlighting</title>
 <script type="text/javascript" src="../../js/codemirror.js"></script>
 <script type="text/javascript">
-var load = window.addEventListener ? window.addEventListener : window.attachEvent;
-load('load', function () {
+
+window.onload = function () {
 
   createEditor('js-regexp', 'uniform');
   createEditor('js-regexp-type', 'type');
@@ -88,7 +88,7 @@ load('load', function () {
         }())
       });
   }
-}, false);
+};
 
 </script>
 </head>

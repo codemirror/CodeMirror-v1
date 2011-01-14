@@ -4,8 +4,8 @@
 <title>CodeMirror Regex Highlighting</title>
 <script type="text/javascript" src="../../js/codemirror.js"></script>
 <script type="text/javascript">
-var load = window.addEventListener ? window.addEventListener : window.attachEvent;
-load('load', function () {
+
+window.onload = function () {
   var editor = CodeMirror.fromTextArea('regexp', {
     noScriptCaching: true,
     // continuousScanning: true,  // Normally Debugging only, but useful with regex
@@ -84,7 +84,7 @@ load('load', function () {
     }())
     //*/
   });
-}, false);
+};
 
 </script>
 </head>
