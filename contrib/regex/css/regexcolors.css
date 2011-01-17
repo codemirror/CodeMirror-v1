@@ -14,7 +14,7 @@ html {
 }
 
 html, body {
-background: #000000 !important;
+background: #555555 !important;
 }
 
 /*///////////////////////////////*/
@@ -53,7 +53,7 @@ span.regex-class-hex {
     color: SpringGreen;
 }
 span.regex-class-unicode-escape {
-    color: SlateGray;
+    color: LightGray;
 }
 span.regex-class-ascii-control {
     color: SlateBlue;
@@ -82,10 +82,10 @@ span.regex-class-octal-begin-range, span.regex-class-octal-end-range {
     color: Salmon;
 }
 span.regex-class-hex-begin-range, span.regex-class-hex-end-range {
-    color: SaddleBrown;
+    color: Tan;
 }
 span.regex-class-unicode-escape-begin-range, span.regex-class-unicode-escape-end-range {
-    color: RoyalBlue;
+    color: LightBlue;
 }
 span.regex-class-ascii-control-begin-range, span.regex-class-ascii-control-end-range {
     color: RosyBrown;
@@ -110,7 +110,7 @@ span.regex-alternator {
     color: BurlyWood;
 }
 span.regex-unicode-class-outside {
-    color: Green;
+    color: Gold;
 }
 span.regex-octal {
     color: MediumVioletRed;
@@ -143,7 +143,7 @@ span.regex-literal-begin, span.regex-literal-end {
     color: MediumBlue;
 }
 span.regex-character {
-    color: Magenta;
+    color: #FFFFAA;
 }
 
 /*///////////////////////////////*/
@@ -204,7 +204,7 @@ span.regex-group-1-1 {
     color: lightblue;
 }
 span.regex-group-1-2 {
-    color: green;
+    color: lightgreen;
 }
 span.regex-group-2-1 {
     color: pink;
