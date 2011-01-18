@@ -44,7 +44,7 @@ function UndoHistory(container, maxDepth, commitDelay, editor) {
   this.firstTouched = false;
   // History is the set of committed changes, touched is the set of
   // nodes touched since the last commit.
-  this.history = []; this.redoHistory = []; this.touched = [];
+  this.history = []; this.redoHistory = []; this.touched = []; this.lostundo = 0;
 }
 
 UndoHistory.prototype = {
@@ -92,11 +92,12 @@ UndoHistory.prototype = {
   clear: function() {
     this.history = [];
     this.redoHistory = [];
+    this.lostundo = 0;
   },
 
   // Ask for the size of the un/redo histories.
   historySize: function() {
-    return {undo: this.history.length, redo: this.redoHistory.length};
+    return {undo: this.history.length, redo: this.redoHistory.length, lostundo: this.lostundo};
   },
 
   // Push a changeset into the document.
@@ -128,7 +129,7 @@ UndoHistory.prototype = {
   // Clear the undo history, make the current document the start
   // position.
   reset: function() {
-    this.history = []; this.redoHistory = [];
+    this.history = []; this.redoHistory = []; this.lostundo = 0;
   },
 
   textAfter: function(br) {
@@ -235,8 +236,10 @@ UndoHistory.prototype = {
   // it than allowed.
   addUndoLevel: function(diffs) {
     this.history.push(diffs);
-    if (this.history.length > this.maxDepth)
+    if (this.history.length > this.maxDepth) {
       this.history.shift();
+      lostundo += 1;
+    }
   },
 
   // Build chains from a set of touched nodes.
