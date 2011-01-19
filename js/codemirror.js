@@ -416,7 +416,11 @@ var CodeMirror = (function(){
             setNum(next++, node.previousSibling);
             for (; node && !win.isBR(node); node = node.nextSibling) {
               var bott = node.offsetTop + node.offsetHeight;
-              while (scroller.offsetHeight && bott - 3 > pos) setNum("&nbsp;");
+              while (scroller.offsetHeight && bott - 3 > pos) {
+                var oldPos = pos;
+                setNum("&nbsp;");
+                if (pos <= oldPos) break;
+              }
             }
             if (node) node = node.nextSibling;
             if (new Date().getTime() > endTime) {
