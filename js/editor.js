@@ -1022,7 +1022,7 @@ var Editor = (function(){
 
         // Ask the lexical context for the correct indentation, and
         // compute how much this differs from the current indentation.
-        if (direction != null && this.options.tabMode == "shift")
+        if (direction != null && this.options.tabMode != "indent")
           newIndent = direction ? curIndent + indentUnit : Math.max(0, curIndent - indentUnit)
         else if (start)
           newIndent = start.indentation(nextChars, curIndent, direction, firstText);
@@ -1087,7 +1087,7 @@ var Editor = (function(){
     // re-indented, when nothing is selected, the line with the cursor
     // is re-indented.
     handleTab: function(direction) {
-      if (this.options.tabMode == "spaces")
+      if (this.options.tabMode == "spaces" && !select.somethingSelected())
         select.insertTabAtCursor();
       else
         this.reindentSelection(direction);

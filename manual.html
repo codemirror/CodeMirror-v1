@@ -345,8 +345,6 @@
         <dt><code>"indent"</code></dt><dd>The default. Causes tab to
         adjust the indentation of the selection or current line using
         the parser's rules.</dd>
-        <dt><code>"spaces"</code></dt><dd>Pressing tab simply inserts
-        four spaces.</dd>
         <dt><code>"default"</code></dt><dd>CodeMirror does not
         interfere with the tab key, but leaves it to the browser to
         handle it. Binds shift-space to regular indentation
@@ -354,6 +352,9 @@
         <dt><code>"shift"</code></dt><dd>Pressing tab indents the
         current line (or selection) one <code>indentUnit</code>
         deeper, pressing shift-tab, un-indents it.</dd>
+        <dt><code>"spaces"</code></dt><dd>Pressing tab simply inserts
+        four spaces, except when something is selected, in which case
+        the <code>"shift"</code> behaviour is used.</dd>
       </dl>
       This option can be changed at run-time using the
       <code>setTabMode(mode)</code> method.</dd>
