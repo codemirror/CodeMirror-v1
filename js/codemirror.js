@@ -136,7 +136,6 @@ var CodeMirror = (function(){
     // display: block occasionally suppresses some Firefox bugs, so we
     // always add it, redundant as it sounds.
     frame.style.display = "block";
-    frame.appendChild(document.createTextNode("IFrames must be enabled for CodeMirror to work."));
 
     var div = this.wrapping = createHTMLElement("div");
     div.style.position = "relative";
