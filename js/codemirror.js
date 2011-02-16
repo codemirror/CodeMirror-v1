@@ -532,7 +532,7 @@ var CodeMirror = (function(){
         area.form.submit();
         area.form.submit = wrapSubmit;
       }
-      area.form.submit = wrapSubmit;
+      try {area.form.submit = wrapSubmit;} catch(e){}
     }
 
     function insert(frame) {
@@ -550,7 +550,7 @@ var CodeMirror = (function(){
       area.parentNode.removeChild(mirror.wrapping);
       area.style.display = "";
       if (area.form) {
-        area.form.submit = realSubmit;
+        try {area.form.submit = realSubmit;} catch(e) {}
         if (typeof area.form.removeEventListener == "function")
           area.form.removeEventListener("submit", updateField, false);
         else
