@@ -524,15 +524,17 @@ var CodeMirror = (function(){
         area.form.addEventListener("submit", updateField, false);
       else
         area.form.attachEvent("onsubmit", updateField);
-      var realSubmit = area.form.submit;
-      function wrapSubmit() {
-        updateField();
-        // Can't use realSubmit.apply because IE6 is too stupid
-        area.form.submit = realSubmit;
-        area.form.submit();
+      if (typeof area.form.submit == "function") {
+        var realSubmit = area.form.submit;
+        function wrapSubmit() {
+          updateField();
+          // Can't use realSubmit.apply because IE6 is too stupid
+          area.form.submit = realSubmit;
+          area.form.submit();
+          area.form.submit = wrapSubmit;
+        }
         area.form.submit = wrapSubmit;
       }
-      try {area.form.submit = wrapSubmit;} catch(e){}
     }
 
     function insert(frame) {
@@ -550,7 +552,8 @@ var CodeMirror = (function(){
       area.parentNode.removeChild(mirror.wrapping);
       area.style.display = "";
       if (area.form) {
-        try {area.form.submit = realSubmit;} catch(e) {}
+        if (typeof area.form.submit == "function")
+          area.form.submit = realSubmit;
         if (typeof area.form.removeEventListener == "function")
           area.form.removeEventListener("submit", updateField, false);
         else
