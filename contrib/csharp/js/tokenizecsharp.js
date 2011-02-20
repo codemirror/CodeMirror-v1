@@ -84,7 +84,7 @@ var tokenizeCSharp = (function() {
     };
   }
 
-  // The token reader, inteded to be used by the tokenizer from
+  // The token reader, intended to be used by the tokenizer from
   // tokenize.js (through jsTokenState). Advances the source stream
   // over a token, and returns an object containing the type and style
   // of that token.
@@ -153,6 +153,27 @@ var tokenizeCSharp = (function() {
       setInside(endBackSlash ? quote : null);
       return {type: "string", style: "csharp-string"};
     }
+    function readVerbatimString(start){
+      var newInside = "@\"";
+      var maybeEnd = (start == "\"");
+      while (true) {
+        if (maybeEnd) {
+          if (source.peek() == "\"") {
+              source.next();
+          }
+          else {
+              newInside = null;
+              break;
+          }
+        }
+        if (source.endOfLine())
+          break;
+        var next = source.next();
+        maybeEnd = (next == "\"");
+      }
+      setInside(newInside);
+      return {type: "string", style: "csharp-string"};
+    }
 
     // Fetch the next token. Dispatches on first character in the
     // stream, or first two characters when the first is a slash.
@@ -160,7 +181,9 @@ var tokenizeCSharp = (function() {
       return readString(inside);
     var ch = source.next();
     if (inside == "/*")
-      return readMultilineComment(ch);
+        return readMultilineComment(ch);
+    else if (inside == "@\"")
+        return readVerbatimString(ch);
     else if (ch == "\"" || ch == "'")
       return readString(ch);
     // with punctuation, the type of the token is the symbol itself
@@ -182,6 +205,14 @@ var tokenizeCSharp = (function() {
     }
     else if (ch == "#") {  // treat c# regions like comments
         nextUntilUnescaped(source, null); return {type: "comment", style: "csharp-comment"};
+    }
+    else if (ch = "@") {
+        if (source.equals("\"")) {
+            source.next();
+            return readVerbatimString(ch);
+        }
+        else
+            return readWord();
     }
     else if (isOperatorChar.test(ch))
       return readOperator();
