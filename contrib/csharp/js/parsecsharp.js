@@ -31,7 +31,8 @@ var JSParser = Editor.Parser = (function() {
   }
 
   // CSharp indentation rules.
-  function indentCSharp(lexical) {
+  function indentCSharp(lexical, noIndent) {
+    if (noIndent) return function(){return 0;};
     return function(firstChars) {
       var firstChar = firstChars && firstChars.charAt(0), type = lexical.type;
       var closing = firstChar == type;
@@ -97,7 +98,7 @@ var JSParser = Editor.Parser = (function() {
           lexical.align = false;
         // Newline tokens get an indentation function associated with
         // them.
-        token.indentation = indentCSharp(lexical);
+        token.indentation = indentCSharp(lexical, tokens.state.doNotIndent);
       }
       // No more processing for meaningless tokens.
       if (token.type == "whitespace" || token.type == "comment")

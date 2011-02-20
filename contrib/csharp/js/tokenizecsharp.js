@@ -74,7 +74,7 @@ var tokenizeCSharp = (function() {
   // we are inside of a multi-line comment and whether the next token
   // could be a regular expression).
   function jsTokenState(inside, regexp) {
-    return function(source, setState) {
+    function state(source, setState) {
       var newInside = inside;
       var type = jsToken(inside, regexp, source, function(c) {newInside = c;});
       var newRegexp = type.type == "operator" || type.type == "keyword c" || type.type.match(/^[\[{}\(,;:]$/);
@@ -82,6 +82,8 @@ var tokenizeCSharp = (function() {
         setState(jsTokenState(newInside, newRegexp));
       return type;
     };
+    state.doNotIndent = inside == "@\"";
+    return state;
   }
 
   // The token reader, intended to be used by the tokenizer from
