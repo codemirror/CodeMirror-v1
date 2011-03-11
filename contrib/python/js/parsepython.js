@@ -17,7 +17,7 @@ var PythonParser = Editor.Parser = (function() {
     var doubleOperators = wordRegexp(['==', '!=', '\\<=', '\\>=', '\\<\\>',
                                       '\\<\\<', '\\>\\>', '\\/\\/', '\\*\\*']);
     var singleDelimiters = '()[]{}@,:`=;';
-    var doubleDelimiters = ['\\+=', '\\-=', '\\*=', '/=', '%=', '&=', '\\|=',
+    var baseDoubleDelimiters = ['\\+=', '\\-=', '\\*=', '/=', '%=', '&=', '\\|=',
                             '\\^='];
     var tripleDelimiters = wordRegexp(['//=','\\>\\>=','\\<\\<=','\\*\\*=']);
     var singleStarters = singleOperators + singleDelimiters + '=!';
@@ -62,7 +62,7 @@ var PythonParser = Editor.Parser = (function() {
             py = py3;
             stringStarters = /[\'\"rbRB]/;
             stringTypes = /[rb]/;
-            doubleDelimiters.push('\\-\\>');
+            baseDoubleDelimiters.push('\\-\\>');
         } else {
             py = py2;
             stringStarters = /[\'\"RUru]/;
@@ -71,7 +71,7 @@ var PythonParser = Editor.Parser = (function() {
         config = conf;
         keywords = wordRegexp(commonkeywords.concat(py.keywords));
         types = wordRegexp(commontypes.concat(py.types));
-        doubleDelimiters = wordRegexp(doubleDelimiters);
+        doubleDelimiters = wordRegexp(baseDoubleDelimiters);
     }
 
     var tokenizePython = (function() {
