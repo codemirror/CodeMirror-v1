@@ -53,6 +53,7 @@ var CodeMirror = (function(){
     width: "",
     height: "300px",
     minHeight: 100,
+    onDynamicHeightChange: null,
     autoMatchParens: false,
     markParen: null,
     unmarkParen: null,
@@ -483,8 +484,12 @@ var CodeMirror = (function(){
         else if (lineHeight) {
           computedHeight = trailingLines * lineHeight;
         }
-        if (computedHeight)
-          self.wrapping.style.height = Math.max(vmargin + computedHeight, self.options.minHeight) + "px";
+        if (computedHeight) {
+          if (self.options.onDynamicHeightChange)
+            computedHeight = self.options.onDynamicHeightChange(computedHeight);
+          if (computedHeight)
+            self.wrapping.style.height = Math.max(vmargin + computedHeight, self.options.minHeight) + "px";
+        }
       }
       setTimeout(updateHeight, 300);
       self.options.onCursorActivity = function(x) {
