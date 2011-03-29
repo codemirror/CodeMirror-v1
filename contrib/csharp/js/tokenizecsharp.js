@@ -208,7 +208,7 @@ var tokenizeCSharp = (function() {
     else if (ch == "#") {  // treat c# regions like comments
         nextUntilUnescaped(source, null); return {type: "comment", style: "csharp-comment"};
     }
-    else if (ch = "@") {
+    else if (ch == "@") {
         if (source.equals("\"")) {
             source.next();
             return readVerbatimString(ch);
