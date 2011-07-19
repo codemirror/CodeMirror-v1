@@ -8,7 +8,7 @@
 var select = {};
 
 (function() {
-  select.ie_selection = document.selection && document.selection.createRangeCollection;
+  select.ie_selection = !(window.getSelection && document.createRange && document.createRange().endContainer);
 
   // Find the 'top-level' (defined as 'a direct child of the node
   // passed as the top argument') node that the given node is

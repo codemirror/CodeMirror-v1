@@ -5,6 +5,7 @@
  */
 
 var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
+var oldIE = internetExplorer && /MSIE\s+[4-8]\b/;
 var webkit = /AppleWebKit/.test(navigator.userAgent);
 var safari = /Apple Computer, Inc/.test(navigator.vendor);
 var gecko = navigator.userAgent.match(/gecko\/(\d{8})/i);
@@ -749,7 +750,7 @@ var Editor = (function(){
       var te = window.frameElement.CodeMirror.textareaHack;
       var coords = this.cursorCoords(true, true);
       te.style.top = coords.y + "px";
-      if (internetExplorer) {
+      if (oldIE) {
         var snapshot = select.getBookmark(this.container);
         if (snapshot) this.selectionSnapshot = snapshot;
       }
@@ -1310,7 +1311,7 @@ var Editor = (function(){
         this.unloaded = false;
       }
 
-      if (internetExplorer) {
+      if (oldIE) {
         this.container.createTextRange().execCommand("unlink");
         clearTimeout(this.saveSelectionSnapshot);
         var self = this;
