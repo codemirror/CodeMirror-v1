@@ -5,7 +5,7 @@
  */
 
 var internetExplorer = document.selection && window.ActiveXObject && /MSIE/.test(navigator.userAgent);
-var oldIE = internetExplorer && /MSIE\s+[4-8]\b/;
+var oldIE = internetExplorer && /MSIE\s+[4-8]\b/.test(navigator.userAgent);
 var webkit = /AppleWebKit/.test(navigator.userAgent);
 var safari = /Apple Computer, Inc/.test(navigator.vendor);
 var gecko = navigator.userAgent.match(/gecko\/(\d{8})/i);
