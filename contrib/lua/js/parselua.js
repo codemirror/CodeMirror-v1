@@ -214,22 +214,23 @@ function parseLUA(source,basecolumn) {
 
  
 	
-	if (style == "lua-identifier" && luaKeywords.test(content)){
-	  token.style = "lua-keyword";
-	}	
-	if (style == "lua-identifier" && luaStdFunctions.test(content)){
-	  token.style = "lua-stdfunc";
-	}
-	if (style == "lua-identifier" && luaCustomFunctions.test(content)){
-	  token.style = "lua-customfunc";
-	}
-
-	if (luaIndentKeys.test(content))
-    	indentDepth++;
-	else if (luaUnindentKeys.test(content))
-		indentDepth--;
+        if (style == "lua-identifier" && luaKeywords.test(content)){
+		      token.style = "lua-keyword";
+        }
+        if (style == "lua-identifier" && luaStdFunctions.test(content)){
+          token.style = "lua-stdfunc";
+        }
+        if (style == "lua-identifier" && luaCustomFunctions.test(content)){
+		      token.style = "lua-customfunc";
+        }
+		
+		    if ((style != "lua-comment") && (style != "lua-string")){
+		      if (luaIndentKeys.test(content))
+		        indentDepth++;
+			    else if (luaUnindentKeys.test(content))
+				    indentDepth--;
+		    }
         
-
         if (content == "\n")
           token.indentation = indentLUA( indentDepth, basecolumn);
 
