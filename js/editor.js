@@ -805,6 +805,12 @@ var Editor = (function(){
       }
     },
 
+// vvv RAZ 
+    setUserKeyHandler: function (callback) {
+      this.userKeyHandler = callback;
+    },
+// ^^^ RAZ 
+      
     grabKeys: function(eventHandler, filter) {
       this.frozen = eventHandler;
       this.keyFilter = filter;
@@ -836,6 +842,10 @@ var Editor = (function(){
         this.frozen(event);
         return;
       }
+
+// vvv RAZ 
+    if (this.userKeyHandler) this.userKeyHandler(event)
+// ^^^ RAZ 
 
       var code = event.keyCode;
       // Don't scan when the user is typing.
