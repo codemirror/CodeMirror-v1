@@ -5,7 +5,7 @@ html {
 .editbox {
   padding: .4em;
   margin: 0;
-  font-family: monospace;
+  font-family: Courier New, monospace;
   font-size: 10pt;
   line-height: 1.1em;
   color: black;
@@ -34,7 +34,6 @@ span.py-error {
 
 span.py-keyword {
   color: #770088;
-  font-weight: bold;
 }
 
 span.py-literal {

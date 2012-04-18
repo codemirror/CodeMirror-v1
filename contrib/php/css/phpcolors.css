@@ -36,7 +36,6 @@ span.php-punctuation {
 
 span.php-keyword {
   color: #770088;
-  font-weight: bold;
 }
 
 span.php-operator {
@@ -46,19 +45,16 @@ span.php-operator {
 /* __FILE__ etc.; http://php.net/manual/en/reserved.php */
 span.php-compile-time-constant {
   color: #776088;
-  font-weight: bold;
 }
 
 /* output of get_defined_constants(). Differs from http://php.net/manual/en/reserved.constants.php */
 span.php-predefined-constant {
   color: darkgreen;
-  font-weight: bold;
 }
 
 /* PHP reserved "language constructs"... echo() etc.; http://php.net/manual/en/reserved.php */
 span.php-reserved-language-construct {
   color: green;
-  font-weight: bold;
 }
 
 /* PHP built-in functions: glob(), chr() etc.; output of get_defined_functions()["internal"] */
@@ -82,7 +78,6 @@ span.php-t_string {
 
 span.php-variable {
   color: black;
-  font-weight: bold;
 }
 
 
@@ -102,7 +97,6 @@ span.php-string-single-quoted {
 /* double quoted strings allow interpolation */
 span.php-string-double-quoted {
   color: #AA2222;
-  font-weight: bold;
 }
 
 span.syntax-error {

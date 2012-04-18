@@ -6,7 +6,7 @@ html {
 .editbox {
   margin: .4em;
   padding: 0;
-  font-family: monospace;
+  font-family: Monaco, 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Lucida Console', monospace;
   font-size: 10pt;
   color: black;
 }
@@ -29,7 +29,6 @@ span.java-operator {
 
 span.java-keyword {
   color: #7f0055;
-  font-weight:bold;
 }
 
 span.java-atom {
@@ -51,7 +50,6 @@ span.java-comment {
 
 span.javadoc-comment {
   color: #3e5797;
-  font-weight:bold;
 }
 
 span.java-string {
@@ -61,4 +59,3 @@ span.java-string {
 span.java-annotation{
   color: gray;	
 }
-

@@ -23,7 +23,6 @@ span.lua-comment {
 }
 
 span.lua-keyword {
-  font-weight: bold;
   color: blue;
 }
 
@@ -32,11 +31,9 @@ span.lua-string {
 }
 
 span.lua-stdfunc {
-  font-weight: bold;
   color: #077;
 }
 span.lua-customfunc {
-  font-weight: bold;
   color: #0AA;
 }
 
@@ -57,7 +54,3 @@ span.lua-error {
   color: #FFF;
   background-color: #F00;
 }
-
-
-
-

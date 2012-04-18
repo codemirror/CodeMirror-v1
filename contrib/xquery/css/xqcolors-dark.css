@@ -15,27 +15,22 @@ span.word {
 
 span.xqueryKeyword {
   color: #ffbd40; 
-  /* font-weight: bold; */
 }
 
 span.xqueryComment {
   color: #CDCDCD;
-  font-style:italic;
 }
 
 span.xqueryModifier {
 color:#6c8cd5;
-  font-weight: bold;
 }
 
 span.xqueryType {
   color:#6c8cd5;
-  font-weight: bold;
 }
 
 span.xqueryAtom {
   color:#6c8cd5;
-  font-weight: bold;  
 }
 
 span.xqueryString {
@@ -89,5 +84,4 @@ span.xml-attribute {
 
 span.xml-attribute-value {
     color: #FFF700;
-    font-style:italic;
 }
