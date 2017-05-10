@@ -1166,15 +1166,12 @@ var Editor = (function(){
     // '()[]{}', search for the matching paren/brace/bracket, and
     // highlight them in green for a moment, or red if no proper match
     // was found.
-    highlightParens: function(jump, fromKey) {
-      var self = this, mark = this.options.markParen;
-      if (typeof mark == "string") mark = [mark, mark];
-      // give the relevant nodes a colour.
       function highlight(node, ok) {
         if (!node) return;
         if (!mark) {
           node.style.fontWeight = "bold";
-          node.style.color = ok ? "#8F8" : "#F88";
+          node.style.color = ok ? "#900" : "#F88";
+          node.style.backgroundColor = ok ? "#cfc" : "#f00";
         }
         else if (mark.call) mark(node, ok);
         else node.className += " " + mark[ok ? 0 : 1];
@@ -1188,6 +1185,7 @@ var Editor = (function(){
         else {
           node.style.fontWeight = "";
           node.style.color = "";
+          node.style.backgroundColor = "";
         }
       }
       if (!fromKey && self.highlighted) {
